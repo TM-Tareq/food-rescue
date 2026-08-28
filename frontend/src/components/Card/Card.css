@@ -1,0 +1,28 @@
+.custom-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem 2rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+}
+
+.card-hoverable:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-hover);
+}
+
+.card-border-orange {
+  border-top: 4px solid var(--accent-orange);
+}
+
+.card-border-green {
+  border-top: 4px solid var(--primary);
+}
+
+.card-border-dark {
+  border-top: 4px solid #0f172a;
+}

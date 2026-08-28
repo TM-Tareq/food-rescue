@@ -1,0 +1,66 @@
+.dual-mode-section {
+  padding: 4rem 1.5rem;
+  background: var(--bg-main);
+}
+
+.dual-mode-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+.mode-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 3rem 2.5rem;
+}
+
+.card-badge-header {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.8rem;
+}
+
+.orange-bg {
+  background: var(--accent-orange-light);
+}
+
+.icon-orange {
+  color: var(--accent-orange);
+}
+
+.green-bg {
+  background: var(--primary-light);
+}
+
+.icon-green {
+  color: var(--primary);
+}
+
+.card-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.8rem;
+}
+
+.card-description {
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 2.2rem;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .dual-mode-container {
+    grid-template-columns: 1fr;
+  }
+}
