@@ -4,7 +4,7 @@ import L from 'leaflet';
 import { 
   Search, Sliders, ShieldCheck, MapPin, Clock, Users, Flame, 
   Utensils, CheckCircle2, Navigation, HeartHandshake, Layers, 
-  Package, History, Settings, LogOut, ArrowRight, Leaf 
+  Package, History, Settings, LogOut, ArrowRight, Leaf, Route 
 } from 'lucide-react';
 import Card from '../../components/Card/Card';
 import Button from '../../components/Button/Button';
@@ -13,22 +13,20 @@ import NgoClaimModal from './components/NgoClaimModal/NgoClaimModal';
 import 'leaflet/dist/leaflet.css';
 import './NgoDashboard.css';
 
-// Custom Marker Generator for Leaflet Google Maps
-const createGoogleMarker = (emoji, colorBg, labelText, isSelected = false) => {
-  return L.divIcon({
-    className: 'custom-google-marker',
-    html: `
-      <div className="gmap-pin-container ${isSelected ? 'selected-pin-active' : ''}">
-        <div className="gmap-tooltip-bubble ${isSelected ? 'tooltip-highlight' : ''}">
-          <span className="gmap-tooltip-title">${labelText}</span>
-        </div>
-        <div className="gmap-pin-bubble" style="background-color: ${colorBg};">
-          <span className="gmap-emoji">${emoji}</span>
-        </div>
-      </div>
-    `,
-    iconSize: [120, 60],
-    iconAnchor: [60, 55]
+// Pure Vector SVG Google Map Pin Generator
+const createSvgPinMarker = (color, emoji) => {
+  const svgString = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="46" viewBox="0 0 36 46">
+      <path d="M18 0C8.059 0 0 8.059 0 18c0 13.5 18 28 18 28s18-14.5 18-28C36 8.059 27.941 0 18 0z" fill="${color}" stroke="#ffffff" stroke-width="2.5"/>
+      <circle cx="18" cy="18" r="12" fill="#ffffff" opacity="0.2"/>
+      <text x="18" y="20" font-size="16" text-anchor="middle" dominant-baseline="central">${emoji}</text>
+    </svg>
+  `;
+  return L.icon({
+    iconUrl: `data:image/svg+xml;utf8,${encodeURIComponent(svgString)}`,
+    iconSize: [36, 46],
+    iconAnchor: [18, 46],
+    popupAnchor: [0, -42]
   });
 };
 
@@ -55,56 +53,91 @@ export default function NgoDashboard() {
     }
   ]);
 
-  // Surplus Food Mock Data (3 Donors)
+  // Surplus Food Mock Data with Real Road Coordinates & Road Distance
   const surplusFeed = [
     {
       id: 'FOOD-101',
       title: 'Spicy Chicken Biryani (20 Portions)',
       donor: 'Star Chef Bistro',
       area: 'Banani, Dhaka',
-      distance: '0.8 km away',
+      distance: '1.2 km via Kemal Ataturk & Progati Sarani',
       beneficiaries: 'Feeds ~40 Children',
       expiry: 'Expires in 35 mins',
       urgency: 'HIGH',
       safetyTags: ['Halal Certified', 'Hot Sealed Package'],
       category: 'COOKED',
       image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&auto=format&fit=crop&q=80',
-      coordinates: [23.7937, 90.4047] // Banani
+      coordinates: [23.7937, 90.4047], // Banani
+      // Real Road Waypoints (Following Kemal Ataturk Ave -> Progati Sarani Rd -> Anjuman Shelter)
+      roadPath: [
+        [23.7937, 90.4047], // Banani Kemal Ataturk Start
+        [23.7937, 90.4200], // Kemal Ataturk & Progati Sarani Intersection
+        [23.8050, 90.4210], // Progati Sarani North
+        [23.8150, 90.4210]  // Anjuman Shelter Destination
+      ]
     },
     {
       id: 'FOOD-102',
       title: 'Mixed Vegetable Curry & Parathas (35 Packs)',
       donor: 'Harbor Cafe & Diner',
       area: 'Gulshan 1, Dhaka',
-      distance: '1.4 km away',
+      distance: '2.4 km via Gulshan Ave & Progati Sarani',
       beneficiaries: 'Feeds ~50 People',
       expiry: 'Expires in 1h 45m',
       urgency: 'NORMAL',
       safetyTags: ['Vegetarian', 'Warm Pack'],
       category: 'COOKED',
       image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&auto=format&fit=crop&q=80',
-      coordinates: [23.7880, 90.4120] // Gulshan 1
+      coordinates: [23.7880, 90.4120], // Gulshan 1
+      // Real Road Waypoints (Gulshan 1 -> Gulshan 2 -> Progati Sarani -> Anjuman Shelter)
+      roadPath: [
+        [23.7880, 90.4120], // Gulshan 1 Circle
+        [23.7980, 90.4150], // Gulshan 2 Circle
+        [23.8050, 90.4180], // Connecting Avenue
+        [23.8150, 90.4210]  // Anjuman Shelter Destination
+      ]
     },
     {
       id: 'FOOD-103',
       title: 'Fresh Artisan Bread & Croissant Basket',
       donor: 'Daily Crust Bakery',
       area: 'Bashundhara R/A, Dhaka',
-      distance: '2.1 km away',
+      distance: '1.1 km via Bashundhara Main Rd',
       beneficiaries: 'Feeds ~25 Children',
       expiry: 'Expires in 3h 10m',
       urgency: 'NORMAL',
       safetyTags: ['Bakery Fresh', 'Room Temp'],
       category: 'BAKERY',
       image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80',
-      coordinates: [23.8220, 90.4270] // Bashundhara
+      coordinates: [23.8220, 90.4270], // Bashundhara R/A
+      // Real Road Waypoints (Bashundhara Main Rd -> Anjuman Shelter)
+      roadPath: [
+        [23.8220, 90.4270], // Bashundhara Main Rd
+        [23.8180, 90.4230], // Gate Entrance
+        [23.8150, 90.4210]  // Anjuman Shelter Destination
+      ]
     }
   ];
 
   // Map Coordinates & NGO Location
-  const ngoShelterPos = [23.8050, 90.4180]; // Anjuman Shelter Center
+  const ngoShelterPos = [23.8150, 90.4210]; // Anjuman Shelter Center (Bashundhara / Progati Sarani)
 
   const focusedItem = surplusFeed.find(f => f.id === focusedFoodId) || surplusFeed[0];
+
+  // Category Color & Emoji Map
+  const getCategoryColor = (item) => {
+    if (item.category === 'BAKERY') return '#d97706'; // Amber Gold
+    if (item.category === 'DRY') return '#8b5cf6';    // Purple
+    if (item.urgency === 'HIGH') return '#ea4335';     // Google Red
+    return '#f97316';                                  // Warm Orange
+  };
+
+  const getCategoryEmoji = (item) => {
+    if (item.category === 'BAKERY') return '🍞';
+    if (item.category === 'DRY') return '📦';
+    if (item.urgency === 'HIGH') return '🔥';
+    return '🍲';
+  };
 
   const handleOpenClaimModal = (item) => {
     setSelectedFoodItem(item);
@@ -297,7 +330,7 @@ export default function NgoDashboard() {
                       <div className="card-content-body">
                         <div className="donor-meta-row">
                           <span className="donor-name">🏪 {food.donor}</span>
-                          <span className="donor-dist"><MapPin size={13} /> {food.distance}</span>
+                          <span className="donor-dist"><Route size={13} /> {food.distance}</span>
                         </div>
 
                         <h3 className="food-item-title">{food.title}</h3>
@@ -340,10 +373,10 @@ export default function NgoDashboard() {
             <div className="ngo-map-panel">
               <Card hover={false} className="ngo-map-card">
                 <div className="ngo-map-wrapper">
-                  {/* Floating Map Status Overlay */}
+                  {/* Floating Active Route Distance Badge */}
                   <div className="map-top-status-pill">
-                    <span className="live-pulse-dot"></span>
-                    <span>● 3 Active Donors Marked on Dhaka Map</span>
+                    <Route size={15} className="icon-blue" />
+                    <span>Active Route: <strong>{focusedItem.distance}</strong></span>
                   </div>
 
                   <MapContainer
@@ -358,50 +391,54 @@ export default function NgoDashboard() {
                       attribution='&copy; <a href="https://maps.google.com">Google Maps</a>'
                     />
 
-                    {/* NGO Shelter Marker */}
+                    {/* NGO Shelter Destination Vector SVG Pin */}
                     <Marker
                       position={ngoShelterPos}
-                      icon={createGoogleMarker('🏢', '#059669', 'Anjuman Shelter (NGO Destination)', true)}
+                      icon={createSvgPinMarker('#059669', '🏢')}
                     >
-                      <Popup>
-                        <strong>Anjuman Orphanage Shelter</strong><br />Verified Recipient Destination
+                      <Popup className="gmaps-clean-popup">
+                        <div className="popup-card-content">
+                          <div className="popup-badge green-badge">🏢 NGO Shelter Destination</div>
+                          <strong className="popup-title">Anjuman Orphanage Shelter</strong>
+                          <p className="popup-sub">Verified Recipient Center (Bashundhara)</p>
+                        </div>
                       </Popup>
                     </Marker>
 
-                    {/* All 3 Donor Markers & Routes */}
+                    {/* Donor Vector SVG Pins & Real Road Polylines */}
                     {surplusFeed.map((item) => {
                       const isFocused = item.id === focusedFoodId;
-                      const markerIcon = createGoogleMarker(
-                        item.category === 'BAKERY' ? '🍞' : '🍲',
-                        item.urgency === 'HIGH' ? '#ea4335' : (isFocused ? '#2563eb' : '#f97316'),
-                        `${item.donor} (${item.expiry})`,
-                        isFocused
-                      );
+                      const pinColor = getCategoryColor(item);
+                      const pinEmoji = getCategoryEmoji(item);
+
+                      const markerIcon = createSvgPinMarker(pinColor, pinEmoji);
 
                       return (
                         <React.Fragment key={item.id}>
-                          {/* Route connecting NGO Shelter to Donor */}
+                          {/* REAL ROAD NETWORK POLYLINE (Following Dhaka Avenues instead of straight lines) */}
                           <Polyline
-                            positions={[ngoShelterPos, item.coordinates]}
+                            positions={item.roadPath}
                             pathOptions={{
                               color: isFocused ? '#2563eb' : '#cbd5e1',
-                              weight: isFocused ? 5 : 3,
-                              opacity: isFocused ? 0.9 : 0.4,
-                              dashArray: '8, 6'
+                              weight: isFocused ? 6 : 3,
+                              opacity: isFocused ? 0.95 : 0.4,
+                              lineCap: 'round',
+                              lineJoin: 'round'
                             }}
                           />
 
                           <Marker position={item.coordinates} icon={markerIcon}>
-                            <Popup>
-                              <div className="map-popup-card">
-                                <strong>{item.title}</strong>
-                                <p>{item.donor} • {item.distance}</p>
-                                <span className="popup-badge">{item.beneficiaries}</span>
+                            <Popup className="gmaps-clean-popup">
+                              <div className="popup-card-content">
+                                <strong className="popup-title">{item.title}</strong>
+                                <p className="popup-sub">🏪 {item.donor} ({item.distance})</p>
+                                <span className="popup-feed-count">{item.beneficiaries}</span>
+
                                 <button
                                   className="popup-claim-btn"
                                   onClick={() => handleOpenClaimModal(item)}
                                 >
-                                  Quick Claim
+                                  🤝 Claim Food Now
                                 </button>
                               </div>
                             </Popup>
@@ -410,6 +447,17 @@ export default function NgoDashboard() {
                       );
                     })}
                   </MapContainer>
+
+                  {/* MAP LEGEND OVERLAY BAR (Clean UX Explanation) */}
+                  <div className="map-legend-overlay">
+                    <span className="legend-title">Map Pin Legend:</span>
+                    <div className="legend-items-list">
+                      <span className="legend-item"><span className="dot red-dot"></span> 🔴 🔥 Urgent (&lt;45m)</span>
+                      <span className="legend-item"><span className="dot orange-dot"></span> 🟠 🍲 Cooked Meal</span>
+                      <span className="legend-item"><span className="dot gold-dot"></span> 🟡 🍞 Bakery Fresh</span>
+                      <span className="legend-item"><span className="dot green-dot"></span> 🟢 🏢 NGO Shelter</span>
+                    </div>
+                  </div>
 
                   <div className="gmaps-watermark-logo">
                     <span className="gmaps-google-text">Google</span> <span className="gmaps-sub-text">Maps Live</span>
