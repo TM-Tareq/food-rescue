@@ -10,6 +10,7 @@ import Card from '../../components/Card/Card';
 import Button from '../../components/Button/Button';
 import Badge from '../../components/Badge/Badge';
 import NgoClaimModal from './components/NgoClaimModal/NgoClaimModal';
+import NgoActiveClaimsTab from './components/NgoActiveClaimsTab/NgoActiveClaimsTab';
 import 'leaflet/dist/leaflet.css';
 import './NgoDashboard.css';
 
@@ -469,29 +470,7 @@ export default function NgoDashboard() {
         )}
 
         {activeTab === 'CLAIMS' && (
-          <div className="active-claims-view">
-            <div className="feed-header">
-              <h1 className="feed-title">Active Claimed Rescues</h1>
-              <p className="feed-sub">Track active pickups dispatched to your shelter.</p>
-            </div>
-
-            <div className="claims-grid">
-              {claimedItems.map((claim) => (
-                <Card key={claim.id} hover={false} className="claim-card">
-                  <div className="claim-card-top">
-                    <Badge theme="fresh">🚚 {claim.status}</Badge>
-                    <span className="claim-time">Claimed at {claim.claimedAt}</span>
-                  </div>
-                  <h3 className="claim-food-title">{claim.title}</h3>
-                  <p className="claim-donor-text">🏪 {claim.donor}</p>
-                  <div className="claim-eta-box">
-                    <Clock size={16} className="icon-blue" />
-                    <span>Rider Arrival ETA: <strong>{claim.eta}</strong></span>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
+          <NgoActiveClaimsTab onSwitchToDiscover={() => setActiveTab('DISCOVER')} />
         )}
       </main>
 
