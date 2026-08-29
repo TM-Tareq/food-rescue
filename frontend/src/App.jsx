@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import MainLayout from './layouts/MainLayout/MainLayout';
 import LandingPage from './features/landing/LandingPage';
 import RestaurantDashboard from './features/restaurant/RestaurantDashboard';
+import NgoDashboard from './features/ngo/NgoDashboard';
 import PartnerAuthModal from './features/auth/components/PartnerAuthModal/PartnerAuthModal';
 import './styles/variables.css';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState('landing'); // 'landing' or 'dashboard'
+  const [currentView, setCurrentView] = useState('landing'); // 'landing', 'dashboard', 'ngo'
   const [authModalState, setAuthModalState] = useState({
     isOpen: false,
     role: 'restaurant',
@@ -18,7 +19,6 @@ export default function App() {
     let mode = 'signin';
 
     if (roleOrMode === 'signin') {
-      // Simulate direct sign in to Restaurant Dashboard for previewing
       setCurrentView('dashboard');
       return;
     } else if (roleOrMode === 'signup') {
@@ -55,10 +55,16 @@ export default function App() {
         >
           🏪 Restaurant Dashboard (Partner Portal)
         </button>
+        <button
+          className={`demo-btn ${currentView === 'ngo' ? 'demo-active' : ''}`}
+          onClick={() => setCurrentView('ngo')}
+        >
+          🏢 NGO Portal (Discovery & Claiming)
+        </button>
       </div>
 
-      {/* Render View */}
-      {currentView === 'landing' ? (
+      {/* Render Selected View */}
+      {currentView === 'landing' && (
         <MainLayout onOpenAuth={handleOpenAuth}>
           <LandingPage onOpenAuth={handleOpenAuth} />
           <PartnerAuthModal
@@ -68,9 +74,11 @@ export default function App() {
             mode={authModalState.mode}
           />
         </MainLayout>
-      ) : (
-        <RestaurantDashboard />
       )}
+
+      {currentView === 'dashboard' && <RestaurantDashboard />}
+
+      {currentView === 'ngo' && <NgoDashboard />}
     </div>
   );
 }

@@ -1,0 +1,222 @@
+.ngo-claim-modal {
+  max-width: 540px !important;
+}
+
+.claim-modal-header {
+  text-align: center;
+  margin-bottom: 1.2rem;
+}
+
+.claim-header-badge {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #047857;
+  background: #d1fae5;
+  border-radius: var(--radius-full);
+  margin-bottom: 0.5rem;
+}
+
+.claim-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.claim-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.food-summary-box {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+}
+
+.summary-food-img {
+  width: 70px;
+  height: 70px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+.summary-food-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.summary-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.summary-donor {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.summary-meta-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.summary-chip {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.feed-chip {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.expiry-chip {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.transport-selection-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 1.8rem;
+}
+
+.selection-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.transport-options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.transport-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--border-color);
+  background: var(--bg-surface);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  position: relative;
+}
+
+.transport-card:hover {
+  border-color: var(--primary);
+  background: #f0fdf4;
+}
+
+.transport-selected {
+  border-color: var(--primary) !important;
+  background: #ecfdf5 !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.option-radio-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.2rem;
+}
+
+.transport-selected .option-radio-circle {
+  border-color: var(--primary);
+}
+
+.inner-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.transport-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.volunteer-bg {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.self-bg {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.transport-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.option-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.option-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.option-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-top: 0.3rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-sm);
+  width: fit-content;
+}
+
+.green-badge {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.orange-badge {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.claim-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
