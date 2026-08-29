@@ -4,7 +4,7 @@ import L from 'leaflet';
 import { 
   Search, Sliders, ShieldCheck, MapPin, Clock, Users, Flame, 
   Utensils, CheckCircle2, Navigation, HeartHandshake, Layers, 
-  Package, History, Settings, LogOut, ArrowRight 
+  Package, History, Settings, LogOut, ArrowRight, Leaf 
 } from 'lucide-react';
 import Card from '../../components/Card/Card';
 import Button from '../../components/Button/Button';
@@ -27,8 +27,8 @@ const createGoogleMarker = (emoji, colorBg, labelText, isSelected = false) => {
         </div>
       </div>
     `,
-    iconSize: [40, 50],
-    iconAnchor: [20, 45]
+    iconSize: [120, 60],
+    iconAnchor: [60, 55]
   });
 };
 
@@ -37,6 +37,7 @@ export default function NgoDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [radiusKm, setRadiusKm] = useState(3.0);
   const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [focusedFoodId, setFocusedFoodId] = useState('FOOD-101');
   
   // Claim Modal State
   const [selectedFoodItem, setSelectedFoodItem] = useState(null);
@@ -54,7 +55,7 @@ export default function NgoDashboard() {
     }
   ]);
 
-  // Surplus Food Mock Data
+  // Surplus Food Mock Data (3 Donors)
   const surplusFeed = [
     {
       id: 'FOOD-101',
@@ -68,7 +69,7 @@ export default function NgoDashboard() {
       safetyTags: ['Halal Certified', 'Hot Sealed Package'],
       category: 'COOKED',
       image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&auto=format&fit=crop&q=80',
-      coordinates: [23.7937, 90.4047]
+      coordinates: [23.7937, 90.4047] // Banani
     },
     {
       id: 'FOOD-102',
@@ -82,7 +83,7 @@ export default function NgoDashboard() {
       safetyTags: ['Vegetarian', 'Warm Pack'],
       category: 'COOKED',
       image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&auto=format&fit=crop&q=80',
-      coordinates: [23.7880, 90.4120]
+      coordinates: [23.7880, 90.4120] // Gulshan 1
     },
     {
       id: 'FOOD-103',
@@ -96,13 +97,14 @@ export default function NgoDashboard() {
       safetyTags: ['Bakery Fresh', 'Room Temp'],
       category: 'BAKERY',
       image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80',
-      coordinates: [23.8220, 90.4270]
+      coordinates: [23.8220, 90.4270] // Bashundhara
     }
   ];
 
-  // Map Coordinates & Markers
-  const dhakaCenter = [23.8050, 90.4180];
-  const ngoShelterPos = [23.8150, 90.4210]; // Anjuman Shelter
+  // Map Coordinates & NGO Location
+  const ngoShelterPos = [23.8050, 90.4180]; // Anjuman Shelter Center
+
+  const focusedItem = surplusFeed.find(f => f.id === focusedFoodId) || surplusFeed[0];
 
   const handleOpenClaimModal = (item) => {
     setSelectedFoodItem(item);
@@ -132,9 +134,11 @@ export default function NgoDashboard() {
       {/* LEFT SIDEBAR NAVIGATION */}
       <aside className="ngo-sidebar">
         <div className="ngo-brand">
-          <div className="ngo-logo-icon">🌿</div>
+          <div className="ngo-logo-icon">
+            <Leaf size={22} />
+          </div>
           <div>
-            <span className="brand-name">FoodRescue</span>
+            <span className="brand-name">Food<span className="brand-highlight">Rescue</span></span>
             <span className="brand-sub">NGO Recipient Portal</span>
           </div>
         </div>
@@ -194,7 +198,6 @@ export default function NgoDashboard() {
           </button>
         </nav>
 
-        {/* Footer Help & Logout */}
         <div className="sidebar-footer">
           <button className="ngo-footer-btn">
             <LogOut size={16} /> Logout
@@ -274,53 +277,62 @@ export default function NgoDashboard() {
 
               {/* Food Listings Feed Grid */}
               <div className="food-cards-feed">
-                {surplusFeed.map((food) => (
-                  <Card key={food.id} hover={false} className="food-feed-card">
-                    <div className="card-image-wrap">
-                      <img src={food.image} alt={food.title} className="food-card-img" />
-                      <div className={`expiry-floating-badge ${food.urgency === 'HIGH' ? 'urgent-bg' : ''}`}>
-                        <Flame size={14} /> {food.expiry}
+                {surplusFeed.map((food) => {
+                  const isFocused = food.id === focusedFoodId;
+
+                  return (
+                    <Card
+                      key={food.id}
+                      hover={true}
+                      className={`food-feed-card ${isFocused ? 'food-card-focused' : ''}`}
+                      onClick={() => setFocusedFoodId(food.id)}
+                    >
+                      <div className="card-image-wrap">
+                        <img src={food.image} alt={food.title} className="food-card-img" />
+                        <div className={`expiry-floating-badge ${food.urgency === 'HIGH' ? 'urgent-bg' : ''}`}>
+                          <Flame size={14} /> {food.expiry}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="card-content-body">
-                      <div className="donor-meta-row">
-                        <span className="donor-name">🏪 {food.donor}</span>
-                        <span className="donor-dist"><MapPin size={13} /> {food.distance}</span>
-                      </div>
+                      <div className="card-content-body">
+                        <div className="donor-meta-row">
+                          <span className="donor-name">🏪 {food.donor}</span>
+                          <span className="donor-dist"><MapPin size={13} /> {food.distance}</span>
+                        </div>
 
-                      <h3 className="food-item-title">{food.title}</h3>
+                        <h3 className="food-item-title">{food.title}</h3>
 
-                      {/* Beneficiaries & Safety Tags */}
-                      <div className="tags-row">
-                        <span className="tag-chip feed-count-chip">
-                          <Users size={13} /> {food.beneficiaries}
-                        </span>
-                        {food.safetyTags.map((tag, idx) => (
-                          <span key={idx} className="tag-chip safety-chip">
-                            {tag}
+                        {/* Beneficiaries & Safety Tags */}
+                        <div className="tags-row">
+                          <span className="tag-chip feed-count-chip">
+                            <Users size={13} /> {food.beneficiaries}
                           </span>
-                        ))}
-                      </div>
+                          {food.safetyTags.map((tag, idx) => (
+                            <span key={idx} className="tag-chip safety-chip">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
 
-                      {/* Claim Action Bar */}
-                      <div className="card-action-bar">
-                        <Button
-                          variant="emerald"
-                          size="md"
-                          icon={HeartHandshake}
-                          onClick={() => handleOpenClaimModal(food)}
-                          className="claim-primary-btn"
-                        >
-                          🤝 Claim Surplus Food
-                        </Button>
-                        <Button variant="outline" size="md">
-                          View Details
-                        </Button>
+                        {/* Claim Action Bar */}
+                        <div className="card-action-bar">
+                          <Button
+                            variant="emerald"
+                            size="md"
+                            icon={HeartHandshake}
+                            onClick={(e) => { e.stopPropagation(); handleOpenClaimModal(food); }}
+                            className="claim-primary-btn"
+                          >
+                            🤝 Claim Surplus Food
+                          </Button>
+                          <Button variant="outline" size="md">
+                            View Details
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  );
+                })}
               </div>
             </div>
 
@@ -331,14 +343,15 @@ export default function NgoDashboard() {
                   {/* Floating Map Status Overlay */}
                   <div className="map-top-status-pill">
                     <span className="live-pulse-dot"></span>
-                    <span>● {surplusFeed.length} Donor Posts Available Nearby</span>
+                    <span>● 3 Active Donors Marked on Dhaka Map</span>
                   </div>
 
                   <MapContainer
-                    center={dhakaCenter}
+                    center={focusedItem.coordinates}
                     zoom={13}
                     scrollWheelZoom={true}
                     className="leaflet-map-canvas"
+                    key={focusedFoodId}
                   >
                     <TileLayer
                       url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
@@ -348,39 +361,54 @@ export default function NgoDashboard() {
                     {/* NGO Shelter Marker */}
                     <Marker
                       position={ngoShelterPos}
-                      icon={createGoogleMarker('🏢', '#059669', 'Anjuman Shelter (Destination)', true)}
+                      icon={createGoogleMarker('🏢', '#059669', 'Anjuman Shelter (NGO Destination)', true)}
                     >
                       <Popup>
                         <strong>Anjuman Orphanage Shelter</strong><br />Verified Recipient Destination
                       </Popup>
                     </Marker>
 
-                    {/* Food Donors Markers */}
-                    {surplusFeed.map((item) => (
-                      <Marker
-                        key={item.id}
-                        position={item.coordinates}
-                        icon={createGoogleMarker(
-                          item.category === 'BAKERY' ? '🍞' : '🍲',
-                          item.urgency === 'HIGH' ? '#ea4335' : '#f97316',
-                          `${item.donor} (${item.expiry})`
-                        )}
-                      >
-                        <Popup>
-                          <div className="map-popup-card">
-                            <strong>{item.title}</strong>
-                            <p>{item.donor} • {item.distance}</p>
-                            <span className="popup-badge">{item.beneficiaries}</span>
-                            <button
-                              className="popup-claim-btn"
-                              onClick={() => handleOpenClaimModal(item)}
-                            >
-                              Quick Claim
-                            </button>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    ))}
+                    {/* All 3 Donor Markers & Routes */}
+                    {surplusFeed.map((item) => {
+                      const isFocused = item.id === focusedFoodId;
+                      const markerIcon = createGoogleMarker(
+                        item.category === 'BAKERY' ? '🍞' : '🍲',
+                        item.urgency === 'HIGH' ? '#ea4335' : (isFocused ? '#2563eb' : '#f97316'),
+                        `${item.donor} (${item.expiry})`,
+                        isFocused
+                      );
+
+                      return (
+                        <React.Fragment key={item.id}>
+                          {/* Route connecting NGO Shelter to Donor */}
+                          <Polyline
+                            positions={[ngoShelterPos, item.coordinates]}
+                            pathOptions={{
+                              color: isFocused ? '#2563eb' : '#cbd5e1',
+                              weight: isFocused ? 5 : 3,
+                              opacity: isFocused ? 0.9 : 0.4,
+                              dashArray: '8, 6'
+                            }}
+                          />
+
+                          <Marker position={item.coordinates} icon={markerIcon}>
+                            <Popup>
+                              <div className="map-popup-card">
+                                <strong>{item.title}</strong>
+                                <p>{item.donor} • {item.distance}</p>
+                                <span className="popup-badge">{item.beneficiaries}</span>
+                                <button
+                                  className="popup-claim-btn"
+                                  onClick={() => handleOpenClaimModal(item)}
+                                >
+                                  Quick Claim
+                                </button>
+                              </div>
+                            </Popup>
+                          </Marker>
+                        </React.Fragment>
+                      );
+                    })}
                   </MapContainer>
 
                   <div className="gmaps-watermark-logo">
