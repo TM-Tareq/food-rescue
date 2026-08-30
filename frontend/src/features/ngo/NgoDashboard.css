@@ -176,7 +176,26 @@
   flex: 1;
   padding: 1.5rem;
   height: 100%;
-  overflow: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Single Sleek Scrollbar */
+.ngo-main-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ngo-main-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ngo-main-content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-full);
+}
+
+.ngo-main-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 .discovery-split-layout {
