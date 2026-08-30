@@ -11,6 +11,7 @@ import Button from '../../components/Button/Button';
 import Badge from '../../components/Badge/Badge';
 import NgoClaimModal from './components/NgoClaimModal/NgoClaimModal';
 import NgoActiveClaimsTab from './components/NgoActiveClaimsTab/NgoActiveClaimsTab';
+import NgoLogisticsTab from './components/NgoLogisticsTab/NgoLogisticsTab';
 import 'leaflet/dist/leaflet.css';
 import './NgoDashboard.css';
 
@@ -471,6 +472,10 @@ export default function NgoDashboard() {
 
         {activeTab === 'CLAIMS' && (
           <NgoActiveClaimsTab onSwitchToDiscover={() => setActiveTab('DISCOVER')} />
+        )}
+
+        {activeTab === 'LOGISTICS' && (
+          <NgoLogisticsTab onSwitchToDiscover={() => setActiveTab('DISCOVER')} />
         )}
       </main>
 
