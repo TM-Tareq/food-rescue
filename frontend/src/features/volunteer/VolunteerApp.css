@@ -1088,3 +1088,166 @@
   font-size: 0.8rem;
   color: #334155;
 }
+
+/* ==========================================================================
+   MOBILE SPLASH SCREEN INTRO ANIMATION
+   ========================================================================== */
+
+.mobile-splash-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #ffffff;
+  text-align: center;
+  animation: splashFadeIn 0.3s ease-out;
+}
+
+@keyframes splashFadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.splash-brand-hero {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.splash-glow-ring {
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.4) 0%, rgba(16, 185, 129, 0) 70%);
+  animation: ringPulse 2s infinite ease-in-out;
+}
+
+@keyframes ringPulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+.splash-icon-box {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #10b981);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 35px rgba(37, 99, 235, 0.5);
+  position: relative;
+  z-index: 2;
+}
+
+.splash-emoji {
+  font-size: 2.6rem;
+  animation: bounceEmoji 1.8s infinite ease-in-out;
+}
+
+@keyframes bounceEmoji {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.splash-text-group {
+  margin-bottom: 2rem;
+}
+
+.splash-app-name {
+  margin: 0 0 0.4rem;
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #f8fafc;
+  letter-spacing: -0.5px;
+}
+
+.highlight-hero {
+  color: #38bdf8;
+  font-weight: 800;
+}
+
+.splash-tagline {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.splash-loader-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.splash-progress-track {
+  width: 200px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.splash-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #10b981, #38bdf8);
+  background-size: 200% 100%;
+  border-radius: 10px;
+  transition: width 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+  animation: gradientFlow 2s linear infinite;
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.splash-status-lbl {
+  font-size: 0.75rem;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.btn-skip-splash {
+  position: absolute;
+  bottom: 36px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #94a3b8;
+  padding: 0.35rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-skip-splash:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.sim-btn.sim-replay {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+}
+
+.sim-btn.sim-replay:hover {
+  background: rgba(56, 189, 248, 0.3);
+  color: #ffffff;
+}
+

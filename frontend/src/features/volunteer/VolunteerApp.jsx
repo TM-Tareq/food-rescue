@@ -41,6 +41,49 @@ export default function VolunteerApp() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [vehicleType, setVehicleType] = useState('motorbike'); // 'motorbike', 'bicycle', 'car', 'walk'
   
+  // Splash Screen Intro State
+  const [showSplashScreen, setShowSplashScreen] = useState(true);
+  const [splashProgress, setSplashProgress] = useState(15);
+  const [splashStatusText, setSplashStatusText] = useState('Connecting to Rescue Network...');
+
+  // Splash Timer Effect (Smoother & Slower Cinematic Intro)
+  useEffect(() => {
+    if (!showSplashScreen) return;
+
+    setSplashProgress(12);
+    setSplashStatusText('Connecting to FoodRescue Network...');
+
+    const t1 = setTimeout(() => {
+      setSplashProgress(45);
+      setSplashStatusText('Scanning Nearby Surplus Dispatches...');
+    }, 1200);
+
+    const t2 = setTimeout(() => {
+      setSplashProgress(80);
+      setSplashStatusText('Verifying Hero Rider Credentials...');
+    }, 2600);
+
+    const t3 = setTimeout(() => {
+      setSplashProgress(100);
+      setSplashStatusText('Welcome back, Tanvir! 🛵');
+    }, 3800);
+
+    const t4 = setTimeout(() => {
+      setShowSplashScreen(false);
+    }, 4500);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+    };
+  }, [showSplashScreen]);
+
+  const handleReplaySplash = () => {
+    setShowSplashScreen(true);
+  };
+  
   // Mission Execution Workflow State
   // 0: idle / dispatch alert available
   // 1: accepted -> en route to restaurant
@@ -162,6 +205,9 @@ export default function VolunteerApp() {
         </div>
         <div className="simulation-pills">
           <span className="sim-label">Simulate Workflow:</span>
+          <button className="sim-btn sim-replay" onClick={handleReplaySplash} title="Replay Splash Screen Intro">
+            🎬 Intro Animation
+          </button>
           <button className={`sim-btn ${missionStep === 0 ? 'active' : ''}`} onClick={() => handleJumpToStep(0)}>
             ⚡ 1. Alert
           </button>
@@ -191,6 +237,40 @@ export default function VolunteerApp() {
 
       {/* Centered Smartphone Device Shell */}
       <div className="smartphone-device-shell">
+        {/* Mobile App Splash Screen Intro Animation */}
+        {showSplashScreen && (
+          <div className="mobile-splash-screen">
+            <div className="splash-brand-hero">
+              <div className="splash-glow-ring"></div>
+              <div className="splash-icon-box">
+                <span className="splash-emoji">🛵</span>
+              </div>
+            </div>
+
+            <div className="splash-text-group">
+              <h2 className="splash-app-name">FoodRescue <span className="highlight-hero">Hero</span></h2>
+              <p className="splash-tagline">Zero Waste • Feeding Hope</p>
+            </div>
+
+            <div className="splash-loader-block">
+              <div className="splash-progress-track">
+                <div 
+                  className="splash-progress-fill" 
+                  style={{ width: `${splashProgress}%` }}
+                ></div>
+              </div>
+              <span className="splash-status-lbl">{splashStatusText}</span>
+            </div>
+
+            <button 
+              className="btn-skip-splash"
+              onClick={() => setShowSplashScreen(false)}
+            >
+              Skip Intro ➔
+            </button>
+          </div>
+        )}
+
         {/* Speaker Notch */}
         <div className="phone-notch-bar">
           <div className="speaker-slot"></div>
