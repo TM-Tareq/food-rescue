@@ -1,0 +1,146 @@
+.receipt-modal-body {
+  padding: 1.25rem 1.5rem 1.5rem;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.receipt-pass-header {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.pass-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--primary-light);
+  color: var(--primary-hover);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-full);
+  margin-bottom: 0.5rem;
+}
+
+.pass-id-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--text-main);
+  font-family: monospace;
+}
+
+.pass-date-time {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.receipt-qr-wrapper {
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1rem;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.qr-frame {
+  background: #ffffff;
+  padding: 0.85rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 0.75rem;
+}
+
+.receipt-qr-img {
+  color: #0f172a;
+}
+
+.qr-pass-code {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-main);
+  font-family: monospace;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.35rem;
+}
+
+.qr-instruction {
+  font-size: 0.78rem;
+  color: #64748b;
+  max-width: 320px;
+}
+
+.receipt-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
+}
+
+.r-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.r-lbl {
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.r-icon {
+  color: #94a3b8;
+}
+
+.r-val {
+  color: var(--text-main);
+}
+
+.r-val.bold {
+  font-weight: 700;
+}
+
+.r-val.strike {
+  text-decoration: line-through;
+  color: #94a3b8;
+}
+
+.highlight-green {
+  background: #f0fdf4;
+  padding: 0.5rem 0.6rem;
+  border-radius: 6px;
+  border-bottom: none !important;
+}
+
+.r-val.green {
+  font-weight: 800;
+  color: #059669;
+}
+
+.highlight-teal {
+  background: #f0fdfa;
+  padding: 0.5rem 0.6rem;
+  border-radius: 6px;
+  border-bottom: none !important;
+}
+
+.r-val.teal {
+  font-weight: 800;
+  color: #0d9488;
+}
+
+.receipt-modal-footer {
+  margin-top: 0.5rem;
+}

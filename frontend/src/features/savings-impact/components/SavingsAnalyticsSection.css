@@ -1,0 +1,332 @@
+.analytics-section-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .analytics-section-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.analytics-card {
+  padding: 1.5rem;
+  background: var(--bg-surface);
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-header, .footprint-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.chart-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 0.15rem;
+}
+
+.chart-subtitle {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.legend-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.legend-gold {
+  background: #f59e0b;
+}
+
+.legend-green {
+  background: var(--primary);
+}
+
+.chart-highlight-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #fffbe6;
+  border: 1px solid #ffe58f;
+  color: #d46b08;
+  font-size: 0.82rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+}
+
+.star-icon {
+  color: #faad14;
+}
+
+.chart-bars-container {
+  height: 220px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 1rem 0.5rem 0.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.chart-bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  position: relative;
+  cursor: pointer;
+}
+
+.bars-flex {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  height: 180px;
+}
+
+.bar {
+  width: 10px;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+}
+
+.bar-gold {
+  background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+}
+
+.bar-green {
+  background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+}
+
+.chart-bar-group:hover .bar {
+  filter: brightness(1.15);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.bar-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-top: 0.5rem;
+}
+
+.chart-bar-group.hovered .bar-label {
+  color: var(--text-main);
+  font-weight: 800;
+}
+
+.chart-tooltip {
+  position: absolute;
+  top: -65px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0f172a;
+  color: #ffffff;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  z-index: 20;
+  animation: fadeIn 0.15s ease-in-out;
+}
+
+.chart-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px 5px 0;
+  border-style: solid;
+  border-color: #0f172a transparent;
+}
+
+.tooltip-month {
+  font-weight: 800;
+  color: #94a3b8;
+  margin-bottom: 0.1rem;
+}
+
+.tooltip-row.gold { color: #fcd34d; }
+.tooltip-row.green { color: #6ee7b7; }
+
+.chart-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.footer-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+.stat-icon-amber { color: #d97706; }
+.stat-icon-green { color: #059669; }
+
+/* Footprint List Styling */
+.footprint-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.footprint-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 0.9rem;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: var(--radius-md);
+  transition: var(--transition-fast);
+}
+
+.footprint-item:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.footprint-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon-wind { background: #e0f2fe; color: #0284c7; }
+.icon-water { background: #e0e7ff; color: #4338ca; }
+.icon-rank { background: #fef3c7; color: #b45309; }
+
+.footprint-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.footprint-val {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.footprint-desc {
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+.footprint-tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+}
+
+.tag-blue { background: #e0f2fe; color: #0369a1; }
+.tag-cyan { background: #e0e7ff; color: #3730a3; }
+.tag-gold { background: #fef3c7; color: #92400e; }
+
+/* Tier Progress Box */
+.tier-progress-card {
+  background: linear-gradient(145deg, #f0fdf4 0%, #e6f4ea 100%);
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-md);
+  padding: 1rem 1.1rem;
+  margin-top: auto;
+}
+
+.tier-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.tier-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.shield-icon {
+  color: var(--primary);
+}
+
+.tier-name {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #065f46;
+}
+
+.tier-count {
+  font-size: 0.8rem;
+  color: #047857;
+}
+
+.tier-bar-track {
+  width: 100%;
+  height: 8px;
+  background: #bbf7d0;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: 0.6rem;
+}
+
+.tier-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.6s ease;
+}
+
+.tier-desc {
+  font-size: 0.78rem;
+  color: #064e3b;
+  line-height: 1.35;
+}

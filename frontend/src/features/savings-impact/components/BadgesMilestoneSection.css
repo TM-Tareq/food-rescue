@@ -1,0 +1,205 @@
+.badges-section-container {
+  margin-bottom: 2rem;
+}
+
+.badges-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.badges-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 0.2rem;
+}
+
+.badges-subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.badges-summary-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-full);
+}
+
+.trophy-icon {
+  color: #2563eb;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 992px) {
+  .badges-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.badge-card {
+  padding: 1.35rem 1.4rem;
+  background: var(--bg-surface);
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.badge-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.card-unlocked-green {
+  border-top: 4px solid var(--primary);
+  background: linear-gradient(180deg, #ffffff 0%, #f4fbf7 100%);
+}
+
+.card-unlocked-gold {
+  border-top: 4px solid #f59e0b;
+  background: linear-gradient(180deg, #ffffff 0%, #fffdf5 100%);
+}
+
+.card-in-progress {
+  border-top: 4px solid #8b5cf6;
+  background: linear-gradient(180deg, #ffffff 0%, #fcfaff 100%);
+}
+
+.badge-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.badge-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bg-green { background: #d1fae5; color: #059669; }
+.bg-gold { background: #fef3c7; color: #d97706; }
+.bg-slate { background: #f3e8ff; color: #7c3aed; }
+
+.status-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.03em;
+}
+
+.chip-unlocked-green {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.chip-unlocked-gold {
+  background: #fffbe6;
+  color: #b45309;
+  border: 1px solid #ffe58f;
+}
+
+.chip-progress {
+  background: #f3e8ff;
+  color: #6b21a8;
+  border: 1px solid #ddd6fe;
+}
+
+.badge-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 0.35rem;
+}
+
+.badge-desc {
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+}
+
+.badge-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.calendar-icon {
+  color: #64748b;
+}
+
+.badge-progress-box {
+  margin-bottom: 0.75rem;
+}
+
+.badge-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.3rem;
+}
+
+.badge-progress-track {
+  width: 100%;
+  height: 6px;
+  background: #e9d5ff;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.badge-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #a855f7 0%, #7c3aed 100%);
+  border-radius: var(--radius-full);
+}
+
+.badge-reward-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #6b21a8;
+  background: #faf5ff;
+  border: 1px solid #e9d5ff;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  margin-top: auto;
+}
+
+.gift-icon {
+  color: #9333ea;
+}

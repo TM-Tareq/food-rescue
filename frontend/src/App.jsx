@@ -5,11 +5,12 @@ import RestaurantDashboard from './features/restaurant/RestaurantDashboard';
 import NgoDashboard from './features/ngo/NgoDashboard';
 import VolunteerApp from './features/volunteer/VolunteerApp';
 import AdminDashboard from './features/admin/AdminDashboard';
+import SavingsImpactDashboard from './features/savings-impact/SavingsImpactDashboard';
 import PartnerAuthModal from './features/auth/components/PartnerAuthModal/PartnerAuthModal';
 import './styles/variables.css';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState('landing'); // 'landing', 'dashboard', 'ngo', 'volunteer', 'admin'
+  const [currentView, setCurrentView] = useState('savings'); // 'savings', 'landing', 'dashboard', 'ngo', 'volunteer', 'admin'
   const [authModalState, setAuthModalState] = useState({
     isOpen: false,
     role: 'restaurant',
@@ -46,6 +47,12 @@ export default function App() {
       {/* Top Quick Demo View Switcher Bar */}
       <div className="demo-view-switcher">
         <button
+          className={`demo-btn ${currentView === 'savings' ? 'demo-active' : ''}`}
+          onClick={() => setCurrentView('savings')}
+        >
+          🌱 My Savings & Eco Impact (User Portal)
+        </button>
+        <button
           className={`demo-btn ${currentView === 'landing' ? 'demo-active' : ''}`}
           onClick={() => setCurrentView('landing')}
         >
@@ -78,6 +85,8 @@ export default function App() {
       </div>
 
       {/* Render Selected View */}
+      {currentView === 'savings' && <SavingsImpactDashboard />}
+
       {currentView === 'landing' && (
         <MainLayout onOpenAuth={handleOpenAuth}>
           <LandingPage onOpenAuth={handleOpenAuth} />
