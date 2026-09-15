@@ -3,11 +3,13 @@ import MainLayout from './layouts/MainLayout/MainLayout';
 import LandingPage from './features/landing/LandingPage';
 import RestaurantDashboard from './features/restaurant/RestaurantDashboard';
 import NgoDashboard from './features/ngo/NgoDashboard';
+import VolunteerApp from './features/volunteer/VolunteerApp';
+import AdminDashboard from './features/admin/AdminDashboard';
 import PartnerAuthModal from './features/auth/components/PartnerAuthModal/PartnerAuthModal';
 import './styles/variables.css';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState('landing'); // 'landing', 'dashboard', 'ngo'
+  const [currentView, setCurrentView] = useState('landing'); // 'landing', 'dashboard', 'ngo', 'volunteer', 'admin'
   const [authModalState, setAuthModalState] = useState({
     isOpen: false,
     role: 'restaurant',
@@ -61,6 +63,18 @@ export default function App() {
         >
           🏢 NGO Portal (Discovery & Claiming)
         </button>
+        <button
+          className={`demo-btn ${currentView === 'volunteer' ? 'demo-active' : ''}`}
+          onClick={() => setCurrentView('volunteer')}
+        >
+          🛵 Volunteer App (Rider Portal)
+        </button>
+        <button
+          className={`demo-btn ${currentView === 'admin' ? 'demo-active' : ''}`}
+          onClick={() => setCurrentView('admin')}
+        >
+          🛡️ Admin Panel (Control Tower)
+        </button>
       </div>
 
       {/* Render Selected View */}
@@ -79,6 +93,12 @@ export default function App() {
       {currentView === 'dashboard' && <RestaurantDashboard />}
 
       {currentView === 'ngo' && <NgoDashboard />}
+
+      {currentView === 'volunteer' && <VolunteerApp />}
+
+      {currentView === 'admin' && <AdminDashboard />}
     </div>
   );
 }
+
+
