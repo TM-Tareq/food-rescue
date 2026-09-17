@@ -323,8 +323,11 @@ export default function VolunteerApp() {
                 <MapContainer 
                   center={[23.8000, 90.4080]} 
                   zoom={13} 
-                  scrollWheelZoom={false}
-                  zoomControl={false}
+                  scrollWheelZoom={true}
+                  zoomControl={true}
+                  doubleClickZoom={true}
+                  dragging={true}
+                  touchZoom={true}
                   style={{ height: '100%', width: '100%' }}
                 >
                   <TileLayer
@@ -497,6 +500,17 @@ export default function VolunteerApp() {
                   </div>
                 )}
 
+                {missionStep >= 5 && (
+                  <div className="completed-mission-banner">
+                    <div className="celebration-badge">🎉 Mission Complete</div>
+                    <h4>Fed 35 Children at Anjuman Shelter</h4>
+                    <p className="completed-sub">Earned +50 Karma Points • Rescue #RESCUE-8091</p>
+                    <button className="btn-primary-action btn-emerald" onClick={() => setMissionStep(0)}>
+                      ⚡ Find Next Rescue Mission
+                    </button>
+                  </div>
+                )}
+
               </div>
             </div>
           )}
@@ -651,12 +665,12 @@ export default function VolunteerApp() {
         <div className="curved-notch-navbar">
           <svg 
             className="notch-svg-background" 
-            viewBox="0 0 375 64" 
+            viewBox="0 0 100 64" 
             preserveAspectRatio="none"
             fill="none"
           >
             <path 
-              d="M0,0 L147.5,0 C157.5,0 164,10 168,18 C176,34 199,34 207,18 C211,10 217.5,0 227.5,0 L375,0 L375,64 L0,64 Z" 
+              d="M0,0 L38,0 C42,0 44.5,8 45.8,16 C47.5,32 52.5,32 54.2,16 C55.5,8 58,0 62,0 L100,0 L100,64 L0,64 Z" 
               fill="#0f172a" 
             />
           </svg>
