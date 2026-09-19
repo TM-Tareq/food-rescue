@@ -5,11 +5,12 @@ import RestaurantDashboard from './features/restaurant/RestaurantDashboard';
 import NgoDashboard from './features/ngo/NgoDashboard';
 import VolunteerApp from './features/volunteer/VolunteerApp';
 import AdminDashboard from './features/admin/AdminDashboard';
+import ConsumerMarketplace from './features/consumer/ConsumerMarketplace';
 import PartnerAuthModal from './features/auth/components/PartnerAuthModal/PartnerAuthModal';
 import './styles/variables.css';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState('landing'); // 'landing', 'dashboard', 'ngo', 'volunteer', 'admin'
+  const [currentView, setCurrentView] = useState('landing'); // 'landing', 'dashboard', 'ngo', 'volunteer', 'admin', 'consumer'
   const [authModalState, setAuthModalState] = useState({
     isOpen: false,
     role: 'restaurant',
@@ -55,25 +56,31 @@ export default function App() {
           className={`demo-btn ${currentView === 'dashboard' ? 'demo-active' : ''}`}
           onClick={() => setCurrentView('dashboard')}
         >
-          🏪 Restaurant Dashboard (Partner Portal)
+          🏪 Restaurant Dashboard
         </button>
         <button
           className={`demo-btn ${currentView === 'ngo' ? 'demo-active' : ''}`}
           onClick={() => setCurrentView('ngo')}
         >
-          🏢 NGO Portal (Discovery & Claiming)
+          🏢 NGO Portal
         </button>
         <button
           className={`demo-btn ${currentView === 'volunteer' ? 'demo-active' : ''}`}
           onClick={() => setCurrentView('volunteer')}
         >
-          🛵 Volunteer App (Rider Portal)
+          🛵 Volunteer App
         </button>
         <button
           className={`demo-btn ${currentView === 'admin' ? 'demo-active' : ''}`}
           onClick={() => setCurrentView('admin')}
         >
-          🛡️ Admin Panel (Control Tower)
+          🛡️ Super Admin Tower
+        </button>
+        <button
+          className={`demo-btn ${currentView === 'consumer' ? 'demo-active' : ''}`}
+          onClick={() => setCurrentView('consumer')}
+        >
+          🛍️ Consumer Marketplace (50-70% OFF)
         </button>
       </div>
 
@@ -97,6 +104,8 @@ export default function App() {
       {currentView === 'volunteer' && <VolunteerApp />}
 
       {currentView === 'admin' && <AdminDashboard />}
+
+      {currentView === 'consumer' && <ConsumerMarketplace />}
     </div>
   );
 }
