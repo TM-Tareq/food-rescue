@@ -231,7 +231,6 @@ export default function LogisticsRescueTab() {
             <Card hover={false} className="google-map-card">
               <div className="google-map-wrapper">
                 <div className="gmaps-search-bar">
-                  <Search size={16} className="gmaps-search-icon" />
                   <input
                     type="text"
                     value={mapSearchText}

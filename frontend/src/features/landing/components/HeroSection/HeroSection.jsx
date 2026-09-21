@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, MapPin, Zap, Sparkles, HeartHandshake } from 'lucide-react';
+import { Search, Zap, Sparkles, HeartHandshake } from 'lucide-react';
 import Button from '../../../../components/Button/Button';
 import Badge from '../../../../components/Badge/Badge';
 import './HeroSection.css';
@@ -35,7 +35,6 @@ export default function HeroSection({ onOpenAuth }) {
 
           <form className="hero-search-box" onSubmit={handleSearch}>
             <div className="search-input-wrapper">
-              <MapPin className="search-icon" size={20} />
               <input
                 type="text"
                 className="search-input"

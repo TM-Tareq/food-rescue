@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { 
-  Search, Sliders, ShieldCheck, MapPin, Clock, Users, Flame, 
+  Compass, Sliders, ShieldCheck, MapPin, Clock, Users, Flame, 
   Utensils, CheckCircle2, Navigation, HeartHandshake, Layers, 
   Package, History, Settings, LogOut, ArrowRight, Leaf, Route 
 } from 'lucide-react';
@@ -197,7 +197,7 @@ export default function NgoDashboard() {
             className={`ngo-nav-item ${activeTab === 'DISCOVER' ? 'nav-active' : ''}`}
             onClick={() => setActiveTab('DISCOVER')}
           >
-            <Search size={18} />
+            <Compass size={18} />
             <span>Discover Surplus</span>
           </button>
 
@@ -258,7 +258,6 @@ export default function NgoDashboard() {
               {/* Filter & Radius Control Card */}
               <div className="filter-controls-card">
                 <div className="search-input-box">
-                  <Search size={16} className="search-icon" />
                   <input
                     type="text"
                     placeholder="Search donor restaurants, area, food items..."
