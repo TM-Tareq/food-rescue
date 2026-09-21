@@ -20,8 +20,13 @@
   right: 0;
   bottom: 0;
   z-index: 9999;
-  padding: 0;
-  background: #020617;
+  padding: 1rem;
+  background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
 }
 
 /* Laptop Preview Top Bar */
@@ -128,23 +133,25 @@
 .smartphone-device-shell {
   width: 410px;
   height: 820px;
-  background: #0f172a;
+  background: #0b0f17;
   border: 12px solid #1e293b;
   border-radius: 46px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 30px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.9), 0 0 40px rgba(37, 99, 235, 0.2);
   display: flex;
   flex-direction: column;
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .fullscreen-mode .smartphone-device-shell {
-  height: 100vh;
-  width: 100vw;
-  max-width: 440px;
-  border: none;
-  border-radius: 0;
+  width: 410px;
+  height: 830px;
+  max-height: 88vh;
+  border: 12px solid #1e293b;
+  border-radius: 46px;
   margin: 0 auto;
+  box-shadow: 0 0 100px rgba(0, 0, 0, 0.95), 0 0 50px rgba(37, 99, 235, 0.35);
 }
 
 /* Speaker Notch & Camera */
@@ -190,7 +197,7 @@
   font-weight: 600;
   color: #94a3b8;
   z-index: 90;
-  background: #0f172a;
+  background: #0b0f17;
 }
 
 .status-icons {
@@ -203,8 +210,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.6rem 1rem;
-  background: #0f172a;
+  padding: 0.7rem 1rem;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   z-index: 80;
 }
@@ -322,6 +330,33 @@
   width: 100%;
   position: relative;
   border-bottom: 2px solid #e2e8f0;
+}
+
+/* Leaflet Custom Mobile Zoom Control Styling */
+.mobile-map-wrapper .leaflet-control-zoom {
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+  margin-top: 48px !important;
+  margin-right: 12px !important;
+}
+
+.mobile-map-wrapper .leaflet-control-zoom a {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 30px !important;
+  font-size: 1.2rem !important;
+  font-weight: 800 !important;
+  transition: all 0.15s ease;
+}
+
+.mobile-map-wrapper .leaflet-control-zoom a:hover {
+  background: #1e293b !important;
+  color: #38bdf8 !important;
 }
 
 .map-overlay-badge {
@@ -960,10 +995,20 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.15rem;
-  font-size: 0.65rem;
+  gap: 2px;
+  padding: 4px 0;
+  height: 100%;
+  font-size: 0.72rem;
+  line-height: 1;
   cursor: pointer;
   transition: color 0.2s ease;
+}
+
+.nav-btn span {
+  display: block;
+  font-size: 0.68rem;
+  line-height: 1;
+  margin-top: 2px;
 }
 
 .nav-btn.active {
@@ -973,6 +1018,38 @@
 
 .notch-spacer {
   width: 60px;
+}
+
+/* COMPLETED MISSION SHEET BANNER */
+.completed-mission-banner {
+  background: #ecfdf5;
+  border: 1.5px solid #10b981;
+  border-radius: 14px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.celebration-badge {
+  display: inline-block;
+  background: #d1fae5;
+  color: #047857;
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  margin-bottom: 0.5rem;
+}
+
+.completed-mission-banner h4 {
+  margin: 0 0 0.3rem;
+  color: #065f46;
+  font-size: 0.98rem;
+}
+
+.completed-sub {
+  margin: 0 0 0.8rem;
+  font-size: 0.78rem;
+  color: #047857;
 }
 
 /* OTP & CELEBRATION MODALS */

@@ -12,7 +12,8 @@ import {
   CheckCircle2, 
   AlertTriangle,
   HelpCircle,
-  Radio
+  Radio,
+  Sparkles
 } from 'lucide-react';
 import Card from '../../components/Card/Card';
 import Button from '../../components/Button/Button';
@@ -22,19 +23,21 @@ import ActiveListingsTab from './components/ActiveListingsTab/ActiveListingsTab'
 import LogisticsRescueTab from './components/LogisticsRescueTab/LogisticsRescueTab';
 import ImpactAnalyticsTab from './components/ImpactAnalyticsTab/ImpactAnalyticsTab';
 import SettingsTab from './components/SettingsTab/SettingsTab';
+import AiFoodSafetyScannerModal from './components/AiFoodSafetyScannerModal/AiFoodSafetyScannerModal';
 import './RestaurantDashboard.css';
 
 export default function RestaurantDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isDispatchModalOpen, setIsDispatchModalOpen] = useState(false);
+  const [isAiScannerOpen, setIsAiScannerOpen] = useState(false);
   const [selectedItemForDispatch, setSelectedItemForDispatch] = useState(null);
 
   // Mock listings
-  const listings = [
+  const [activeListingsData, setActiveListingsData] = useState([
     {
       id: 1,
       name: 'Spicy Chicken Biryani',
-      sub: 'Cooked 1h ago',
+      sub: 'Cooked 1h ago • AI Certified Grade A+',
       image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=200&q=80',
       quantity: '20 Portions',
       temp: 'Hot (60°C+)',
@@ -46,7 +49,7 @@ export default function RestaurantDashboard() {
     {
       id: 2,
       name: 'Assorted Pastries Pkg',
-      sub: 'Morning Bake',
+      sub: 'Morning Bake • AI Certified Grade A+',
       image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=200&q=80',
       quantity: '15 Packs',
       temp: 'Room Temp',
@@ -55,11 +58,15 @@ export default function RestaurantDashboard() {
       status: 'Matching NGO...',
       statusType: 'pending'
     }
-  ];
+  ]);
 
   const handleOpenDispatch = (item = null) => {
     setSelectedItemForDispatch(item);
     setIsDispatchModalOpen(true);
+  };
+
+  const handleAiListingApproved = (newListing) => {
+    setActiveListingsData(prev => [newListing, ...prev]);
   };
 
   return (
@@ -170,9 +177,18 @@ export default function RestaurantDashboard() {
                 </div>
 
                 <Button
+                  variant="outline"
+                  icon={Sparkles}
+                  onClick={() => setIsAiScannerOpen(true)}
+                  style={{ borderColor: '#059669', color: '#047857' }}
+                >
+                  🤖 AI Hygiene & Photo Audit
+                </Button>
+
+                <Button
                   variant="primary"
                   icon={Plus}
-                  onClick={() => handleOpenDispatch(null)}
+                  onClick={() => setIsAiScannerOpen(true)}
                 >
                   Post Surplus Food
                 </Button>
@@ -248,7 +264,7 @@ export default function RestaurantDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {listings.map((item) => (
+                      {activeListingsData.map((item) => (
                         <tr key={item.id}>
                           <td>
                             <div className="item-cell">
@@ -370,6 +386,13 @@ export default function RestaurantDashboard() {
         isOpen={isDispatchModalOpen}
         onClose={() => setIsDispatchModalOpen(false)}
         selectedItem={selectedItemForDispatch}
+      />
+
+      {/* AI Food Safety & Thermal Packaging Vision Inspection Modal */}
+      <AiFoodSafetyScannerModal
+        isOpen={isAiScannerOpen}
+        onClose={() => setIsAiScannerOpen(false)}
+        onListingApproved={handleAiListingApproved}
       />
     </div>
   );

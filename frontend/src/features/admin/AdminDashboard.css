@@ -164,10 +164,42 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.admin-user-profile.editable-profile {
+  cursor: pointer;
+  border: 1px transparent;
+}
+
+.admin-user-profile.editable-profile:hover {
+  background: var(--hover-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.edit-pencil-icon {
+  margin-left: 0.2rem;
+  color: var(--accent-blue);
+  opacity: 0.7;
+}
+
+.admin-user-profile:hover .edit-pencil-icon {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .admin-avatar {
   font-size: 1.6rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  border-radius: 50%;
+  border: 1px solid var(--card-border);
 }
 
 .user-meta {
@@ -179,11 +211,93 @@
   font-size: 0.88rem;
   font-weight: 700;
   color: var(--text-main);
+  display: flex;
+  align-items: center;
 }
 
 .user-role {
   font-size: 0.72rem;
   color: var(--text-muted);
+}
+
+/* EDIT PROFILE MODAL FORM */
+.profile-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.avatar-picker-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.picker-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.avatar-options-grid {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.avatar-option-btn {
+  width: 42px;
+  height: 42px;
+  font-size: 1.4rem;
+  background: var(--bg-primary);
+  border: 1.5px solid var(--card-border);
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.avatar-option-btn.selected {
+  border-color: var(--accent-blue);
+  background: rgba(37, 99, 235, 0.15);
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
+  transform: scale(1.08);
+}
+
+.form-group-admin {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.form-group-admin label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-sub);
+}
+
+.admin-form-input {
+  padding: 0.6rem 0.8rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.admin-form-input:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.2);
+}
+
+.form-row-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
 }
 
 /* SUBTAB NAVBAR */

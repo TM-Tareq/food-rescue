@@ -70,7 +70,6 @@ export default function ActiveListingsTab({ onOpenDispatch }) {
         </div>
 
         <div className="search-bar">
-          <Search size={16} className="search-icon" />
           <input
             type="text"
             placeholder="Search by food name or category..."
