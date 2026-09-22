@@ -5,11 +5,14 @@ import RestaurantDashboard from './features/restaurant/RestaurantDashboard';
 import NgoDashboard from './features/ngo/NgoDashboard';
 import VolunteerApp from './features/volunteer/VolunteerApp';
 import AdminDashboard from './features/admin/AdminDashboard';
+import SavingsImpactDashboard from './features/savings-impact/SavingsImpactDashboard';
+import ConsumerMarketplace from './features/consumer/ConsumerMarketplace';
 
 import PartnerAuthModal from './features/auth/components/PartnerAuthModal/PartnerAuthModal';
 import './styles/variables.css';
 
 export default function App() {
+  const [currentView, setCurrentView] = useState('landing');
 
   const [authModalState, setAuthModalState] = useState({
     isOpen: false,
