@@ -1,7 +1,10 @@
-export { apiClient } from './apiClient';
-export { authService } from './authService';
-export { surplusService } from './surplusService';
-export { ngoService } from './ngoService';
-export { volunteerService } from './volunteerService';
-export { consumerService } from './consumerService';
-export { adminService } from './adminService';
+import apiClient from './apiClient';
+import { authService } from './authService';
+import { surplusService } from './surplusService';
+import { ngoService } from './ngoService';
+import { volunteerService } from './volunteerService';
+import { consumerService } from './consumerService';
+import { adminService } from './adminService';
+
+export { apiClient, authService, surplusService, ngoService, volunteerService, consumerService, adminService };
+export default apiClient;
