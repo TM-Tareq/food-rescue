@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Leaf, 
   LayoutDashboard, 
@@ -24,6 +24,7 @@ import LogisticsRescueTab from './components/LogisticsRescueTab/LogisticsRescueT
 import ImpactAnalyticsTab from './components/ImpactAnalyticsTab/ImpactAnalyticsTab';
 import SettingsTab from './components/SettingsTab/SettingsTab';
 import AiFoodSafetyScannerModal from './components/AiFoodSafetyScannerModal/AiFoodSafetyScannerModal';
+import { surplusService } from '../../services/surplusService';
 import './RestaurantDashboard.css';
 
 export default function RestaurantDashboard() {
@@ -32,33 +33,17 @@ export default function RestaurantDashboard() {
   const [isAiScannerOpen, setIsAiScannerOpen] = useState(false);
   const [selectedItemForDispatch, setSelectedItemForDispatch] = useState(null);
 
-  // Mock listings
-  const [activeListingsData, setActiveListingsData] = useState([
-    {
-      id: 1,
-      name: 'Spicy Chicken Biryani',
-      sub: 'Cooked 1h ago • AI Certified Grade A+',
-      image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=200&q=80',
-      quantity: '20 Portions',
-      temp: 'Hot (60°C+)',
-      expiry: 'Expires in 35m',
-      expiryType: 'urgent',
-      status: 'Volunteer En Route (Tanvir)',
-      statusType: 'success'
-    },
-    {
-      id: 2,
-      name: 'Assorted Pastries Pkg',
-      sub: 'Morning Bake • AI Certified Grade A+',
-      image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=200&q=80',
-      quantity: '15 Packs',
-      temp: 'Room Temp',
-      expiry: 'Expires in 2h 10m',
-      expiryType: 'warning',
-      status: 'Matching NGO...',
-      statusType: 'pending'
+  // Active listings data state
+  const [activeListingsData, setActiveListingsData] = useState([]);
+
+  // Fetch live active listings from backend / fallback service on mount
+  useEffect(() => {
+    async function fetchListings() {
+      const listings = await surplusService.getActiveListings();
+      setActiveListingsData(listings);
     }
-  ]);
+    fetchListings();
+  }, []);
 
   const handleOpenDispatch = (item = null) => {
     setSelectedItemForDispatch(item);

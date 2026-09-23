@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import Modal from '../../../../components/Modal/Modal';
 import Button from '../../../../components/Button/Button';
+import { surplusService } from '../../../../services/surplusService';
 import './AiFoodSafetyScannerModal.css';
 
 export default function AiFoodSafetyScannerModal({
@@ -73,40 +74,30 @@ export default function AiFoodSafetyScannerModal({
     }, 2000);
   };
 
-  const handleCompleteListing = () => {
+  const handleCompleteListing = async () => {
     if (!scanResult || scanResult.status !== 'APPROVED') return;
 
-    const newListing = {
-      id: Date.now(),
-      name: foodName,
-      sub: 'AI Vision Certified (Grade A+)',
-      image: samplePhotos[selectedPhotoIndex].url,
-      quantity: `${portions} Portions`,
-      temp: 'Hot (60°C+)',
-      expiry: 'Expires in 45m',
-      expiryType: 'urgent',
-      status: 'Matching NGO...',
-      statusType: 'pending'
+    const payload = {
+      foodItemTitle: foodName,
+      quantityPortions: portions,
+      imageUrl: samplePhotos[selectedPhotoIndex].url,
+      skipAiAudit: false
     };
 
+    const newListing = await surplusService.createSurplusListing(payload);
     onListingApproved(newListing);
     onClose();
   };
 
-  const handleSkipAiAudit = () => {
-    const unverifiedListing = {
-      id: Date.now(),
-      name: foodName,
-      sub: '⚠️ Manual Unverified (On-Site Rider Photo Inspection Required)',
-      image: samplePhotos[selectedPhotoIndex].url,
-      quantity: `${portions} Portions (Max 5)`,
-      temp: 'Unverified Temp',
-      expiry: 'Expires in 30m',
-      expiryType: 'warning',
-      status: 'Awaiting Rider Verification',
-      statusType: 'pending'
+  const handleSkipAiAudit = async () => {
+    const payload = {
+      foodItemTitle: foodName,
+      quantityPortions: portions,
+      imageUrl: samplePhotos[selectedPhotoIndex].url,
+      skipAiAudit: true
     };
 
+    const unverifiedListing = await surplusService.createSurplusListing(payload);
     onListingApproved(unverifiedListing);
     onClose();
   };

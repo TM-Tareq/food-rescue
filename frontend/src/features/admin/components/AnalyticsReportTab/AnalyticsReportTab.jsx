@@ -5,9 +5,11 @@ import {
 } from 'lucide-react';
 import Button from '../../../../components/Button/Button';
 import Badge from '../../../../components/Badge/Badge';
+import { adminService } from '../../../../services/adminService';
 
 export default function AnalyticsReportTab() {
   const [reportGenerated, setReportGenerated] = useState(false);
+  const [reportResult, setReportResult] = useState(null);
 
   // ESG Environmental Impact Metrics
   const esgMetrics = {
@@ -32,11 +34,13 @@ export default function AnalyticsReportTab() {
     { rank: 3, name: 'Shanti Old Age Home', beneficiaries: '60 Senior Citizens', mealsReceived: '2,200' }
   ];
 
-  const handleGeneratePdf = () => {
+  const handleGeneratePdf = async () => {
+    const result = await adminService.exportEsgReport();
+    setReportResult(result);
     setReportGenerated(true);
     setTimeout(() => {
       setReportGenerated(false);
-    }, 3000);
+    }, 4000);
   };
 
   return (

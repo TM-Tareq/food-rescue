@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import Modal from '../../../components/Modal/Modal';
 import Button from '../../../components/Button/Button';
+import { consumerService } from '../../../services/consumerService';
 
 export default function CartCheckoutModal({
   isOpen,
@@ -40,33 +41,25 @@ export default function CartCheckoutModal({
   const platformFee = 10; // Nominal surplus verification fee
   const totalAmount = subtotal + deliveryFee + platformFee;
 
-  const handleConfirmCheckout = (e) => {
+  const handleConfirmCheckout = async (e) => {
     e.preventDefault();
     if (cartItems.length === 0) return;
 
     setIsProcessing(true);
 
-    setTimeout(() => {
-      setIsProcessing(false);
+    const orderPayload = {
+      restaurantName: cartItems[0]?.restaurantName || 'Kacchi Bhai Banani',
+      totalAmount: totalAmount,
+      fulfillmentType: fulfillmentType,
+      paymentMethod: paymentMethod.toUpperCase()
+    };
 
-      const newOrder = {
-        id: `PASS-${Math.floor(100000 + Math.random() * 900000)}`,
-        restaurantName: cartItems[0]?.restaurantName || 'Kacchi Bhai Banani',
-        restaurantAddress: cartItems[0]?.area || 'Block D, Banani Rd 11',
-        restaurantPhone: '+880 1711-987654',
-        itemTitle: cartItems[0]?.itemTitle || 'Surplus Meal Pack',
-        quantity: cartItems.length,
-        totalAmount: totalAmount,
-        fulfillmentType: fulfillmentType,
-        paymentMethod: paymentMethod.toUpperCase(),
-        pinCode: `${Math.floor(1000 + Math.random() * 9000)}`,
-        timestamp: new Date().toLocaleTimeString()
-      };
+    const newOrder = await consumerService.checkoutEscrowOrder(orderPayload);
 
-      onCheckoutSuccess(newOrder);
-      onClearCart();
-      onClose();
-    }, 1500);
+    setIsProcessing(false);
+    onCheckoutSuccess(newOrder);
+    onClearCart();
+    onClose();
   };
 
   return (

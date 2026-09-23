@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { 
@@ -14,6 +14,7 @@ import NgoActiveClaimsTab from './components/NgoActiveClaimsTab/NgoActiveClaimsT
 import NgoLogisticsTab from './components/NgoLogisticsTab/NgoLogisticsTab';
 import NgoImpactHistoryTab from './components/NgoImpactHistoryTab/NgoImpactHistoryTab';
 import NgoSettingsTab from './components/NgoSettingsTab/NgoSettingsTab';
+import { ngoService } from '../../services/ngoService';
 import 'leaflet/dist/leaflet.css';
 import './NgoDashboard.css';
 
@@ -46,16 +47,16 @@ export default function NgoDashboard() {
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
 
   // Active Claims Counter State
-  const [claimedItems, setClaimedItems] = useState([
-    {
-      id: 'CLAIM-901',
-      title: 'Assorted Fresh Bakery Pack (15 Packs)',
-      donor: 'Green Bistro Cafe (Gulshan 2)',
-      claimedAt: '10:45 AM',
-      status: 'RIDER_EN_ROUTE',
-      eta: '12 mins'
+  const [claimedItems, setClaimedItems] = useState([]);
+
+  // Fetch live active claims for NGO from backend / fallback service on mount
+  useEffect(() => {
+    async function loadActiveClaims() {
+      const claims = await ngoService.getActiveClaims('NGO-DHAKA-1');
+      setClaimedItems(claims);
     }
-  ]);
+    loadActiveClaims();
+  }, []);
 
   // Surplus Food Mock Data with Real Road Coordinates & Road Distance
   const surplusFeed = [

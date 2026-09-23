@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MainLayout from './layouts/MainLayout/MainLayout';
 import LandingPage from './features/landing/LandingPage';
 import RestaurantDashboard from './features/restaurant/RestaurantDashboard';
@@ -9,16 +9,28 @@ import SavingsImpactDashboard from './features/savings-impact/SavingsImpactDashb
 import ConsumerMarketplace from './features/consumer/ConsumerMarketplace';
 
 import PartnerAuthModal from './features/auth/components/PartnerAuthModal/PartnerAuthModal';
+import { authService } from './services';
 import './styles/variables.css';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('landing');
+  const [backendStatus, setBackendStatus] = useState('CHECKING'); // 'ONLINE', 'FALLBACK', 'CHECKING'
 
   const [authModalState, setAuthModalState] = useState({
     isOpen: false,
     role: 'restaurant',
     mode: 'signin'
   });
+
+  useEffect(() => {
+    authService.checkBackendHealth().then((res) => {
+      if (res && res.status !== 'OFFLINE') {
+        setBackendStatus('ONLINE');
+      } else {
+        setBackendStatus('FALLBACK');
+      }
+    });
+  }, []);
 
   const handleOpenAuth = (roleOrMode = 'restaurant') => {
     let role = 'restaurant';

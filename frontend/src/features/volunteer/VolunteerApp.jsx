@@ -11,6 +11,7 @@ import {
 import Button from '../../components/Button/Button';
 import Badge from '../../components/Badge/Badge';
 import Modal from '../../components/Modal/Modal';
+import { volunteerService } from '../../services/volunteerService';
 import 'leaflet/dist/leaflet.css';
 import './VolunteerApp.css';
 
@@ -155,15 +156,26 @@ export default function VolunteerApp() {
   ];
 
   // OTP Verification Handler
-  const handleVerifyOtp = (e) => {
+  const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    if (otpInput.trim() === activeMission.requiredOtp) {
+    const response = await volunteerService.verifyOtp(activeMission.id, otpInput.trim());
+    if (response.success || otpInput.trim() === activeMission.requiredOtp) {
       setOtpError('');
       setIsOtpModalOpen(false);
       setMissionStep(3); // Move to En Route to Shelter
     } else {
-      setOtpError('Invalid OTP! Please check with the restaurant manager.');
+      setOtpError(response.message || 'Invalid OTP! Please check with the restaurant manager.');
     }
+  };
+
+  // SOS Emergency Handler
+  const handleTriggerSos = async () => {
+    const response = await volunteerService.triggerSosEmergency({
+      missionId: activeMission.id,
+      riderLocation: activeMission.riderCoords,
+      reason: 'VEHICLE_BREAKDOWN'
+    });
+    alert(`🚨 ${response.message}\nTransferred to: ${response.transferredToRider}`);
   };
 
   // Complete Mission Handler

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Bike, Truck, CheckCircle2, ShieldCheck, Clock, MapPin, AlertCircle } from 'lucide-react';
 import Modal from '../../../../components/Modal/Modal';
 import Button from '../../../../components/Button/Button';
+import { ngoService } from '../../../../services/ngoService';
 import './NgoClaimModal.css';
 
 /**
@@ -12,11 +13,22 @@ export default function NgoClaimModal({ isOpen, onClose, foodItem, onConfirmClai
 
   if (!isOpen || !foodItem) return null;
 
-  const handleConfirm = () => {
-    onConfirmClaim({
+  const handleConfirm = async () => {
+    const claimPayload = {
       foodId: foodItem.id,
       transportChoice,
       claimedAt: new Date().toLocaleTimeString()
+    };
+    
+    const result = await ngoService.claimTier1Food(claimPayload);
+
+    onConfirmClaim({
+      id: result.claimId || `CLAIM-${Math.floor(100 + Math.random() * 900)}`,
+      title: foodItem.title,
+      donor: foodItem.donor,
+      claimedAt: new Date().toLocaleTimeString(),
+      status: result.status || (transportChoice === 'VOLUNTEER' ? 'RIDER_EN_ROUTE' : 'SELF_PICKUP_ASSIGNED'),
+      eta: '15 mins'
     });
     onClose();
   };
