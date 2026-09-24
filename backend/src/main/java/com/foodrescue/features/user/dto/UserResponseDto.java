@@ -1,20 +1,20 @@
 package com.foodrescue.features.user.dto;
 
-import com.foodrescue.features.user.model.Role;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@AllArgsConstructor
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class UserResponseDto {
     private Long id;
-    private String name;
+    private String fullName;
     private String email;
-    private Role role;
+    private String role;
     private String phone;
     private String address;
+    private LocalDateTime createdAt;
 }
