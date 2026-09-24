@@ -195,6 +195,18 @@ export default function VolunteerApp() {
   const handleJumpToStep = (stepNumber) => {
     setActiveTab('dispatch');
     setMissionStep(stepNumber);
+
+    // Dynamic GPS Rider Marker Positioning along the route
+    if (stepNumber === 1) {
+      setActiveMission(prev => ({ ...prev, riderCoords: [23.7920, 90.4040] })); // Moving towards Restaurant
+    } else if (stepNumber === 2) {
+      setActiveMission(prev => ({ ...prev, riderCoords: [23.7937, 90.4066] })); // Arrived at Restaurant
+    } else if (stepNumber === 3 || stepNumber === 4) {
+      setActiveMission(prev => ({ ...prev, riderCoords: [23.8020, 90.4095] })); // Moving towards Shelter
+    } else if (stepNumber === 5) {
+      setActiveMission(prev => ({ ...prev, riderCoords: [23.8103, 90.4125] })); // Arrived at Shelter
+    }
+
     if (stepNumber === 2) {
       setIsOtpModalOpen(true);
     } else {

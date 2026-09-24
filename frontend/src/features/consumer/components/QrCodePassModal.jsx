@@ -26,6 +26,18 @@ export default function QrCodePassModal({
           </div>
         </div>
 
+        {/* Live Kitchen & Pickup Status Progress Bar */}
+        <div className="order-live-stepper" style={{ margin: '14px 0', padding: '12px 16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.8rem', fontWeight: '600', color: '#334155' }}>
+            <span style={{ color: '#059669' }}>1. Paid & Verified ✅</span>
+            <span style={{ color: '#2563eb' }}>2. Kitchen Packing 🍳</span>
+            <span style={{ color: '#d97706' }}>3. Ready at Counter 🛍️</span>
+          </div>
+          <div style={{ height: '6px', background: '#cbd5e1', borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{ width: '66%', height: '100%', background: 'linear-gradient(90deg, #059669, #2563eb)', transition: 'width 0.5s ease' }}></div>
+          </div>
+        </div>
+
         {/* QR Code Visual Shell */}
         <div className="qr-code-frame-box">
           <div className="qr-visual-wrapper">

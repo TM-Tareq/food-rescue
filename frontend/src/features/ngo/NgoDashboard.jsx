@@ -125,9 +125,15 @@ export default function NgoDashboard() {
   ];
 
   // Map Coordinates & NGO Location
-  const ngoShelterPos = [23.8150, 90.4210]; // Anjuman Shelter Center (Bashundhara / Progati Sarani)
+  // Dynamic Filter Engine
+  const filteredFeed = surplusFeed.filter(item => {
+    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          item.donor.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'ALL' || item.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
-  const focusedItem = surplusFeed.find(f => f.id === focusedFoodId) || surplusFeed[0];
+  const focusedItem = filteredFeed.find(f => f.id === focusedFoodId) || filteredFeed[0] || surplusFeed[0];
 
   // Category Color & Emoji Map
   const getCategoryColor = (item) => {
