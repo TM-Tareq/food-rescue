@@ -25,11 +25,12 @@ public class UserService {
     private UserResponseDto mapToDto(User user) {
         return UserResponseDto.builder()
                 .id(user.getId())
-                .name(user.getName())
+                .fullName(user.getName())
                 .email(user.getEmail())
-                .role(user.getRole())
+                .role(user.getRole() != null ? user.getRole().name() : null)
                 .phone(user.getPhone())
                 .address(user.getAddress())
+                .createdAt(user.getCreatedAt())
                 .build();
     }
 }
