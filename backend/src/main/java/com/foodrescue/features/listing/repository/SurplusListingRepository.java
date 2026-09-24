@@ -16,4 +16,6 @@ public interface SurplusListingRepository extends JpaRepository<SurplusListing, 
     List<SurplusListing> findByStatus(ListingStatus status);
 
     List<SurplusListing> findByCurrentTierAndStatus(ListingTier currentTier, ListingStatus status);
+
+    List<SurplusListing> findByRestaurantIdAndStatus(Long restaurantId, ListingStatus status);
 }
