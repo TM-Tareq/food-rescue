@@ -28,23 +28,23 @@ class SurplusListingServiceTest {
     @Test
     void testCreateSurplusListingSuccess() {
         CreateSurplusRequestDto request = CreateSurplusRequestDto.builder()
-                .foodItemTitle("Kacchi Biryani")
+                .foodItemTitle("Royal Kacchi Biryani")
                 .category(FoodCategory.COOKED)
-                .quantityPortions(20)
-                .initialPriceBDT(300.0)
+                .quantityPortions(25)
+                .initialPriceBDT(350.0)
                 .skipAiAudit(false)
                 .build();
 
-        SurplusListing savedListing = SurplusListing.builder()
-                .id(1L)
-                .foodItemTitle("Kacchi Biryani")
-                .quantityPortions(20)
+        SurplusListing saved = SurplusListing.builder()
+                .id(101L)
+                .foodItemTitle("Royal Kacchi Biryani")
+                .quantityPortions(25)
                 .build();
 
-        when(surplusListingRepository.save(any(SurplusListing.class))).thenReturn(savedListing);
+        when(surplusListingRepository.save(any(SurplusListing.class))).thenReturn(saved);
 
-        SurplusResponseDto result = surplusListingService.createSurplusListing(request);
-        assertNotNull(result);
-        assertEquals(1L, result.getId());
+        SurplusResponseDto response = surplusListingService.createSurplusListing(request);
+        assertNotNull(response);
+        assertEquals(101L, response.getId());
     }
 }
