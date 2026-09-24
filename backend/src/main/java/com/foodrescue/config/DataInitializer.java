@@ -17,6 +17,7 @@ public class DataInitializer {
             log.info("   [User]: Anjuman Orphanage Shelter - NGO");
             log.info("   [User]: Tanvir Ahmed (Hero Rider #V-9012) - VOLUNTEER");
             log.info("   [User]: Farhan Ahmed - CONSUMER");
+            log.info("   [User]: Tareq Rahman - SUPER_ADMIN");
             log.info("✅ Database Seeding Completed!");
         };
     }
