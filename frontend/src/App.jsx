@@ -9,12 +9,16 @@ import SavingsImpactDashboard from './features/savings-impact/SavingsImpactDashb
 import ConsumerMarketplace from './features/consumer/ConsumerMarketplace';
 
 import PartnerAuthModal from './features/auth/components/PartnerAuthModal/PartnerAuthModal';
+import BackendStatusBadge from './components/BackendStatusBadge/BackendStatusBadge';
+import { useTheme } from './context/ThemeContext';
 import { authService } from './services';
 import './styles/variables.css';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('landing');
   const [backendStatus, setBackendStatus] = useState('CHECKING'); // 'ONLINE', 'FALLBACK', 'CHECKING'
+
+  const { themeMode, toggleTheme } = useTheme();
 
   const [authModalState, setAuthModalState] = useState({
     isOpen: false,
@@ -61,6 +65,14 @@ export default function App() {
     <div className="app-container">
       {/* Top Quick Demo View Switcher Bar */}
       <div className="demo-view-switcher">
+        <BackendStatusBadge />
+        <button
+          className="demo-btn theme-toggle-btn"
+          onClick={toggleTheme}
+          style={{ background: 'rgba(255, 255, 255, 0.1)', color: '#fbbf24', borderColor: '#f59e0b' }}
+        >
+          {themeMode === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+        </button>
         <button
           className={`demo-btn ${currentView === 'savings' ? 'demo-active' : ''}`}
           onClick={() => setCurrentView('savings')}
@@ -132,5 +144,3 @@ export default function App() {
     </div>
   );
 }
-
-

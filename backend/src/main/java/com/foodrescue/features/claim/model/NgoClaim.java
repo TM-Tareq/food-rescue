@@ -2,6 +2,7 @@ package com.foodrescue.features.claim.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,13 +18,3 @@ public class NgoClaim {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String ngoId;
-    private Long foodId;
-    private String transportChoice;
-    private String pickupOtp;
-
-    @Enumerated(EnumType.STRING)
-    private ClaimStatus status;
-
-    private LocalDateTime claimedAt;
-}

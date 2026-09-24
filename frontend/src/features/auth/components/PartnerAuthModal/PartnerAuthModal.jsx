@@ -3,6 +3,7 @@ import { Store, Building2, Bike, Shield, ArrowRight, Lock } from 'lucide-react';
 import Modal from '../../../../components/Modal/Modal';
 import Button from '../../../../components/Button/Button';
 import Badge from '../../../../components/Badge/Badge';
+import { useAuth } from '../../../../context/AuthContext';
 import './PartnerAuthModal.css';
 
 export default function PartnerAuthModal({ isOpen, onClose, initialRole = 'restaurant', mode = 'signin' }) {
@@ -11,9 +12,11 @@ export default function PartnerAuthModal({ isOpen, onClose, initialRole = 'resta
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const { switchRole } = useAuth();
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert(`[${isLoginMode ? 'Sign In' : 'Sign Up'}] Role: ${selectedRole.toUpperCase()} - Email: ${email}`);
+    switchRole(selectedRole.toUpperCase());
     onClose();
   };
 
