@@ -15,6 +15,11 @@ import NgoLogisticsTab from './components/NgoLogisticsTab/NgoLogisticsTab';
 import NgoImpactHistoryTab from './components/NgoImpactHistoryTab/NgoImpactHistoryTab';
 import NgoSettingsTab from './components/NgoSettingsTab/NgoSettingsTab';
 import { ngoService } from '../../services/ngoService';
+import { 
+  PRIMARY_ROUTE_ETA_POS, 
+  ALT_ROUTE_ETA_POS, 
+  createGoogleEtaBadgeMarker 
+} from '../../services/dhakaRouteService';
 import 'leaflet/dist/leaflet.css';
 import './NgoDashboard.css';
 
@@ -425,17 +430,37 @@ export default function NgoDashboard() {
 
                       return (
                         <React.Fragment key={item.id}>
-                          {/* REAL ROAD NETWORK POLYLINE (Following Dhaka Avenues instead of straight lines) */}
+                          {/* REAL ROAD NETWORK POLYLINE (Following Dhaka Avenues - Matching Image 2) */}
+                          {isFocused && (
+                            <Polyline
+                              positions={item.roadPath}
+                              pathOptions={{
+                                color: '#1a73e8',
+                                weight: 9,
+                                opacity: 0.35,
+                                lineCap: 'round',
+                                lineJoin: 'round'
+                              }}
+                            />
+                          )}
                           <Polyline
                             positions={item.roadPath}
                             pathOptions={{
-                              color: isFocused ? '#2563eb' : '#cbd5e1',
+                              color: isFocused ? '#4285F4' : '#cbd5e1',
                               weight: isFocused ? 6 : 3,
-                              opacity: isFocused ? 0.95 : 0.4,
+                              opacity: isFocused ? 0.98 : 0.45,
                               lineCap: 'round',
                               lineJoin: 'round'
                             }}
                           />
+
+                          {/* Floating Google ETA Badge on Focused Route (Matching Image 2) */}
+                          {isFocused && (
+                            <Marker 
+                              position={PRIMARY_ROUTE_ETA_POS} 
+                              icon={createGoogleEtaBadgeMarker('১৪ মিনিট', '৩.৮ কিমি', true)} 
+                            />
+                          )}
 
                           <Marker position={item.coordinates} icon={markerIcon}>
                             <Popup className="gmaps-clean-popup">

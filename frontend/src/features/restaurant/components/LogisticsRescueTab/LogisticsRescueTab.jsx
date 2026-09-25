@@ -6,27 +6,20 @@ import Card from '../../../../components/Card/Card';
 import Button from '../../../../components/Button/Button';
 import Badge from '../../../../components/Badge/Badge';
 import InAppChatModal from '../InAppChatModal/InAppChatModal';
+import { 
+  BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE, 
+  BANANI_TO_BASHUNDHARA_ALT_ROUTE, 
+  PRIMARY_ROUTE_ETA_POS, 
+  ALT_ROUTE_ETA_POS, 
+  createGoogleEtaBadgeMarker, 
+  createGoogleCleanPinMarker 
+} from '../../../../services/dhakaRouteService';
 import 'leaflet/dist/leaflet.css';
 import './LogisticsRescueTab.css';
 
-// Helper function to generate Google Maps Markers
-const createGoogleMarker = (emoji, colorBg, labelText, isSelected = false) => {
-  return L.divIcon({
-    className: 'custom-google-marker',
-    html: `
-      <div className="gmap-pin-container ${isSelected ? 'selected-pin-active' : ''}">
-        <div className="gmap-tooltip-bubble ${isSelected ? 'tooltip-highlight' : ''}">
-          <span className="gmap-tooltip-title">${labelText}</span>
-        </div>
-        <div className="gmap-pin-bubble" style="background-color: ${colorBg};">
-          <span className="gmap-emoji">${emoji}</span>
-        </div>
-      </div>
-    `,
-    iconSize: [40, 50],
-    iconAnchor: [20, 45]
-  });
-};
+const restIcon = createGoogleCleanPinMarker('🏪', '#ea4335', 'Restaurant');
+const riderIcon = createGoogleCleanPinMarker('🛵', '#1a73e8', 'Rider');
+const ngoIcon = createGoogleCleanPinMarker('🏢', '#34a853', 'NGO Shelter');
 
 export default function LogisticsRescueTab() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -252,30 +245,40 @@ export default function LogisticsRescueTab() {
                     attribution='&copy; <a href="https://maps.google.com">Google Maps</a>'
                   />
 
-                  {/* Render Markers & Routes for Active Missions */}
-                  {activeMissions.map((m) => {
-                    const isSelected = m.id === currentSelectedMission?.id;
-                    const restIcon = createGoogleMarker('🏪', '#ea4335', `Rest: ${m.item.split('(')[0]}`, isSelected);
-                    const riderIcon = createGoogleMarker('🛵', isSelected ? '#1a73e8' : '#64748b', `Rider: ${m.volunteer}`, isSelected);
-                    const ngoIcon = createGoogleMarker('🏢', '#34a853', `NGO: ${m.destination.split('(')[0]}`, isSelected);
+                  {/* Alternate Route Polyline (Greyed Out - Like Image 2) */}
+                  <Polyline
+                    positions={BANANI_TO_BASHUNDHARA_ALT_ROUTE}
+                    pathOptions={{ color: '#94a3b8', weight: 5, opacity: 0.65, lineCap: 'round', lineJoin: 'round' }}
+                  />
 
-                    return (
-                      <React.Fragment key={m.id}>
-                        <Polyline
-                          positions={[m.coordinates.restPos, m.coordinates.riderPos, m.coordinates.ngoPos]}
-                          pathOptions={{
-                            color: isSelected ? '#1a73e8' : '#94a3b8',
-                            weight: isSelected ? 6 : 4,
-                            opacity: isSelected ? 0.9 : 0.5,
-                            dashArray: '8, 6'
-                          }}
-                        />
-                        <Marker position={m.coordinates.restPos} icon={restIcon} />
-                        <Marker position={m.coordinates.riderPos} icon={riderIcon} />
-                        <Marker position={m.coordinates.ngoPos} icon={ngoIcon} />
-                      </React.Fragment>
-                    );
-                  })}
+                  {/* Primary Google Maps Navigation Polyline (Vibrant Blue - Like Image 2) */}
+                  <Polyline
+                    positions={BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE}
+                    pathOptions={{ color: '#1a73e8', weight: 9, opacity: 0.35, lineCap: 'round', lineJoin: 'round' }}
+                  />
+                  <Polyline
+                    positions={BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE}
+                    pathOptions={{ color: '#4285F4', weight: 6, opacity: 0.98, lineCap: 'round', lineJoin: 'round' }}
+                  />
+
+                  {/* Floating Google ETA Badges (Matching Image 2) */}
+                  <Marker position={PRIMARY_ROUTE_ETA_POS} icon={createGoogleEtaBadgeMarker('১৪ মিনিট', '৩.৮ কিমি', true)} />
+                  <Marker position={ALT_ROUTE_ETA_POS} icon={createGoogleEtaBadgeMarker('১৫ মিনিট', '৬.১ কিমি', false)} />
+
+                  {/* Clean Marker Pins without overlapping text bubbles */}
+                  {activeMissions.map((m) => (
+                    <React.Fragment key={m.id}>
+                      <Marker position={m.coordinates.restPos} icon={restIcon}>
+                        <Popup>🏪 Restaurant: {m.item.split('(')[0]}</Popup>
+                      </Marker>
+                      <Marker position={m.coordinates.riderPos} icon={riderIcon}>
+                        <Popup>🛵 Rider: {m.volunteer}</Popup>
+                      </Marker>
+                      <Marker position={m.coordinates.ngoPos} icon={ngoIcon}>
+                        <Popup>🏢 Destination: {m.destination}</Popup>
+                      </Marker>
+                    </React.Fragment>
+                  ))}
                 </MapContainer>
 
                 <div className="gmaps-watermark-logo">

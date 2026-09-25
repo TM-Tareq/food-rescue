@@ -12,29 +12,20 @@ import Button from '../../components/Button/Button';
 import Badge from '../../components/Badge/Badge';
 import Modal from '../../components/Modal/Modal';
 import { volunteerService } from '../../services/volunteerService';
+import { 
+  BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE, 
+  BANANI_TO_BASHUNDHARA_ALT_ROUTE, 
+  PRIMARY_ROUTE_ETA_POS, 
+  ALT_ROUTE_ETA_POS, 
+  createGoogleEtaBadgeMarker, 
+  createGoogleCleanPinMarker 
+} from '../../services/dhakaRouteService';
 import 'leaflet/dist/leaflet.css';
 import './VolunteerApp.css';
 
-// SVG Vector Marker Generator for Mobile GPS Map
-const createRiderSvgPin = (color, emoji) => {
-  const svgString = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="48" viewBox="0 0 40 48">
-      <path d="M20 0C9.0 0 0 9.0 0 20c0 15 20 28 20 28s20-13 20-28C40 9.0 31.0 0 20 0z" fill="${color}" stroke="#ffffff" stroke-width="2.5"/>
-      <circle cx="20" cy="20" r="14" fill="#ffffff" opacity="0.3"/>
-      <text x="20" y="22" font-size="18" text-anchor="middle" dominant-baseline="central">${emoji}</text>
-    </svg>
-  `;
-  return L.icon({
-    iconUrl: `data:image/svg+xml;utf8,${encodeURIComponent(svgString)}`,
-    iconSize: [40, 48],
-    iconAnchor: [20, 48],
-    popupAnchor: [0, -44]
-  });
-};
-
-const riderPin = createRiderSvgPin('#2563eb', '🛵');
-const restaurantPin = createRiderSvgPin('#e11d48', '🏪');
-const shelterPin = createRiderSvgPin('#059669', '🏠');
+const riderPin = createGoogleCleanPinMarker('🛵', '#1a73e8', 'Rider');
+const restaurantPin = createGoogleCleanPinMarker('🏪', '#ea4335', 'Restaurant');
+const shelterPin = createGoogleCleanPinMarker('🏠', '#34a853', 'Shelter');
 
 export default function VolunteerApp() {
   const [activeTab, setActiveTab] = useState('dispatch'); // 'dispatch', 'feed', 'impact', 'profile'
@@ -358,8 +349,29 @@ export default function VolunteerApp() {
                     url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
                     attribution="&copy; Google Maps"
                   />
+                  {/* Alternate Route Polyline (Greyed Out - Like Image 2) */}
+                  <Polyline 
+                    positions={BANANI_TO_BASHUNDHARA_ALT_ROUTE} 
+                    pathOptions={{ color: '#94a3b8', weight: 5, opacity: 0.65, lineCap: 'round', lineJoin: 'round' }} 
+                  />
+                  
+                  {/* Primary Google Maps Navigation Polyline (Vibrant Blue - Like Image 2) */}
+                  <Polyline 
+                    positions={BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE} 
+                    pathOptions={{ color: '#1a73e8', weight: 9, opacity: 0.35, lineCap: 'round', lineJoin: 'round' }} 
+                  />
+                  <Polyline 
+                    positions={BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE} 
+                    pathOptions={{ color: '#4285F4', weight: 6, opacity: 0.98, lineCap: 'round', lineJoin: 'round' }} 
+                  />
+
+                  {/* Floating Google ETA Badges (Matching Image 2) */}
+                  <Marker position={PRIMARY_ROUTE_ETA_POS} icon={createGoogleEtaBadgeMarker('১৪ মিনিট', '৩.৮ কিমি', true)} />
+                  <Marker position={ALT_ROUTE_ETA_POS} icon={createGoogleEtaBadgeMarker('১৫ মিনিট', '৬.১ কিমি', false)} />
+
+                  {/* Clean Pin Markers */}
                   <Marker position={activeMission.riderCoords} icon={riderPin}>
-                    <Popup>🛵 You (Rider Tanvir)</Popup>
+                    <Popup>🛵 Rider: Tanvir Hossain (Online)</Popup>
                   </Marker>
                   <Marker position={activeMission.pickupCoords} icon={restaurantPin}>
                     <Popup>🏪 Pickup: {activeMission.restaurantName}</Popup>
@@ -367,9 +379,6 @@ export default function VolunteerApp() {
                   <Marker position={activeMission.dropoffCoords} icon={shelterPin}>
                     <Popup>🏠 Dropoff: {activeMission.shelterName}</Popup>
                   </Marker>
-                  {/* Google Maps Styled Direction Routing Line */}
-                  <Polyline positions={routePolyline} color="#1a73e8" weight={8} opacity={0.3} />
-                  <Polyline positions={routePolyline} color="#4285F4" weight={5} opacity={0.95} />
                 </MapContainer>
 
                 <div className="map-overlay-badge">

@@ -11,6 +11,14 @@ import Button from '../../../../components/Button/Button';
 import Badge from '../../../../components/Badge/Badge';
 import Modal from '../../../../components/Modal/Modal';
 import InAppChatModal from '../../../restaurant/components/InAppChatModal/InAppChatModal';
+import { 
+  BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE, 
+  BANANI_TO_BASHUNDHARA_ALT_ROUTE, 
+  PRIMARY_ROUTE_ETA_POS, 
+  ALT_ROUTE_ETA_POS, 
+  createGoogleEtaBadgeMarker, 
+  createGoogleCleanPinMarker 
+} from '../../../../services/dhakaRouteService';
 import 'leaflet/dist/leaflet.css';
 import './NgoLogisticsTab.css';
 
@@ -358,16 +366,25 @@ export default function NgoLogisticsTab({ onSwitchToDiscover }) {
                       attribution='&copy; <a href="https://maps.google.com">Google Maps</a>'
                     />
 
+                    {/* Alternate Route Polyline (Greyed Out - Like Image 2) */}
                     <Polyline
-                      positions={activeMission.path}
-                      pathOptions={{
-                        color: '#2563eb',
-                        weight: 6,
-                        opacity: 0.95,
-                        lineCap: 'round',
-                        lineJoin: 'round'
-                      }}
+                      positions={BANANI_TO_BASHUNDHARA_ALT_ROUTE}
+                      pathOptions={{ color: '#94a3b8', weight: 5, opacity: 0.65, lineCap: 'round', lineJoin: 'round' }}
                     />
+
+                    {/* Primary Google Maps Navigation Polyline (Vibrant Blue - Like Image 2) */}
+                    <Polyline
+                      positions={BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE}
+                      pathOptions={{ color: '#1a73e8', weight: 9, opacity: 0.35, lineCap: 'round', lineJoin: 'round' }}
+                    />
+                    <Polyline
+                      positions={BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE}
+                      pathOptions={{ color: '#4285F4', weight: 6, opacity: 0.98, lineCap: 'round', lineJoin: 'round' }}
+                    />
+
+                    {/* Floating Google ETA Badges (Matching Image 2) */}
+                    <Marker position={PRIMARY_ROUTE_ETA_POS} icon={createGoogleEtaBadgeMarker('১৪ মিনিট', '৩.৮ কিমি', true)} />
+                    <Marker position={ALT_ROUTE_ETA_POS} icon={createGoogleEtaBadgeMarker('১৫ মিনিট', '৬.১ কিমি', false)} />
 
                     <Marker position={activeMission.restaurantPos} icon={createLogisticsSvgPin('#ea580c', '🍲')}>
                       <Popup className="gmaps-clean-popup">
