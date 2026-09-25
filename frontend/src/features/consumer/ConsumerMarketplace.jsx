@@ -10,11 +10,12 @@ import SavingsImpactTab from './components/SavingsImpactTab';
 import CartCheckoutModal from './components/CartCheckoutModal';
 import QrCodePassModal from './components/QrCodePassModal';
 import UserProfileModal from './components/UserProfileModal';
+import { useTheme } from '../../context/ThemeContext';
 import './ConsumerMarketplace.css';
 
 export default function ConsumerMarketplace() {
   const [activeTab, setActiveTab] = useState('explorer'); // 'explorer', 'orders', 'impact'
-  const [themeMode, setThemeMode] = useState('light'); // Default Light Eco-Green Theme
+  const { themeMode } = useTheme();
   
   // User Profile & Settings State
   const [userInfo, setUserInfo] = useState({

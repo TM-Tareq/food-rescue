@@ -50,22 +50,43 @@
 }
 
 [data-theme="dark"] {
-  --bg-main: #0b0f19;
-  --bg-surface: #111827;
-  --bg-subtle: #1f2937;
-  --border-color: #374151;
-  --border-hover: #4b5563;
+  --bg-main: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-subtle: #090d16;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --border-hover: rgba(255, 255, 255, 0.25);
 
-  --text-main: #f9fafb;
-  --text-muted: #9ca3af;
-  --text-light: #6b7280;
+  --text-main: #f8fafc;
+  --text-muted: #cbd5e1;
+  --text-light: #94a3b8;
+  --text-white: #ffffff;
 
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.6);
 
-  --primary-light: rgba(5, 150, 105, 0.25);
-  --accent-orange-light: rgba(249, 115, 22, 0.25);
+  --primary-light: rgba(5, 150, 105, 0.22);
+  --accent-orange-light: rgba(249, 115, 22, 0.22);
+}
+
+/* Global Dark Mode Contrast Overrides */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .dashboard-sidebar,
+[data-theme="dark"] .ngo-sidebar {
+  background: #0f172a !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 * {

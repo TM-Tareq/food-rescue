@@ -10,11 +10,12 @@ import {
   Globe, ShieldCheck, Truck, ShoppingBag, BarChart3, Sun, Moon, 
   Search, Bell, User, Clock, ChevronDown, Sparkles, Activity, Edit2
 } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 import './AdminDashboard.css';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'verification', 'logistics', 'marketplace', 'analytics'
-  const [theme, setTheme] = useState('light'); // 'light' vs 'dark'
+  const { themeMode: theme, toggleTheme } = useTheme();
   const [systemTime, setSystemTime] = useState('');
 
   // Editable Admin Profile State
@@ -41,10 +42,6 @@ export default function AdminDashboard() {
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
-  };
 
   const handleOpenProfileModal = () => {
     setEditForm({ ...adminProfile });

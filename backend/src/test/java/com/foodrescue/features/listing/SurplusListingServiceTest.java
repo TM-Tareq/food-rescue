@@ -22,6 +22,9 @@ class SurplusListingServiceTest {
     @Mock
     private SurplusListingRepository surplusListingRepository;
 
+    @Mock
+    private com.foodrescue.features.listing.service.AiVisionAuditService aiVisionAuditService;
+
     @InjectMocks
     private SurplusListingService surplusListingService;
 
@@ -41,6 +44,14 @@ class SurplusListingServiceTest {
                 .quantityPortions(25)
                 .build();
 
+        when(aiVisionAuditService.inspectFoodPhoto(any(), any())).thenReturn(
+                com.foodrescue.features.listing.service.AiVisionAuditService.AuditResult.builder()
+                        .grade(com.foodrescue.features.listing.model.AiGrade.GRADE_A_PLUS)
+                        .hygieneScore(98)
+                        .recommendedTier1Minutes(45)
+                        .isFresh(true)
+                        .build()
+        );
         when(surplusListingRepository.save(any(SurplusListing.class))).thenReturn(saved);
 
         SurplusResponseDto response = surplusListingService.createSurplusListing(request);

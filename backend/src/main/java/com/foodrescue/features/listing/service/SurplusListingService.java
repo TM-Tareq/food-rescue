@@ -19,23 +19,41 @@ import java.util.stream.Collectors;
 public class SurplusListingService {
 
     private final SurplusListingRepository surplusListingRepository;
+    private final AiVisionAuditService aiVisionAuditService;
 
     @Transactional
     public SurplusResponseDto createSurplusListing(CreateSurplusRequestDto request) {
         LocalDateTime now = LocalDateTime.now();
+        
+        // Execute AI Vision Safety Audit
+        AiVisionAuditService.AuditResult auditResult;
+        if (Boolean.TRUE.equals(request.getSkipAiAudit())) {
+            auditResult = AiVisionAuditService.AuditResult.builder()
+                    .grade(AiGrade.MANUAL_UNVERIFIED)
+                    .hygieneScore(70)
+                    .recommendedTier1Minutes(15)
+                    .aiSummaryNotes("AI Audit Skipped. Manual On-Site Verification Required.")
+                    .isFresh(true)
+                    .build();
+        } else {
+            String catStr = request.getCategory() != null ? request.getCategory().name() : "COOKED";
+            auditResult = aiVisionAuditService.inspectFoodPhoto(request.getPackagingPhotoUrl(), catStr);
+        }
+
         LocalDateTime kitchenClosing = request.getKitchenClosingTimestamp() != null 
                 ? request.getKitchenClosingTimestamp() : now.plusHours(2);
         LocalDateTime finalExpiry = request.getFinalExpiryTimestamp() != null 
                 ? request.getFinalExpiryTimestamp() : now.plusHours(4);
 
-        // 3-Tier Time Windows
-        LocalDateTime tier1End = kitchenClosing.isBefore(now.plusMinutes(45)) ? kitchenClosing : now.plusMinutes(45);
+        // Dynamic Tier 1 Time Window calculated by AI Audit Result
+        int tier1Minutes = auditResult.getRecommendedTier1Minutes();
+        LocalDateTime tier1End = now.plusMinutes(tier1Minutes);
+        if (tier1End.isAfter(kitchenClosing)) {
+            tier1End = kitchenClosing;
+        }
+
         LocalDateTime tier2End = tier1End.plusHours(1);
         LocalDateTime tier3End = finalExpiry;
-
-        AiGrade grade = Boolean.TRUE.equals(request.getSkipAiAudit()) 
-                ? AiGrade.MANUAL_UNVERIFIED : AiGrade.GRADE_A_PLUS;
-        int hygieneScore = Boolean.TRUE.equals(request.getSkipAiAudit()) ? 70 : 98;
 
         SurplusListing listing = SurplusListing.builder()
                 .restaurantId(request.getRestaurantId() != null ? request.getRestaurantId() : 1L)
@@ -51,8 +69,8 @@ public class SurplusListingService {
                 .tier2ConsumerWindowEnd(tier2End)
                 .tier3FlashWindowEnd(tier3End)
                 .currentTier(ListingTier.TIER1_NGO_FREE)
-                .aiHygieneScore(hygieneScore)
-                .aiQualityGrade(grade)
+                .aiHygieneScore(auditResult.getHygieneScore())
+                .aiQualityGrade(auditResult.getGrade())
                 .packagingPhotoUrl(request.getPackagingPhotoUrl())
                 .isAiAuditSkipped(request.getSkipAiAudit())
                 .status(ListingStatus.ACTIVE)

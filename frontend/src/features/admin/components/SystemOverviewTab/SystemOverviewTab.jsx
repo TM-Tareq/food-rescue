@@ -171,8 +171,8 @@ export default function SystemOverviewTab({ theme = 'light' }) {
               style={{ height: '100%', width: '100%' }}
             >
               <TileLayer
-                url={mapTileUrl}
-                attribution="&copy; OpenStreetMap & CartoDB"
+                url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+                attribution="&copy; Google Maps"
               />
 
               {/* Heatmap density circles */}

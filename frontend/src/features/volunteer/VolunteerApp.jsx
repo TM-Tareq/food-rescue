@@ -355,8 +355,8 @@ export default function VolunteerApp() {
                   style={{ height: '100%', width: '100%' }}
                 >
                   <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution="&copy; OpenStreetMap"
+                    url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+                    attribution="&copy; Google Maps"
                   />
                   <Marker position={activeMission.riderCoords} icon={riderPin}>
                     <Popup>🛵 You (Rider Tanvir)</Popup>
@@ -367,7 +367,9 @@ export default function VolunteerApp() {
                   <Marker position={activeMission.dropoffCoords} icon={shelterPin}>
                     <Popup>🏠 Dropoff: {activeMission.shelterName}</Popup>
                   </Marker>
-                  <Polyline positions={routePolyline} color="#2563eb" weight={4} dashArray="6, 8" />
+                  {/* Google Maps Styled Direction Routing Line */}
+                  <Polyline positions={routePolyline} color="#1a73e8" weight={8} opacity={0.3} />
+                  <Polyline positions={routePolyline} color="#4285F4" weight={5} opacity={0.95} />
                 </MapContainer>
 
                 <div className="map-overlay-badge">
