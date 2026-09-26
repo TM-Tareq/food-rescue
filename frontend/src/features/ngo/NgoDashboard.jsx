@@ -130,7 +130,7 @@ export default function NgoDashboard() {
   ];
 
   // Map Coordinates & NGO Location
-  // Dynamic Filter Engine
+  const ngoShelterPos = [23.8150, 90.4210]; // Anjuman Shelter (Bashundhara)
   const filteredFeed = surplusFeed.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           item.donor.toLowerCase().includes(searchQuery.toLowerCase());
