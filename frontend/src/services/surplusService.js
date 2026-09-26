@@ -9,15 +9,21 @@ export const surplusService = {
     try {
       return await apiClient.post('/surplus', listingData);
     } catch (error) {
+      const origPrice = listingData.initialPriceBDT || 500;
+      const t2Disc = listingData.tier2DiscountPercent || 50;
+      const t3Disc = listingData.tier3DiscountPercent || 80;
+      const expHrs = listingData.expiryHours || 3;
+
       return {
         id: Date.now(),
         name: listingData.foodItemTitle || 'Royal Mutton Kacchi Biryani',
-        sub: listingData.skipAiAudit ? '⚠️ Manual Unverified (On-Site Rider Inspection Required)' : 'AI Certified (Grade A+)',
+        sub: listingData.skipAiAudit ? '⚠️ Manual Unverified (On-Site Inspection)' : 'AI Certified (Grade A+)',
         quantity: `${listingData.quantityPortions || 25} Portions`,
         temp: 'Hot (60°C+)',
-        expiry: 'Expires in 45m',
-        expiryType: 'urgent',
-        status: 'Matching NGO...',
+        expiry: `Expires in ${expHrs}h (${t2Disc}%-${t3Disc}% Off)`,
+        expiryType: 'warning',
+        price: `Base: ৳ ${origPrice} | B2C: ${t2Disc}% Off (৳ ${Math.round(origPrice * (1 - t2Disc/100))})`,
+        status: 'Matching NGO / Discount Consumer...',
         statusType: 'pending'
       };
     }

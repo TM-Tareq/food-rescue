@@ -26,21 +26,12 @@ export default function Navbar({ onOpenAuth }) {
         {/* Reusable Button Actions */}
         <div className="navbar-actions">
           <Button
-            variant="outline"
+            variant="primary"
             size="md"
             icon={User}
             onClick={() => onOpenAuth('signin')}
           >
             Partner Sign In
-          </Button>
-
-          <Button
-            variant="primary"
-            size="md"
-            icon={ShieldCheck}
-            onClick={() => onOpenAuth('signup')}
-          >
-            Join Movement
           </Button>
         </div>
       </div>

@@ -7,10 +7,6 @@ spring:
   application:
     name: food-rescue-backend
 
-  profiles:
-    active: mysql
-
-  # MySQL Workbench Connection Setup
   datasource:
     url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DB:food_rescue_db}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Dhaka
     username: ${MYSQL_USER:root}

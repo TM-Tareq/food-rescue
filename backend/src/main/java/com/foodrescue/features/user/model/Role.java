@@ -4,5 +4,6 @@ public enum Role {
     RESTAURANT,
     NGO,
     VOLUNTEER,
+    CONSUMER,
     ADMIN
 }

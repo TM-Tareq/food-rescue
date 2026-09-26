@@ -17,6 +17,12 @@ export default function AiFoodSafetyScannerModal({
   const [portions, setPortions] = useState(25);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   
+  // Business Owner Pricing & Discount Timer Settings
+  const [basePrice, setBasePrice] = useState(500);
+  const [tier2Discount, setTier2Discount] = useState(50); // Default 50%
+  const [tier3Discount, setTier3Discount] = useState(80); // Default 80%
+  const [expiryHours, setExpiryHours] = useState(3);      // Default 3 Hours
+  
   // AI Audit States
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
@@ -80,6 +86,10 @@ export default function AiFoodSafetyScannerModal({
     const payload = {
       foodItemTitle: foodName,
       quantityPortions: portions,
+      initialPriceBDT: basePrice,
+      tier2DiscountPercent: tier2Discount,
+      tier3DiscountPercent: tier3Discount,
+      expiryHours: expiryHours,
       imageUrl: samplePhotos[selectedPhotoIndex].url,
       skipAiAudit: false
     };
@@ -93,6 +103,10 @@ export default function AiFoodSafetyScannerModal({
     const payload = {
       foodItemTitle: foodName,
       quantityPortions: portions,
+      initialPriceBDT: basePrice,
+      tier2DiscountPercent: tier2Discount,
+      tier3DiscountPercent: tier3Discount,
+      expiryHours: expiryHours,
       imageUrl: samplePhotos[selectedPhotoIndex].url,
       skipAiAudit: true
     };
@@ -138,6 +152,75 @@ export default function AiFoodSafetyScannerModal({
               value={portions}
               onChange={(e) => setPortions(e.target.value)}
             />
+          </div>
+        </div>
+
+        {/* Business Owner Pricing & Discount Strategy Controls */}
+        <div className="business-pricing-card" style={{
+          background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+          border: '1.5px solid #cbd5e1',
+          borderRadius: '12px',
+          padding: '14px 18px',
+          marginBottom: '18px'
+        }}>
+          <h5 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            🏷️ Business Owner Price & Discount Strategy
+          </h5>
+          <div className="form-row-grid">
+            <div className="form-group">
+              <label className="lbl" style={{ fontSize: '12px', fontWeight: 600 }}>Regular Item Price (BDT ৳):</label>
+              <input 
+                type="number" 
+                className="inp-field"
+                value={basePrice}
+                onChange={(e) => setBasePrice(Number(e.target.value))}
+                placeholder="e.g. 500"
+              />
+            </div>
+            <div className="form-group">
+              <label className="lbl" style={{ fontSize: '12px', fontWeight: 600 }}>Total Listing Expiry (Hours):</label>
+              <input 
+                type="number" 
+                className="inp-field"
+                value={expiryHours}
+                onChange={(e) => setExpiryHours(Number(e.target.value))}
+                placeholder="e.g. 3"
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginTop: '10px' }}>
+            <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 600, color: '#2563eb', marginBottom: '4px' }}>
+                <span>Tier-2 Consumer Sale:</span>
+                <span>{tier2Discount}% Off (৳ {Math.round(basePrice * (1 - tier2Discount / 100))})</span>
+              </div>
+              <input 
+                type="range" 
+                min="30" 
+                max="70" 
+                step="5" 
+                value={tier2Discount} 
+                onChange={(e) => setTier2Discount(Number(e.target.value))}
+                style={{ width: '100%', accentColor: '#2563eb', cursor: 'pointer' }}
+              />
+            </div>
+
+            <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 600, color: '#dc2626', marginBottom: '4px' }}>
+                <span>Tier-3 Flash Clearance:</span>
+                <span>{tier3Discount}% Off (৳ {Math.round(basePrice * (1 - tier3Discount / 100))})</span>
+              </div>
+              <input 
+                type="range" 
+                min="70" 
+                max="90" 
+                step="5" 
+                value={tier3Discount} 
+                onChange={(e) => setTier3Discount(Number(e.target.value))}
+                style={{ width: '100%', accentColor: '#dc2626', cursor: 'pointer' }}
+              />
+            </div>
           </div>
         </div>
 
