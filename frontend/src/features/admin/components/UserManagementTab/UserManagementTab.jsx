@@ -7,6 +7,7 @@ import {
 import Button from '../../../../components/Button/Button';
 import Modal from '../../../../components/Modal/Modal';
 import { userManagementService } from '../../../../services/userManagementService';
+import { masterMenuService } from '../../../../services/masterMenuService';
 import './UserManagementTab.css';
 
 export default function UserManagementTab() {
@@ -449,6 +450,30 @@ export default function UserManagementTab() {
                 </div>
               </div>
             </div>
+
+            {/* RESTAURANT MASTER MENU CATALOG INSPECTION FOR SUPER ADMIN */}
+            {selectedUser.role === 'RESTAURANT' && (
+              <div style={{
+                background: '#f8fafc',
+                border: '1px solid #cbd5e1',
+                borderRadius: '10px',
+                padding: '14px',
+                margin: '14px 0'
+              }}>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  📖 Restaurant Configured Master Menu Catalog ({masterMenuService.getMasterMenuItems().length} Items)
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' }}>
+                  {masterMenuService.getMasterMenuItems().map(item => (
+                    <div key={item.id} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px', fontSize: '0.8rem' }}>
+                      <img src={item.demoImage} alt={item.title} style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
+                      <strong style={{ display: 'block', color: '#0f172a', fontSize: '0.82rem' }}>{item.title}</strong>
+                      <span style={{ color: '#475569' }}>Base: ৳{item.originalPrice}</span> | <span style={{ color: '#2563eb' }}>Tier 2: {item.tier2Discount}% off</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="user-modal-grid">
               <div className="user-modal-item">

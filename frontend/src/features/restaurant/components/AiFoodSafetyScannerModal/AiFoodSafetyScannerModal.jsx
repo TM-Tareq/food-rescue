@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, ShieldCheck, Camera, CheckCircle2, AlertTriangle, 
-  Thermometer, Clock, Leaf, RefreshCw, Upload, FileCheck
+  Thermometer, Clock, Leaf, RefreshCw, Upload, FileCheck, Utensils
 } from 'lucide-react';
 import Modal from '../../../../components/Modal/Modal';
 import Button from '../../../../components/Button/Button';
 import { surplusService } from '../../../../services/surplusService';
+import { masterMenuService } from '../../../../services/masterMenuService';
 import './AiFoodSafetyScannerModal.css';
 
 export default function AiFoodSafetyScannerModal({
@@ -13,6 +14,9 @@ export default function AiFoodSafetyScannerModal({
   onClose,
   onListingApproved
 }) {
+  const [masterMenuItems, setMasterMenuItems] = useState([]);
+  const [selectedMenuId, setSelectedMenuId] = useState('');
+  
   const [foodName, setFoodName] = useState('Royal Mutton Kacchi Biryani');
   const [portions, setPortions] = useState(25);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
@@ -22,21 +26,52 @@ export default function AiFoodSafetyScannerModal({
   const [tier2Discount, setTier2Discount] = useState(50); // Default 50%
   const [tier3Discount, setTier3Discount] = useState(80); // Default 80%
   const [expiryHours, setExpiryHours] = useState(3);      // Default 3 Hours
+  const [activeDemoImage, setActiveDemoImage] = useState('');
   
   // AI Audit States
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
 
+  // Load Master Menu Items from localStorage / masterMenuService on mount/open
+  useEffect(() => {
+    if (isOpen) {
+      const items = masterMenuService.getMasterMenuItems();
+      setMasterMenuItems(items);
+      if (items.length > 0) {
+        handleSelectMasterMenuItem(items[0]);
+      }
+    }
+  }, [isOpen]);
+
+  const handleSelectMasterMenuItem = (item) => {
+    setSelectedMenuId(item.id);
+    setFoodName(item.title);
+    setBasePrice(item.originalPrice || 500);
+    setTier2Discount(item.tier2Discount || 50);
+    setTier3Discount(item.tier3Discount || 80);
+    setExpiryHours(item.expiryHours || 3);
+    setActiveDemoImage(item.demoImage || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80');
+  };
+
+  const handleDropdownChange = (e) => {
+    const id = e.target.value;
+    setSelectedMenuId(id);
+    const item = masterMenuItems.find(m => m.id === id);
+    if (item) {
+      handleSelectMasterMenuItem(item);
+    }
+  };
+
   // Sample Food Package Images for AI Vision Audit
   const samplePhotos = [
     {
-      title: 'Sealed Thermal Foil Pack (Recommended)',
-      url: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=500&q=80',
+      title: 'Sealed Thermal Pack (Demo Saved Image)',
+      url: activeDemoImage || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=500&q=80',
       quality: 'pass'
     },
     {
-      title: 'Bakery Box (Covered)',
-      url: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=500&q=80',
+      title: 'Sealed Thermal Foil Pack (Recommended)',
+      url: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=500&q=80',
       quality: 'pass'
     },
     {
@@ -54,16 +89,19 @@ export default function AiFoodSafetyScannerModal({
       setIsScanning(false);
       const chosenPhoto = samplePhotos[selectedPhotoIndex];
 
+      // Auto-match menu item if needed
+      const matched = masterMenuItems.find(m => m.id === selectedMenuId) || masterMenuItems[0];
+
       if (chosenPhoto.quality === 'pass') {
         setScanResult({
           status: 'APPROVED',
           hygieneScore: 98,
           grade: 'Grade A+ (Certified)',
-          sealingDetection: 'Hermetically Sealed Thermal Container (99.4% Confidence)',
+          sealingDetection: `Hermetically Sealed Thermal Container for "${matched ? matched.title : foodName}" (99.4% Confidence)`,
           temperatureEst: 'Hot Storage (62°C+) • Freshly Cooked',
           spoilageCheck: 'Zero Mold / Zero Discoloration Detected',
           expiryRecommendation: 'Safe Window: 45 Mins Max for High Temperature',
-          aiSummary: 'Passed AI Thermal Vision & Hygiene Standards. Safe for immediate NGO dispatch or B2C surplus sale.'
+          aiSummary: `Passed AI Thermal Vision & Hygiene Standards. Matched with Master Menu Item "${matched ? matched.title : foodName}". High-res pre-saved demo image linked.`
         });
       } else {
         setScanResult({
@@ -77,12 +115,15 @@ export default function AiFoodSafetyScannerModal({
           aiSummary: '⚠️ AI Audit Failed: Food must be properly covered and sealed in thermal packaging before listing.'
         });
       }
-    }, 2000);
+    }, 1800);
   };
 
   const handleCompleteListing = async () => {
     if (!scanResult || scanResult.status !== 'APPROVED') return;
 
+    const matched = masterMenuItems.find(m => m.id === selectedMenuId);
+    const finalImage = matched ? matched.demoImage : (samplePhotos[selectedPhotoIndex].url || activeDemoImage);
+
     const payload = {
       foodItemTitle: foodName,
       quantityPortions: portions,
@@ -90,16 +131,22 @@ export default function AiFoodSafetyScannerModal({
       tier2DiscountPercent: tier2Discount,
       tier3DiscountPercent: tier3Discount,
       expiryHours: expiryHours,
-      imageUrl: samplePhotos[selectedPhotoIndex].url,
+      imageUrl: finalImage,
       skipAiAudit: false
     };
 
     const newListing = await surplusService.createSurplusListing(payload);
-    onListingApproved(newListing);
+    onListingApproved({
+      ...newListing,
+      image: finalImage
+    });
     onClose();
   };
 
   const handleSkipAiAudit = async () => {
+    const matched = masterMenuItems.find(m => m.id === selectedMenuId);
+    const finalImage = matched ? matched.demoImage : (samplePhotos[selectedPhotoIndex].url || activeDemoImage);
+
     const payload = {
       foodItemTitle: foodName,
       quantityPortions: portions,
@@ -107,12 +154,15 @@ export default function AiFoodSafetyScannerModal({
       tier2DiscountPercent: tier2Discount,
       tier3DiscountPercent: tier3Discount,
       expiryHours: expiryHours,
-      imageUrl: samplePhotos[selectedPhotoIndex].url,
+      imageUrl: finalImage,
       skipAiAudit: true
     };
 
     const unverifiedListing = await surplusService.createSurplusListing(payload);
-    onListingApproved(unverifiedListing);
+    onListingApproved({
+      ...unverifiedListing,
+      image: finalImage
+    });
     onClose();
   };
 
@@ -120,22 +170,47 @@ export default function AiFoodSafetyScannerModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="🤖 AI Thermal Vision & Food Safety Audit Engine"
+      title="🤖 AI Thermal Vision & Master Menu Surplus Food Engine"
     >
       <div className="ai-audit-modal-content">
         {/* Header Alert Banner */}
         <div className="ai-intro-banner">
           <Sparkles size={22} color="#059669" />
           <div>
-            <h4>Automated AI Hygiene & Freshness Inspection</h4>
-            <p>Scan food packaging with computer vision to issue an official <strong>AI Safety Seal</strong> before posting.</p>
+            <h4>Automated AI Hygiene & Master Menu Matching</h4>
+            <p>Select an item from your <strong>Settings Master Menu Catalog</strong> or scan raw photos to auto-populate high-res demo pictures and tier pricing.</p>
           </div>
+        </div>
+
+        {/* MASTER MENU DROPDOWN SELECTOR */}
+        <div style={{
+          background: '#f0fdf4',
+          border: '1.5px solid #86efac',
+          borderRadius: '12px',
+          padding: '14px',
+          marginBottom: '16px'
+        }}>
+          <label className="lbl" style={{ fontWeight: 700, color: '#166534', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+            <Utensils size={16} /> Select Item from Restaurant Master Menu Catalog:
+          </label>
+          <select 
+            className="inp-field" 
+            value={selectedMenuId} 
+            onChange={handleDropdownChange}
+            style={{ fontWeight: 600, background: '#ffffff', borderColor: '#22c55e', color: '#14532d' }}
+          >
+            {masterMenuItems.map(item => (
+              <option key={item.id} value={item.id}>
+                📖 {item.title} — Base: ৳{item.originalPrice} (Tier 2: {item.tier2Discount}% off, Tier 3: {item.tier3Discount}% off)
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Form Inputs */}
         <div className="form-row-grid">
           <div className="form-group">
-            <label className="lbl">Food Item Title:</label>
+            <label className="lbl">Selected Food Item Title:</label>
             <input 
               type="text" 
               className="inp-field"
@@ -145,7 +220,7 @@ export default function AiFoodSafetyScannerModal({
           </div>
 
           <div className="form-group">
-            <label className="lbl">Quantity (Portions):</label>
+            <label className="lbl">Quantity (Portions / Servings):</label>
             <input 
               type="number" 
               className="inp-field"
@@ -164,11 +239,11 @@ export default function AiFoodSafetyScannerModal({
           marginBottom: '18px'
         }}>
           <h5 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            🏷️ Business Owner Price & Discount Strategy
+            🏷️ Master Menu Price & Tier Discount Strategy
           </h5>
           <div className="form-row-grid">
             <div className="form-group">
-              <label className="lbl" style={{ fontSize: '12px', fontWeight: 600 }}>Regular Item Price (BDT ৳):</label>
+              <label className="lbl" style={{ fontSize: '12px', fontWeight: 600 }}>Original Base Price (BDT ৳):</label>
               <input 
                 type="number" 
                 className="inp-field"
@@ -226,7 +301,7 @@ export default function AiFoodSafetyScannerModal({
 
         {/* Photo Selection Grid for AI Audit */}
         <div className="photo-selection-section">
-          <label className="lbl">Select Packaging Photo for AI Inspection:</label>
+          <label className="lbl">Select Packaging Photo / Demo Picture for AI Inspection:</label>
           <div className="photo-thumbs-grid">
             {samplePhotos.map((photo, idx) => (
               <div 
@@ -250,12 +325,12 @@ export default function AiFoodSafetyScannerModal({
           {isScanning ? (
             <>
               <RefreshCw size={18} className="spin-icon" />
-              <span>Scanning Computer Vision Features...</span>
+              <span>Scanning Computer Vision & Matching Master Menu...</span>
             </>
           ) : (
             <>
               <Sparkles size={18} />
-              <span>Run AI Vision & Freshness Inspection ➔</span>
+              <span>Run AI Vision & Master Menu Verification ➔</span>
             </>
           )}
         </button>
@@ -266,14 +341,14 @@ export default function AiFoodSafetyScannerModal({
           onClick={handleSkipAiAudit}
           type="button"
         >
-          ⚠️ Skip AI Audit (Post as Manual Unverified - Requires On-Site Rider Photo)
+          ⚠️ Skip AI Audit (Post using Saved Master Menu Demo Image directly)
         </button>
 
         {/* Live AI Scanner Overlay Beam Animation */}
         {isScanning && (
           <div className="ai-scanning-overlay">
             <div className="scan-beam"></div>
-            <p className="scan-status-text">Analyzing Thermal Insulation & Packaging Integrity...</p>
+            <p className="scan-status-text">Matching Item with Master Menu Catalog & Inspecting Sealing Integrity...</p>
           </div>
         )}
 
@@ -319,7 +394,7 @@ export default function AiFoodSafetyScannerModal({
                 className="btn-approve-post"
                 onClick={handleCompleteListing}
               >
-                ✨ Publish AI Certified Listing ➔
+                ✨ Publish AI Certified Listing with Saved Master Image ➔
               </button>
             )}
           </div>

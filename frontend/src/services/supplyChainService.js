@@ -178,9 +178,22 @@ export const supplyChainService = {
   saveBatches(batches) {
     try {
       localStorage.setItem('foodrescue_supply_chain_batches', JSON.stringify(batches));
+      window.dispatchEvent(new Event('foodrescue_supply_chain_updated'));
     } catch (e) {
       console.error('Error saving supply chain batches:', e);
     }
+  },
+
+  addOrUpdateBatch(newBatch) {
+    const batches = this.getBatches();
+    const existingIndex = batches.findIndex(b => b.id === newBatch.id);
+    if (existingIndex !== -1) {
+      batches[existingIndex] = { ...batches[existingIndex], ...newBatch };
+    } else {
+      batches.unshift(newBatch);
+    }
+    this.saveBatches(batches);
+    return newBatch;
   },
 
   /**

@@ -43,7 +43,15 @@ export default function App() {
 
   const [currentView, setCurrentView] = useState(() => {
     const hash = window.location.hash.toLowerCase();
-    return HASH_VIEW_MAP[hash] || 'landing';
+    const matchedView = HASH_VIEW_MAP[hash] || 'landing';
+    const savedUserRaw = localStorage.getItem('foodrescue_user');
+    if (!savedUserRaw && matchedView !== 'landing' && matchedView !== 'savings') {
+      if (window.location.hash && window.location.hash !== '#home') {
+        window.history.replaceState({ view: 'landing' }, '', '#home');
+      }
+      return 'landing';
+    }
+    return matchedView;
   });
 
   const [backendStatus, setBackendStatus] = useState('CHECKING');

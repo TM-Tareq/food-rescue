@@ -3,6 +3,7 @@ import { Bike, Truck, CheckCircle2, ShieldCheck, Clock, MapPin, AlertCircle } fr
 import Modal from '../../../../components/Modal/Modal';
 import Button from '../../../../components/Button/Button';
 import { ngoService } from '../../../../services/ngoService';
+import { supplyChainService } from '../../../../services/supplyChainService';
 import './NgoClaimModal.css';
 
 /**
@@ -14,6 +15,45 @@ export default function NgoClaimModal({ isOpen, onClose, foodItem, onConfirmClai
   if (!isOpen || !foodItem) return null;
 
   const handleConfirm = async () => {
+    const pickupCode = Math.floor(1000 + Math.random() * 9000).toString();
+    const deliveryCode = Math.floor(1000 + Math.random() * 9000).toString();
+
+    const batchId = `BATCH-${Math.floor(8000 + Math.random() * 999)}`;
+    const newBatch = {
+      id: batchId,
+      title: foodItem.title,
+      restaurant: foodItem.donor || 'Star Chef Bistro',
+      restaurantAddress: foodItem.area || 'Banani, Dhaka',
+      category: foodItem.category || 'COOKED_MEAL',
+      portions: 30,
+      portionsClaimedNgo: 30,
+      portionsSoldConsumer: 0,
+      hygieneScore: 96,
+      aiGrade: 'GRADE_A_PREMIUM',
+      prepTime: '08:30 PM',
+      expiryTime: foodItem.expiry || 'Expires in 45 mins',
+      currentStage: 2, // Claimed / Allocated Pending Pickup
+      status: 'CLAIMED_PENDING_PICKUP',
+      deliveryMode: transportChoice === 'VOLUNTEER' ? 'VOLUNTEER_RIDER' : 'NGO_SELF_PICKUP',
+      recipient: 'Anjuman Orphanage Shelter (Bashundhara)',
+      recipientType: 'NGO',
+      riderName: transportChoice === 'VOLUNTEER' ? 'Pending Volunteer Claim' : 'NGO Self-Pickup Van',
+      riderPhone: transportChoice === 'VOLUNTEER' ? '+880 1711-987654' : '+880 1819-445566',
+      riderAvatar: transportChoice === 'VOLUNTEER' ? '🛵' : '🚐',
+      pickupOtp: pickupCode,
+      pickupOtpVerified: false,
+      pickupOtpStatus: 'ACTIVE_VISIBLE',
+      deliveryOtp: deliveryCode,
+      deliveryOtpVerified: false,
+      deliveryOtpStatus: 'ACTIVE_VISIBLE',
+      eta: transportChoice === 'VOLUNTEER' ? 'Awaiting Volunteer Rider' : 'NGO Self-Pickup',
+      distanceKm: '2.4 km',
+      foodSavedKg: 15,
+      co2SavedKg: 22.5
+    };
+
+    supplyChainService.addOrUpdateBatch(newBatch);
+
     const claimPayload = {
       foodId: foodItem.id,
       transportChoice,
@@ -23,12 +63,14 @@ export default function NgoClaimModal({ isOpen, onClose, foodItem, onConfirmClai
     const result = await ngoService.claimTier1Food(claimPayload);
 
     onConfirmClaim({
-      id: result.claimId || `CLAIM-${Math.floor(100 + Math.random() * 900)}`,
+      id: batchId,
       title: foodItem.title,
       donor: foodItem.donor,
       claimedAt: new Date().toLocaleTimeString(),
-      status: result.status || (transportChoice === 'VOLUNTEER' ? 'RIDER_EN_ROUTE' : 'SELF_PICKUP_ASSIGNED'),
-      eta: '15 mins'
+      status: result.status || (transportChoice === 'VOLUNTEER' ? 'DISPATCHING_RIDER' : 'SELF_PICKUP_ASSIGNED'),
+      eta: '15 mins',
+      pickupOtp: pickupCode,
+      deliveryOtp: deliveryCode
     });
     onClose();
   };

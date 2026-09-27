@@ -16,6 +16,7 @@ import Modal from '../../components/Modal/Modal';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { volunteerService } from '../../services/volunteerService';
+import { supplyChainService } from '../../services/supplyChainService';
 import { 
   BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE, 
   BANANI_TO_BASHUNDHARA_ALT_ROUTE, 
@@ -61,9 +62,52 @@ export default function VolunteerApp({ onLogout }) {
   const [isGpsModalOpen, setIsGpsModalOpen] = useState(false);
   const [gpsStatusText, setGpsStatusText] = useState(null);
 
-  // Automatically Fetch Live Device GPS Location as Primary Default on Load
+  const syncSurplusPoolFromSupplyChain = () => {
+    try {
+      const batches = supplyChainService.getBatches();
+      const riderBatches = batches.filter(b => b.deliveryMode === 'VOLUNTEER_RIDER' && b.status !== 'DELIVERED');
+      
+      if (riderBatches.length > 0) {
+        const mapped = riderBatches.map(b => ({
+          id: b.id,
+          restaurantName: b.restaurant || 'Star Chef Bistro',
+          restaurantAddress: b.restaurantAddress || 'Block D, Banani Road 11, Dhaka',
+          restaurantPhone: b.riderPhone || '+880 1711-987654',
+          shelterName: b.recipient || 'Anjuman Orphanage Shelter',
+          shelterAddress: 'Plot 4, Road 2, Block B, Bashundhara R/A',
+          shelterPhone: '+880 1819-123456',
+          foodItem: b.title,
+          weight: `${b.foodSavedKg || 14.5} kg (Feeds ${b.portions || 35} People)`,
+          expiryTime: b.expiryTime || '42 mins left',
+          karmaPoints: 50,
+          requiredOtp: b.pickupOtp || '4892',
+          deliveryOtp: b.deliveryOtp || '7842',
+          pickupCoords: [23.7937, 90.4066],
+          dropoffCoords: [23.8103, 90.4125],
+          dist: b.distanceKm || '0.8 km away',
+          urgency: 'URGENT',
+          isAutoDispatch: true
+        }));
+        
+        setSurplusPool(mapped);
+        
+        const newest = mapped[0];
+        setActiveMission(prev => ({
+          ...newest,
+          riderCoords: prev.riderCoords || [23.7900, 90.4020]
+        }));
+        setHasIncomingAlert(true);
+      }
+    } catch (e) {
+      console.warn('Error syncing rider surplus pool:', e);
+    }
+  };
+
   useEffect(() => {
     fetchDeviceGps();
+    syncSurplusPoolFromSupplyChain();
+    window.addEventListener('foodrescue_supply_chain_updated', syncSurplusPoolFromSupplyChain);
+    return () => window.removeEventListener('foodrescue_supply_chain_updated', syncSurplusPoolFromSupplyChain);
   }, []);
 
   // Fetch Live Device GPS Location (Primary Auto Mode)
@@ -229,13 +273,37 @@ export default function VolunteerApp({ onLogout }) {
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setOtpError('');
-    const response = await volunteerService.verifyOtp(activeMission.id, otpInput.trim());
-    if (response.success || otpInput.trim() === activeMission.requiredOtp) {
-      setOtpError('');
-      setIsOtpModalOpen(false);
-      setMissionStep(3); // Advance to Delivery
-    } else {
-      setOtpError(response.message || 'Invalid OTP Code! Please check with restaurant manager.');
+    try {
+      if (missionStep === 2) {
+        // Pickup OTP verification (Kitchen Handover)
+        supplyChainService.verifyPickupOtp(activeMission.id, otpInput.trim());
+        setOtpError('');
+        setIsOtpModalOpen(false);
+        setMissionStep(3); // Advance to Delivery
+      } else if (missionStep === 4) {
+        // Delivery OTP verification (Shelter Handover)
+        supplyChainService.verifyDeliveryOtp(activeMission.id, otpInput.trim());
+        setOtpError('');
+        setMissionStep(5); // Advance to Celebration
+        setIsCelebrationModalOpen(true);
+      } else {
+        const response = await volunteerService.verifyOtp(activeMission.id, otpInput.trim());
+        if (response.success || otpInput.trim() === activeMission.requiredOtp) {
+          setOtpError('');
+          setIsOtpModalOpen(false);
+          setMissionStep(3);
+        } else {
+          setOtpError(response.message || 'Invalid OTP Code!');
+        }
+      }
+    } catch (err) {
+      if (otpInput.trim() === activeMission.requiredOtp || otpInput.trim() === activeMission.deliveryOtp) {
+        setOtpError('');
+        setIsOtpModalOpen(false);
+        setMissionStep(missionStep === 2 ? 3 : 5);
+      } else {
+        setOtpError(err.message || 'Invalid OTP Code! Please check with donor or recipient shelter.');
+      }
     }
   };
 

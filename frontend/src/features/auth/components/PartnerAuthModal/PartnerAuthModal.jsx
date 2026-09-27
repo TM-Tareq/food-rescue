@@ -57,13 +57,26 @@ export default function PartnerAuthModal({ isOpen, onClose, initialRole = 'resta
       let activeRole = (knownRole || selectedRole).toLowerCase();
 
       if (!isLoginMode) {
-        // --- CONSUMER SELF-REGISTRATION FLOW ---
+        // --- CONSUMER SELF-REGISTRATION FLOW WITH STRICT VALIDATION ---
+        if (!fullName || fullName.trim().length < 2) {
+          throw new Error('Please enter your full name (at least 2 characters).');
+        }
+        if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+          throw new Error('Please enter a valid email address.');
+        }
+        if (!password || password.length < 6) {
+          throw new Error('Password must be at least 6 characters long.');
+        }
+        if (!phone || phone.trim().length < 10) {
+          throw new Error('Please enter a valid phone number (at least 10 digits).');
+        }
+
         const registerData = {
-          name: fullName || cleanEmail.split('@')[0],
+          name: fullName.trim(),
           email: cleanEmail,
           password: password,
           role: selectedRole.toUpperCase(),
-          phone: phone || '01700000000',
+          phone: phone.trim(),
           address: 'Dhaka, Bangladesh'
         };
 
@@ -72,14 +85,14 @@ export default function PartnerAuthModal({ isOpen, onClose, initialRole = 'resta
         
         const registeredUser = {
           id: res.userId || Date.now(),
-          name: res.name || fullName || cleanEmail.split('@')[0],
+          name: res.name || fullName.trim(),
           email: res.email || cleanEmail,
           role: activeRole.toUpperCase(),
           avatar: '🛍️'
         };
 
         login(registeredUser, res.jwtAccessToken || 'jwt-registered-token-2026');
-        setAuthStatusMessage({ type: 'success', text: `✅ Consumer account registered as ${activeRole.toUpperCase()}!` });
+        setAuthStatusMessage({ type: 'success', text: `✅ Account created successfully for ${fullName.trim()}!` });
 
         setTimeout(() => {
           setIsLoading(false);

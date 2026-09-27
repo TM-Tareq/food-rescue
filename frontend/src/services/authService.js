@@ -37,23 +37,6 @@ export const authService = {
       console.warn('Registry lookup error:', e);
     }
 
-    // Heuristic role detection by email keyword
-    if (cleanEmail.includes('volunteer') || cleanEmail.includes('rider') || cleanEmail.includes('hero')) {
-      return 'VOLUNTEER';
-    }
-    if (cleanEmail.includes('ngo') || cleanEmail.includes('shelter') || cleanEmail.includes('anjuman')) {
-      return 'NGO';
-    }
-    if (cleanEmail.includes('chef') || cleanEmail.includes('bistro') || cleanEmail.includes('restaurant') || cleanEmail.includes('kacchi')) {
-      return 'RESTAURANT';
-    }
-    if (cleanEmail.includes('admin') || cleanEmail.includes('tareq')) {
-      return 'ADMIN';
-    }
-    if (cleanEmail.includes('consumer') || cleanEmail.includes('buyer')) {
-      return 'CONSUMER';
-    }
-
     return null;
   },
 

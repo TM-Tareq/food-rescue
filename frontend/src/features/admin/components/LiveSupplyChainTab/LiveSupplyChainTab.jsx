@@ -220,8 +220,8 @@ export default function LiveSupplyChainTab() {
                     <div className="otp-pill-box">
                       <span className="otp-label">Kitchen Pickup:</span>
                       {batch.pickupOtpVerified ? (
-                        <span className="otp-badge-removed">
-                          <Trash2 size={10} /> Verified & Removed
+                        <span className="otp-badge-confirmed">
+                          <CheckCircle2 size={12} /> Pickup Confirmed
                         </span>
                       ) : (
                         <span className="otp-badge-active">
@@ -234,8 +234,8 @@ export default function LiveSupplyChainTab() {
                     <div className="otp-pill-box">
                       <span className="otp-label">Doorstep Handover:</span>
                       {batch.deliveryOtpVerified ? (
-                        <span className="otp-badge-removed">
-                          <Trash2 size={10} /> Verified & Removed
+                        <span className="otp-badge-confirmed">
+                          <CheckCircle2 size={12} /> Handover Confirmed
                         </span>
                       ) : batch.deliveryOtp ? (
                         <span className="otp-badge-active green-otp">
@@ -300,13 +300,13 @@ export default function LiveSupplyChainTab() {
             <div className="multi-party-otp-banner">
               <div className="otp-banner-header">
                 <Key size={18} />
-                <span>🔐 Multi-Party Real-Time OTP Visibility & Lifecycle Engine</span>
+                <span>🔐 Multi-Party Real-Time OTP Visibility & Verification Engine</span>
               </div>
               <div className="otp-visibility-grid">
                 <div className="otp-vis-card">
                   <span className="vis-role">🏪 Restaurant Owner Screen:</span>
                   <span className="vis-val">
-                    {selectedBatch.pickupOtpVerified ? '✅ Kitchen Pickup Confirmed (OTP Expired & Removed)' : `🔑 Pickup OTP: ${selectedBatch.pickupOtp}`}
+                    {selectedBatch.pickupOtpVerified ? '✅ Kitchen Pickup Confirmed' : `🔑 Pickup OTP: ${selectedBatch.pickupOtp}`}
                   </span>
                 </div>
                 
@@ -315,7 +315,7 @@ export default function LiveSupplyChainTab() {
                     {selectedBatch.deliveryMode === 'NGO_SELF_PICKUP' ? '🏠 NGO Self-Pickup Screen:' : selectedBatch.recipientType === 'NGO' ? '🏠 NGO Shelter Screen:' : '🛍️ Consumer Screen:'}
                   </span>
                   <span className="vis-val">
-                    {selectedBatch.deliveryOtpVerified ? '✅ Handover Completed (OTP Expired & Removed)' : `🔑 Delivery OTP: ${selectedBatch.deliveryOtp}`}
+                    {selectedBatch.deliveryOtpVerified ? '✅ Handover Confirmed' : `🔑 Delivery OTP: ${selectedBatch.deliveryOtp}`}
                   </span>
                 </div>
               </div>
@@ -427,7 +427,7 @@ export default function LiveSupplyChainTab() {
                   </p>
                   <div className="node-details-grid">
                     <span>🚚 Transport Vehicle: <strong>{selectedBatch.riderName} ({selectedBatch.riderPhone})</strong></span>
-                    <span>🔐 Kitchen OTP Status: <strong>{selectedBatch.pickupOtpVerified ? 'Verified & Removed ✅' : `Active OTP: ${selectedBatch.pickupOtp}`}</strong></span>
+                    <span>🔐 Kitchen OTP Status: <strong>{selectedBatch.pickupOtpVerified ? 'Verified & Confirmed ✅' : `Active OTP: ${selectedBatch.pickupOtp}`}</strong></span>
                   </div>
                 </div>
               </div>
@@ -462,12 +462,12 @@ export default function LiveSupplyChainTab() {
                 </div>
                 <div className="node-content">
                   <div className="node-header">
-                    <h4>Step 5: Handover Completed & OTP Removal Confirmation</h4>
+                    <h4>Step 5: Handover Completed & OTP Confirmation</h4>
                     <span className="node-time">⏰ {selectedBatch.deliveryTime || 'Completed'}</span>
                   </div>
-                  <p>Food delivered to beneficiary. Verified via 4-digit recipient OTP or NGO self-pickup code. OTP removed upon completion.</p>
+                  <p>Food delivered to beneficiary. Verified via 4-digit recipient OTP or NGO self-pickup code.</p>
                   <div className="node-details-grid">
-                    <span>🔑 Recipient OTP Status: <strong>{selectedBatch.deliveryOtpVerified ? 'Verified & Removed ✅' : `Active OTP: ${selectedBatch.deliveryOtp}`}</strong></span>
+                    <span>🔑 Recipient OTP Status: <strong>{selectedBatch.deliveryOtpVerified ? 'Verified & Confirmed ✅' : `Active OTP: ${selectedBatch.deliveryOtp}`}</strong></span>
                     <span>🌱 ESG Carbon Impact: <strong>+{selectedBatch.co2SavedKg} KG CO₂ Reduced</strong></span>
                   </div>
                 </div>
