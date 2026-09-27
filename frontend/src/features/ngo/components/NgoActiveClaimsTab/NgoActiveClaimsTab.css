@@ -101,10 +101,11 @@
   gap: 1rem;
   padding: 1.6rem !important;
   max-width: 460px;
-  background: #ffffff !important;
+  background: var(--bg-card) !important;
   border-radius: var(--radius-xl) !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-md) !important;
+  color: var(--text-primary) !important;
 }
 
 .claim-card-top-row {
@@ -116,7 +117,7 @@
 .claim-id-text {
   font-size: 0.78rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 .status-pill-badge {
@@ -130,13 +131,13 @@
 }
 
 .urgent-status {
-  background: #dcfce7;
-  color: #15803d;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
 }
 
 .normal-status {
-  background: #ffedd5;
-  color: #c2410c;
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
 }
 
 .live-dot {
@@ -149,7 +150,7 @@
 .claim-item-title {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-primary);
   line-height: 1.3;
 }
 
@@ -158,7 +159,7 @@
   flex-direction: column;
   gap: 0.4rem;
   font-size: 0.88rem;
-  color: #64748b;
+  color: var(--text-secondary);
 }
 
 .info-row-item {
@@ -168,7 +169,7 @@
 }
 
 .icon-muted {
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 .beneficiary-tag-wrap {
@@ -178,8 +179,8 @@
 .beneficiary-pill {
   font-size: 0.78rem;
   font-weight: 800;
-  color: #0284c7;
-  background: #e0f2fe;
+  color: var(--accent-cyan, #38bdf8);
+  background: rgba(56, 189, 248, 0.15);
   padding: 0.25rem 0.7rem;
   border-radius: var(--radius-full);
   display: inline-flex;
@@ -193,9 +194,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.85rem 1.1rem;
-  background: #f8fafc;
+  background: var(--bg-input);
   border-radius: var(--radius-lg);
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--border-color);
 }
 
 .driver-left-info {
@@ -208,25 +209,26 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
+  color: var(--text-primary);
 }
 
 .driver-name-text {
   display: block;
   font-size: 0.92rem;
   font-weight: 800;
-  color: #1e293b;
+  color: var(--text-primary);
 }
 
 .driver-rating-sub {
   display: block;
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
@@ -249,22 +251,22 @@
 }
 
 .green-btn {
-  background: #dcfce7;
-  color: #16a34a;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
 }
 
 .green-btn:hover {
-  background: #16a34a;
+  background: #10b981;
   color: #ffffff;
 }
 
 .blue-btn {
-  background: #e0f2fe;
-  color: #0284c7;
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
 }
 
 .blue-btn:hover {
-  background: #0284c7;
+  background: #38bdf8;
   color: #ffffff;
 }
 
@@ -274,19 +276,20 @@
   flex-direction: column;
   gap: 0.6rem;
   padding: 0.85rem 1rem;
-  background: #f0f9ff;
-  border: 1px solid #e0f2fe;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   font-size: 0.82rem;
   width: 100%;
   box-sizing: border-box;
+  color: var(--text-primary);
 }
 
 .otp-left-box {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #1e40af;
+  color: var(--accent-cyan, #38bdf8);
   font-weight: 600;
   flex-wrap: wrap;
 }
@@ -295,18 +298,18 @@
   font-family: 'Outfit', sans-serif;
   font-size: 1.1rem;
   font-weight: 800;
-  color: #1d4ed8;
+  color: var(--accent-blue, #38bdf8);
   letter-spacing: 1px;
 }
 
 .copy-otp-sub-btn,
 .qr-otp-sub-btn {
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   padding: 0.2rem 0.5rem;
   cursor: pointer;
-  color: #1d4ed8;
+  color: var(--accent-blue, #38bdf8);
   font-size: 0.72rem;
   font-weight: 700;
   display: inline-flex;
@@ -431,4 +434,28 @@
   .stitch-picture-claims-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Dark Theme Overrides (Uber/Facebook True Black Standard) */
+.theme-dark .chip-active,
+[data-theme="dark"] .chip-active {
+  background: rgba(16, 185, 129, 0.2) !important;
+  color: #34d399 !important;
+  border-color: rgba(52, 211, 153, 0.4) !important;
+}
+
+.theme-dark .qr-image-box,
+[data-theme="dark"] .qr-image-box {
+  background: #1e1e1e !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.theme-dark .qr-svg-icon,
+[data-theme="dark"] .qr-svg-icon {
+  color: #ffffff !important;
+}
+
+.theme-dark .qr-code-text,
+[data-theme="dark"] .qr-code-text {
+  color: #38bdf8 !important;
 }

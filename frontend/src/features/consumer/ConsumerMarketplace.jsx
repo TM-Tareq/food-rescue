@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   ShoppingBag, Flame, Sparkles, TrendingUp, Sun, Moon, 
   MapPin, Clock, ShieldCheck, Search, Filter, User, ChevronRight,
-  Heart, Tag, CreditCard, QrCode, Settings
+  Heart, Tag, CreditCard, QrCode, Settings, LogOut
 } from 'lucide-react';
 import DealExplorerTab from './components/DealExplorerTab';
 import ActiveOrdersTab from './components/ActiveOrdersTab';
@@ -11,11 +11,14 @@ import CartCheckoutModal from './components/CartCheckoutModal';
 import QrCodePassModal from './components/QrCodePassModal';
 import UserProfileModal from './components/UserProfileModal';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import './ConsumerMarketplace.css';
 
-export default function ConsumerMarketplace() {
+export default function ConsumerMarketplace({ onLogout }) {
+  const { logout } = useAuth();
   const [activeTab, setActiveTab] = useState('explorer'); // 'explorer', 'orders', 'impact'
-  const { themeMode } = useTheme();
+  const { roleThemes, toggleRoleTheme } = useTheme();
+  const themeMode = roleThemes.consumer;
   
   // User Profile & Settings State
   const [userInfo, setUserInfo] = useState({
@@ -109,7 +112,7 @@ export default function ConsumerMarketplace() {
           {/* Theme Switcher Toggle */}
           <button 
             className="theme-switch-btn"
-            onClick={() => setThemeMode(prev => (prev === 'dark' ? 'light' : 'dark'))}
+            onClick={() => toggleRoleTheme('consumer')}
             title="Toggle Light / Dark Mode"
           >
             {themeMode === 'dark' ? <Sun size={18} color="#f59e0b" /> : <Moon size={18} color="#059669" />}
@@ -138,6 +141,20 @@ export default function ConsumerMarketplace() {
             <ShoppingBag size={18} />
             <span>Cart</span>
             <span className="cart-count-badge">{cartItems.length}</span>
+          </button>
+
+          {/* Sign Out Button */}
+          <button 
+            className="theme-switch-btn"
+            onClick={() => {
+              logout();
+              if (onLogout) onLogout();
+            }}
+            style={{ borderColor: '#ef4444', color: '#dc2626' }}
+            title="Sign Out of Account"
+          >
+            <LogOut size={18} />
+            <span>Sign Out</span>
           </button>
         </div>
       </header>

@@ -6,11 +6,14 @@ import Card from '../../../../components/Card/Card';
 import Button from '../../../../components/Button/Button';
 import Badge from '../../../../components/Badge/Badge';
 import InAppChatModal from '../InAppChatModal/InAppChatModal';
+import { useTheme } from '../../../../context/ThemeContext';
 import { 
   BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE, 
   BANANI_TO_BASHUNDHARA_ALT_ROUTE, 
+  BASHUNDHARA_LOCAL_RESCUE_ROUTE,
   PRIMARY_ROUTE_ETA_POS, 
   ALT_ROUTE_ETA_POS, 
+  getOsmTileLayer,
   createGoogleEtaBadgeMarker, 
   createGoogleCleanPinMarker 
 } from '../../../../services/dhakaRouteService';
@@ -22,6 +25,9 @@ const riderIcon = createGoogleCleanPinMarker('🛵', '#1a73e8', 'Rider');
 const ngoIcon = createGoogleCleanPinMarker('🏢', '#34a853', 'NGO Shelter');
 
 export default function LogisticsRescueTab() {
+  const { roleThemes } = useTheme();
+  const themeMode = roleThemes.restaurant;
+  const tileLayer = getOsmTileLayer(themeMode);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mapSearchText, setMapSearchText] = useState('প্রগতি সরণি, ঢাকা');
 
@@ -42,10 +48,11 @@ export default function LogisticsRescueTab() {
       destination: 'Anjuman Orphanage Shelter (Bashundhara)',
       otpRequired: '4892',
       urgency: 'HIGH',
+      route: BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE,
       coordinates: {
         restPos: [23.7937, 90.4047],
-        riderPos: [23.8120, 90.4230],
-        ngoPos: [23.8220, 90.4270]
+        riderPos: [23.8050, 90.4210],
+        ngoPos: [23.8103, 90.4310]
       }
     },
     {
@@ -55,14 +62,15 @@ export default function LogisticsRescueTab() {
       rating: '4.8 ⭐',
       vehicle: 'Bicycle (Dhaka North)',
       phone: '+880 1819-987654',
-      pickupETA: '8 mins away (Gulshan 2)',
-      destination: 'Dhaka Community Food Bank (Gulshan 1)',
+      pickupETA: '8 mins away (Bashundhara)',
+      destination: 'Anjuman Orphanage Shelter (Bashundhara)',
       otpRequired: '7103',
       urgency: 'NORMAL',
+      route: BASHUNDHARA_LOCAL_RESCUE_ROUTE,
       coordinates: {
-        restPos: [23.7980, 90.4150],
-        riderPos: [23.7950, 90.4180],
-        ngoPos: [23.7880, 90.4120]
+        restPos: [23.8220, 90.4270],
+        riderPos: [23.8180, 90.4250],
+        ngoPos: [23.8103, 90.4310]
       }
     }
   ];
@@ -241,29 +249,26 @@ export default function LogisticsRescueTab() {
                   key={currentSelectedMission?.id || 'map'}
                 >
                   <TileLayer
-                    url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-                    attribution='&copy; <a href="https://maps.google.com">Google Maps</a>'
+                    url={tileLayer.url}
+                    attribution={tileLayer.attribution}
                   />
 
-                  {/* Alternate Route Polyline (Greyed Out - Like Image 2) */}
-                  <Polyline
-                    positions={BANANI_TO_BASHUNDHARA_ALT_ROUTE}
-                    pathOptions={{ color: '#94a3b8', weight: 5, opacity: 0.65, lineCap: 'round', lineJoin: 'round' }}
-                  />
+                  {/* Active Selected Mission Route Polyline */}
+                  {currentSelectedMission && (
+                    <>
+                      <Polyline
+                        positions={currentSelectedMission.route}
+                        pathOptions={{ color: '#059669', weight: 8, opacity: 0.4, lineCap: 'round', lineJoin: 'round' }}
+                      />
+                      <Polyline
+                        positions={currentSelectedMission.route}
+                        pathOptions={{ color: '#10b981', weight: 5, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }}
+                      />
+                    </>
+                  )}
 
-                  {/* Primary Google Maps Navigation Polyline (Vibrant Blue - Like Image 2) */}
-                  <Polyline
-                    positions={BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE}
-                    pathOptions={{ color: '#1a73e8', weight: 9, opacity: 0.35, lineCap: 'round', lineJoin: 'round' }}
-                  />
-                  <Polyline
-                    positions={BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE}
-                    pathOptions={{ color: '#4285F4', weight: 6, opacity: 0.98, lineCap: 'round', lineJoin: 'round' }}
-                  />
-
-                  {/* Floating Google ETA Badges (Matching Image 2) */}
+                  {/* Floating OpenStreetMap ETA Badges */}
                   <Marker position={PRIMARY_ROUTE_ETA_POS} icon={createGoogleEtaBadgeMarker('১৪ মিনিট', '৩.৮ কিমি', true)} />
-                  <Marker position={ALT_ROUTE_ETA_POS} icon={createGoogleEtaBadgeMarker('১৫ মিনিট', '৬.১ কিমি', false)} />
 
                   {/* Clean Marker Pins without overlapping text bubbles */}
                   {activeMissions.map((m) => (
@@ -282,7 +287,7 @@ export default function LogisticsRescueTab() {
                 </MapContainer>
 
                 <div className="gmaps-watermark-logo">
-                  <span className="gmaps-google-text">Google</span> <span className="gmaps-sub-text">Maps Live</span>
+                  <span className="gmaps-google-text">OpenStreetMap</span> <span className="gmaps-sub-text">+ Leaflet Live</span>
                 </div>
               </div>
             </Card>

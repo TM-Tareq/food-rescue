@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import SystemOverviewTab from './components/SystemOverviewTab/SystemOverviewTab';
 import PartnerVerificationTab from './components/PartnerVerificationTab/PartnerVerificationTab';
+import UserManagementTab from './components/UserManagementTab/UserManagementTab';
 import LogisticsTowerTab from './components/LogisticsTowerTab/LogisticsTowerTab';
 import MarketplaceOversightTab from './components/MarketplaceOversightTab/MarketplaceOversightTab';
 import AnalyticsReportTab from './components/AnalyticsReportTab/AnalyticsReportTab';
+import LiveSupplyChainTab from './components/LiveSupplyChainTab/LiveSupplyChainTab';
 import Modal from '../../components/Modal/Modal';
 import Button from '../../components/Button/Button';
+import { partnerApplicationService } from '../../services/partnerApplicationService';
 import { 
-  Globe, ShieldCheck, Truck, ShoppingBag, BarChart3, Sun, Moon, 
-  Search, Bell, User, Clock, ChevronDown, Sparkles, Activity, Edit2
+  Globe, ShieldCheck, Users, Truck, ShoppingBag, BarChart3, Sun, Moon, 
+  Search, Bell, User, Clock, ChevronDown, Sparkles, Activity, Edit2, LogOut
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import './AdminDashboard.css';
 
-export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'verification', 'logistics', 'marketplace', 'analytics'
-  const { themeMode: theme, toggleTheme } = useTheme();
+export default function AdminDashboard({ onLogout }) {
+  const { logout } = useAuth();
+  const [activeTab, setActiveTab] = useState('supply-chain'); // Default to Live Supply Chain Radar
+  const { roleThemes, toggleRoleTheme } = useTheme();
+  const theme = roleThemes.admin;
   const [systemTime, setSystemTime] = useState('');
 
   // Editable Admin Profile State
@@ -79,7 +85,7 @@ export default function AdminDashboard() {
           {/* DYNAMIC LIGHT / DARK THEME SWITCHER */}
           <button 
             className="theme-switcher-toggle"
-            onClick={toggleTheme}
+            onClick={() => toggleRoleTheme('admin')}
             title="Toggle Light Mode / Dark Mode Theme"
           >
             {theme === 'light' ? (
@@ -112,11 +118,34 @@ export default function AdminDashboard() {
               <span className="user-role">{adminProfile.role}</span>
             </div>
           </div>
+
+          {/* ADMIN LOGOUT BUTTON */}
+          <button 
+            className="theme-switcher-toggle"
+            onClick={() => {
+              logout();
+              if (onLogout) onLogout();
+            }}
+            style={{ borderColor: '#ef4444', color: '#dc2626' }}
+            title="Sign Out of Super Admin Session"
+          >
+            <LogOut size={16} />
+            <span><strong>Sign Out</strong></span>
+          </button>
         </div>
       </header>
 
       {/* NAVIGATION SUB-TAB BAR */}
       <nav className="admin-subtab-navbar">
+        <button 
+          className={`subtab-btn ${activeTab === 'supply-chain' ? 'active' : ''}`}
+          onClick={() => setActiveTab('supply-chain')}
+        >
+          <Activity size={16} />
+          <span>📡 Live Supply Chain Radar</span>
+          <span className="tab-badge-pending" style={{ background: '#10b981' }}>LIVE</span>
+        </button>
+
         <button 
           className={`subtab-btn ${activeTab === 'overview' ? 'active' : ''}`}
           onClick={() => setActiveTab('overview')}
@@ -131,7 +160,17 @@ export default function AdminDashboard() {
         >
           <ShieldCheck size={16} />
           <span>Partner Verification</span>
-          <span className="tab-badge-pending">3</span>
+          <span className="tab-badge-pending">
+            {partnerApplicationService.getApplications().filter(a => a.status === 'PENDING').length}
+          </span>
+        </button>
+
+        <button 
+          className={`subtab-btn ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => setActiveTab('users')}
+        >
+          <Users size={16} />
+          <span>User Controls & Audit</span>
         </button>
 
         <button 
@@ -161,8 +200,10 @@ export default function AdminDashboard() {
 
       {/* DYNAMIC TAB VIEWPORT */}
       <main className="admin-main-viewport">
+        {activeTab === 'supply-chain' && <LiveSupplyChainTab />}
         {activeTab === 'overview' && <SystemOverviewTab theme={theme} />}
         {activeTab === 'verification' && <PartnerVerificationTab />}
+        {activeTab === 'users' && <UserManagementTab />}
         {activeTab === 'logistics' && <LogisticsTowerTab />}
         {activeTab === 'marketplace' && <MarketplaceOversightTab />}
         {activeTab === 'analytics' && <AnalyticsReportTab />}

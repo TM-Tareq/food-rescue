@@ -1,7 +1,33 @@
+/* Theme Mode Variables for Restaurant Dashboard (Uber/Facebook True Black) */
+.dashboard-root.theme-dark,
+[data-theme="dark"] .dashboard-root {
+  --bg-main: #000000;
+  --bg-surface: #121212;
+  --bg-subtle: #1e1e1e;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --text-main: #ffffff;
+  --text-muted: #b0b3b8;
+  --primary: #10b981;
+  --primary-light: rgba(16, 185, 129, 0.15);
+}
+
+.dashboard-root.theme-light,
+[data-theme="light"] .dashboard-root {
+  --bg-main: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f5f9;
+  --border-color: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --primary: #059669;
+  --primary-light: #ecfdf5;
+}
+
 .dashboard-root {
   display: flex;
   min-height: 100vh;
   background: var(--bg-main);
+  color: var(--text-main);
 }
 
 /* 1. Clean Light Sidebar */

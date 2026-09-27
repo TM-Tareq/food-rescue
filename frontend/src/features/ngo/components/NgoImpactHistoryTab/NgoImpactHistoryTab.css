@@ -439,3 +439,118 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Dark Theme Overrides (Uber/Facebook True Black Standard)
+   ========================================================================== */
+.theme-dark .tab-title,
+[data-theme="dark"] .tab-title,
+.theme-dark .section-title,
+[data-theme="dark"] .section-title,
+.theme-dark .donor-name-title,
+[data-theme="dark"] .donor-name-title,
+.theme-dark .duration-bar-label,
+[data-theme="dark"] .duration-bar-label {
+  color: #ffffff !important;
+}
+
+.theme-dark .tab-sub,
+[data-theme="dark"] .tab-sub,
+.theme-dark .kpi-label,
+[data-theme="dark"] .kpi-label,
+.theme-dark .kpi-sub-info,
+[data-theme="dark"] .kpi-sub-info {
+  color: #b0b3b8 !important;
+}
+
+.theme-dark .duration-selector-bar,
+[data-theme="dark"] .duration-selector-bar,
+.theme-dark .table-search-box,
+[data-theme="dark"] .table-search-box {
+  background: #121212 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.theme-dark .table-search-box input,
+[data-theme="dark"] .table-search-box input {
+  color: #ffffff !important;
+}
+
+.theme-dark .duration-chip,
+[data-theme="dark"] .duration-chip {
+  background: #1e1e1e !important;
+  color: #b0b3b8 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.theme-dark .duration-chip.chip-active,
+[data-theme="dark"] .duration-chip.chip-active {
+  background: rgba(16, 185, 129, 0.2) !important;
+  color: #34d399 !important;
+  border-color: #10b981 !important;
+}
+
+.theme-dark .kpi-metric-card,
+[data-theme="dark"] .kpi-metric-card,
+.theme-dark .history-table-card,
+[data-theme="dark"] .history-table-card {
+  background: #121212 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.theme-dark .donor-rank-card,
+[data-theme="dark"] .donor-rank-card {
+  background: #121212 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.theme-dark .donor-rank-card.rank-1,
+[data-theme="dark"] .donor-rank-card.rank-1 {
+  background: #1a1810 !important;
+  border-color: #eab308 !important;
+}
+
+.theme-dark .donor-rank-card.rank-2,
+[data-theme="dark"] .donor-rank-card.rank-2 {
+  background: #18181b !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.theme-dark .donor-rank-card.rank-3,
+[data-theme="dark"] .donor-rank-card.rank-3 {
+  background: #1c1815 !important;
+  border-color: #f97316 !important;
+}
+
+.theme-dark .rank-badge-icon,
+[data-theme="dark"] .rank-badge-icon {
+  background: #1e1e1e !important;
+}
+
+.theme-dark .rescue-history-table th,
+[data-theme="dark"] .rescue-history-table th {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+  border-bottom-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.theme-dark .rescue-history-table td,
+[data-theme="dark"] .rescue-history-table td {
+  color: #ffffff !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.theme-dark .date-cell,
+[data-theme="dark"] .date-cell {
+  color: #b0b3b8 !important;
+}
+
+.theme-dark .food-cell,
+[data-theme="dark"] .food-cell {
+  color: #ffffff !important;
+}
+
+.theme-dark .portions-cell,
+[data-theme="dark"] .portions-cell {
+  color: #38bdf8 !important;
+}

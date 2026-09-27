@@ -5,23 +5,19 @@ import L from 'leaflet';
  * Provides real street-following waypoints, Google ETA badges, and clean pin markers matching Image 2.
  */
 
-// 1. Primary Road Network Waypoints (Following Pragati Sarani, Kuril Flyover, 300 Feet Rd, Bashundhara Ave)
+// 1. Primary Road Network Waypoints (Banani Kemal Ataturk -> Progati Sarani -> Bashundhara Rd -> Anjuman Shelter)
 export const BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE = [
-  [23.7937, 90.4066], // Banani Rd 11
-  [23.7960, 90.4055], // Kemal Ataturk Ave
-  [23.8020, 90.4040], // Kakrail/Airport Rd Entry
-  [23.8105, 90.4050], // Kurmitola / Army Golf Link
-  [23.8160, 90.4095], // Khilkhet Overpass Loop
-  [23.8175, 90.4140], // Kuril Flyover Bridge Curve
-  [23.8155, 90.4210], // Pragati Sarani Roundabout Turn
+  [23.7937, 90.4047], // Banani Kemal Ataturk Start (Star Chef Bistro)
+  [23.7960, 90.4120], // Kemal Ataturk & Gulshan Link
+  [23.8050, 90.4210], // Progati Sarani North
   [23.8120, 90.4230], // Bashundhara Main Gate Turn
   [23.8115, 90.4265], // Bashundhara Road 2
-  [23.8103, 90.4310]  // Anjuman Shelter (Evercare Hospital area)
+  [23.8103, 90.4310]  // Anjuman Shelter Destination
 ];
 
-// 2. Alternate Route (Following 300 Feet Highway & Namapara Road - Like Image 2)
+// 2. Alternate Route (Following 300 Feet Highway & Namapara Road)
 export const BANANI_TO_BASHUNDHARA_ALT_ROUTE = [
-  [23.7937, 90.4066], // Banani Rd 11
+  [23.7937, 90.4047], // Banani Rd 11
   [23.8050, 90.4060], // Radisson Blue Link
   [23.8185, 90.4100], // Kuril Flyover High Expressway
   [23.8210, 90.4220], // Khilkhet Namapara Turn
@@ -30,9 +26,33 @@ export const BANANI_TO_BASHUNDHARA_ALT_ROUTE = [
   [23.8103, 90.4310]  // Anjuman Shelter
 ];
 
-// Midpoints for Floating Google ETA Badges (Matching Image 2)
-export const PRIMARY_ROUTE_ETA_POS = [23.8120, 90.4220]; // Pragati Sarani Turn
+// 3. Mission 2 Route (Daily Crust Bakery Bashundhara -> Anjuman Shelter)
+export const BASHUNDHARA_LOCAL_RESCUE_ROUTE = [
+  [23.8220, 90.4270], // Daily Crust Bakery (Bashundhara Block C)
+  [23.8180, 90.4250], // Bashundhara Block D Road
+  [23.8150, 90.4280], // Bashundhara Avenue
+  [23.8103, 90.4310]  // Anjuman Shelter Destination
+];
+
+// Midpoints for Floating ETA Badges
+export const PRIMARY_ROUTE_ETA_POS = [23.8050, 90.4210]; // Progati Sarani Midpoint
 export const ALT_ROUTE_ETA_POS = [23.8210, 90.4220];     // Khilkhet N301 Expressway
+
+/**
+ * Provides OpenStreetMap + Leaflet TileLayer configuration based on theme
+ */
+export const getOsmTileLayer = (themeMode = 'light') => {
+  if (themeMode === 'dark') {
+    return {
+      url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    };
+  }
+  return {
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  };
+};
 
 /**
  * Creates Google Maps Floating ETA Badge Marker (Matching Image 2)

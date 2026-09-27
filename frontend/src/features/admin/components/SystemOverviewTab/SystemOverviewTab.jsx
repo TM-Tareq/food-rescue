@@ -10,6 +10,8 @@ import Card from '../../../../components/Card/Card';
 import Button from '../../../../components/Button/Button';
 import Badge from '../../../../components/Badge/Badge';
 import Modal from '../../../../components/Modal/Modal';
+import { useTheme } from '../../../../context/ThemeContext';
+import { getOsmTileLayer } from '../../../../services/dhakaRouteService';
 import 'leaflet/dist/leaflet.css';
 
 // SVG Vector Marker Generator for Admin Heatmap
@@ -34,6 +36,9 @@ const restaurantPin = createAdminSvgPin('#e11d48', '🏪');
 const shelterPin = createAdminSvgPin('#059669', '🏠');
 
 export default function SystemOverviewTab({ theme = 'light' }) {
+  const { roleThemes } = useTheme();
+  const themeMode = roleThemes?.admin || theme;
+  const tileLayer = getOsmTileLayer(themeMode);
   const [selectedUrgentMission, setSelectedUrgentMission] = useState(null);
   const [isDispatchModalOpen, setIsDispatchModalOpen] = useState(false);
   const [dispatchStatus, setDispatchStatus] = useState('');
@@ -171,8 +176,8 @@ export default function SystemOverviewTab({ theme = 'light' }) {
               style={{ height: '100%', width: '100%' }}
             >
               <TileLayer
-                url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-                attribution="&copy; Google Maps"
+                url={tileLayer.url}
+                attribution={tileLayer.attribution}
               />
 
               {/* Heatmap density circles */}

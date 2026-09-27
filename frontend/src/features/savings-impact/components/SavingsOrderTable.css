@@ -282,3 +282,69 @@
   font-size: 0.8rem;
   color: #64748b;
 }
+
+/* ==========================================================================
+   Dark Theme Overrides (Uber/Facebook True Black Standard)
+   ========================================================================== */
+.theme-dark .savings-table-card,
+[data-theme="dark"] .savings-table-card {
+  background: #121212 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.theme-dark .table-subtitle,
+[data-theme="dark"] .table-subtitle,
+.theme-dark .table-footer-summary,
+[data-theme="dark"] .table-footer-summary,
+.theme-dark .page-info,
+[data-theme="dark"] .page-info {
+  color: #b0b3b8 !important;
+}
+
+.theme-dark .table-search-input,
+[data-theme="dark"] .table-search-input,
+.theme-dark .table-filter-btn,
+[data-theme="dark"] .table-filter-btn,
+.theme-dark .qr-pass-btn,
+[data-theme="dark"] .qr-pass-btn,
+.theme-dark .page-btn,
+[data-theme="dark"] .page-btn {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.theme-dark .table-responsive-wrapper,
+[data-theme="dark"] .table-responsive-wrapper {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.theme-dark .savings-table th,
+[data-theme="dark"] .savings-table th {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+  border-bottom-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.theme-dark .savings-table td,
+[data-theme="dark"] .savings-table td {
+  color: #ffffff !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.theme-dark .table-row:hover,
+[data-theme="dark"] .table-row:hover {
+  background: #242526 !important;
+}
+
+.theme-dark .item-name,
+[data-theme="dark"] .item-name {
+  color: #e4e6eb !important;
+}
+
+.theme-dark .co2-pill,
+[data-theme="dark"] .co2-pill {
+  background: rgba(16, 185, 129, 0.2) !important;
+  border-color: rgba(52, 211, 153, 0.3) !important;
+  color: #34d399 !important;
+}

@@ -126,3 +126,80 @@
 .btn-toggle-mode:hover {
   text-decoration: underline;
 }
+
+/* RESTRICTED ENTERPRISE REGISTRATION CARD */
+.enterprise-restricted-card {
+  padding: 20px;
+  border-radius: 12px;
+  background: var(--bg-input, #1e1e1e);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  margin-bottom: 1rem;
+}
+
+.restricted-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.enterprise-restricted-card h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main, #ffffff);
+  margin: 0 0 6px 0;
+}
+
+.enterprise-restricted-card p {
+  font-size: 0.82rem;
+  color: var(--text-muted, #b0b3b8);
+  line-height: 1.45;
+  margin: 0 0 16px 0;
+}
+
+.restricted-action-row {
+  margin-top: 10px;
+}
+
+/* LOCKED ROLE INDICATOR (Register mode — no tab switching) */
+.locked-role-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 20px;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--bg-subtle, #f1f5f9);
+  border: 2px solid var(--primary, #10b981);
+  margin-bottom: 1.5rem;
+}
+
+.locked-role-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary, #10b981);
+}
+
+.locked-role-badge svg {
+  flex-shrink: 0;
+}
+
+.locked-role-hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted, #94a3b8);
+  opacity: 0.8;
+}

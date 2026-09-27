@@ -4,7 +4,8 @@ import L from 'leaflet';
 import { 
   Compass, Sliders, ShieldCheck, MapPin, Clock, Users, Flame, 
   Utensils, CheckCircle2, Navigation, HeartHandshake, Layers, 
-  Package, History, Settings, LogOut, ArrowRight, Leaf, Route 
+  Package, History, Settings, LogOut, ArrowRight, Leaf, Route,
+  Sun, Moon
 } from 'lucide-react';
 import Card from '../../components/Card/Card';
 import Button from '../../components/Button/Button';
@@ -14,11 +15,14 @@ import NgoActiveClaimsTab from './components/NgoActiveClaimsTab/NgoActiveClaimsT
 import NgoLogisticsTab from './components/NgoLogisticsTab/NgoLogisticsTab';
 import NgoImpactHistoryTab from './components/NgoImpactHistoryTab/NgoImpactHistoryTab';
 import NgoSettingsTab from './components/NgoSettingsTab/NgoSettingsTab';
+import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import { ngoService } from '../../services/ngoService';
 import { 
   PRIMARY_ROUTE_ETA_POS, 
   ALT_ROUTE_ETA_POS, 
-  createGoogleEtaBadgeMarker 
+  createGoogleEtaBadgeMarker,
+  getOsmTileLayer
 } from '../../services/dhakaRouteService';
 import 'leaflet/dist/leaflet.css';
 import './NgoDashboard.css';
@@ -40,7 +44,10 @@ const createSvgPinMarker = (color, emoji) => {
   });
 };
 
-export default function NgoDashboard() {
+export default function NgoDashboard({ onLogout }) {
+  const { logout } = useAuth();
+  const { roleThemes, toggleRoleTheme } = useTheme();
+  const themeMode = roleThemes.ngo;
   const [activeTab, setActiveTab] = useState('DISCOVER');
   const [searchQuery, setSearchQuery] = useState('');
   const [radiusKm, setRadiusKm] = useState(3.0);
@@ -57,8 +64,13 @@ export default function NgoDashboard() {
   // Fetch live active claims for NGO from backend / fallback service on mount
   useEffect(() => {
     async function loadActiveClaims() {
-      const claims = await ngoService.getActiveClaims('NGO-DHAKA-1');
-      setClaimedItems(claims);
+      try {
+        const claims = await ngoService.getActiveClaims('NGO-DHAKA-1');
+        setClaimedItems(Array.isArray(claims) ? claims : []);
+      } catch (e) {
+        console.warn('Failed to load NGO active claims:', e);
+        setClaimedItems([]);
+      }
     }
     loadActiveClaims();
   }, []);
@@ -179,7 +191,7 @@ export default function NgoDashboard() {
   };
 
   return (
-    <div className="ngo-portal-container">
+    <div className={`ngo-portal-container theme-${themeMode}`}>
       {/* LEFT SIDEBAR NAVIGATION */}
       <aside className="ngo-sidebar">
         <div className="ngo-brand">
@@ -195,12 +207,19 @@ export default function NgoDashboard() {
         {/* Verified NGO Profile Box */}
         <div className="ngo-profile-card">
           <div className="ngo-avatar">🏢</div>
-          <div className="ngo-profile-info">
+          <div className="ngo-profile-info" style={{ flex: 1 }}>
             <span className="ngo-name">Anjuman Shelter</span>
             <span className="ngo-tier-badge">
               <ShieldCheck size={12} /> Tier-1 Verified NGO
             </span>
           </div>
+          <button 
+            className="ngo-header-theme-toggle" 
+            onClick={() => toggleRoleTheme('ngo')}
+            title="Switch Light / Dark Theme"
+          >
+            {themeMode === 'dark' ? <Sun size={16} color="#fbbf24" /> : <Moon size={16} color="#38bdf8" />}
+          </button>
         </div>
 
         {/* Sidebar Nav Links */}
@@ -248,8 +267,21 @@ export default function NgoDashboard() {
         </nav>
 
         <div className="sidebar-footer">
-          <button className="ngo-footer-btn">
-            <LogOut size={16} /> Logout
+          <button className="ngo-footer-btn" onClick={() => toggleRoleTheme('ngo')}>
+            {themeMode === 'dark' ? <Sun size={16} color="#fbbf24" /> : <Moon size={16} color="#38bdf8" />}
+            <span>{themeMode === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+          </button>
+          
+          <button 
+            className="ngo-footer-btn logout" 
+            style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.3)', marginTop: '8px' }}
+            onClick={() => {
+              logout();
+              if (onLogout) onLogout();
+            }}
+          >
+            <LogOut size={16} />
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>
@@ -265,6 +297,15 @@ export default function NgoDashboard() {
                   <h1 className="feed-title">Nearby Surplus Food Feed</h1>
                   <p className="feed-sub">Claim free surplus meals for orphanages & shelters within your radius.</p>
                 </div>
+                
+                <button 
+                  className="theme-switch-btn"
+                  onClick={() => toggleRoleTheme('ngo')}
+                  title="Toggle Light / Dark Mode"
+                >
+                  {themeMode === 'dark' ? <Sun size={18} color="#f59e0b" /> : <Moon size={18} color="#059669" />}
+                  <span>{themeMode === 'dark' ? 'Light' : 'Dark'}</span>
+                </button>
               </div>
 
               {/* Filter & Radius Control Card */}
@@ -402,8 +443,8 @@ export default function NgoDashboard() {
                     key={focusedFoodId}
                   >
                     <TileLayer
-                      url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-                      attribution='&copy; <a href="https://maps.google.com">Google Maps</a>'
+                      url={getOsmTileLayer(themeMode).url}
+                      attribution={getOsmTileLayer(themeMode).attribution}
                     />
 
                     {/* NGO Shelter Destination Vector SVG Pin */}

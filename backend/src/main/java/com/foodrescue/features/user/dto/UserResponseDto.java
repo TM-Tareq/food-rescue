@@ -14,7 +14,10 @@ public class UserResponseDto {
     private String fullName;
     private String email;
     private String role;
+    private String status;
+    private String avatar;
     private String phone;
     private String address;
+    private String lastActive;
     private LocalDateTime createdAt;
 }

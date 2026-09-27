@@ -113,7 +113,7 @@
 .card-focused-active {
   border-color: var(--primary) !important;
   box-shadow: var(--shadow-md) !important;
-  background: #f0fdf4 !important;
+  background: var(--primary-light) !important;
 }
 
 .mission-card {
@@ -424,3 +424,69 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Dark Theme Overrides (Super Admin Executive Slate Alignment)
+   ========================================================================== */
+.theme-dark .readable-status-badge,
+[data-theme="dark"] .readable-status-badge {
+  color: #34d399 !important;
+  background: rgba(16, 185, 129, 0.2) !important;
+  border-color: rgba(52, 211, 153, 0.4) !important;
+}
+
+.theme-dark .urgent-badge,
+[data-theme="dark"] .urgent-badge {
+  color: #fb923c !important;
+  background: rgba(249, 115, 22, 0.2) !important;
+  border-color: rgba(249, 115, 22, 0.4) !important;
+}
+
+.theme-dark .green-call-btn,
+[data-theme="dark"] .green-call-btn {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.theme-dark .message-chat-btn,
+[data-theme="dark"] .message-chat-btn {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.theme-dark .otp-row,
+[data-theme="dark"] .otp-row {
+  background: rgba(56, 189, 248, 0.15) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+  color: #ffffff !important;
+}
+
+.theme-dark .otp-code,
+[data-theme="dark"] .otp-code {
+  color: #38bdf8 !important;
+}
+
+.theme-dark .gmaps-search-bar,
+[data-theme="dark"] .gmaps-search-bar {
+  background: #1e1e1e !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.theme-dark .gmaps-search-input,
+[data-theme="dark"] .gmaps-search-input {
+  color: #ffffff !important;
+}
+
+.theme-dark .gmap-tooltip-bubble,
+[data-theme="dark"] .gmap-tooltip-bubble {
+  background: #121212 !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.theme-dark .gmap-tooltip-title,
+[data-theme="dark"] .gmap-tooltip-title {
+  color: #ffffff !important;
+}
+

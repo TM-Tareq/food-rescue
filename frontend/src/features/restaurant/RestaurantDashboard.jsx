@@ -13,7 +13,10 @@ import {
   AlertTriangle,
   HelpCircle,
   Radio,
-  Sparkles
+  Sparkles,
+  Sun,
+  Moon,
+  LogOut
 } from 'lucide-react';
 import Card from '../../components/Card/Card';
 import Button from '../../components/Button/Button';
@@ -24,10 +27,15 @@ import LogisticsRescueTab from './components/LogisticsRescueTab/LogisticsRescueT
 import ImpactAnalyticsTab from './components/ImpactAnalyticsTab/ImpactAnalyticsTab';
 import SettingsTab from './components/SettingsTab/SettingsTab';
 import AiFoodSafetyScannerModal from './components/AiFoodSafetyScannerModal/AiFoodSafetyScannerModal';
+import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import { surplusService } from '../../services/surplusService';
 import './RestaurantDashboard.css';
 
-export default function RestaurantDashboard() {
+export default function RestaurantDashboard({ onLogout }) {
+  const { logout } = useAuth();
+  const { roleThemes, toggleRoleTheme } = useTheme();
+  const themeMode = roleThemes.restaurant;
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isDispatchModalOpen, setIsDispatchModalOpen] = useState(false);
   const [isAiScannerOpen, setIsAiScannerOpen] = useState(false);
@@ -55,7 +63,7 @@ export default function RestaurantDashboard() {
   };
 
   return (
-    <div className="dashboard-root">
+    <div className={`dashboard-root theme-${themeMode}`}>
       {/* 1. Clean Light Sidebar Navigation */}
       <aside className="dashboard-sidebar">
         <div className="sidebar-top">
@@ -133,52 +141,101 @@ export default function RestaurantDashboard() {
             <HelpCircle size={16} />
             <span>Help Center</span>
           </a>
+
+          <button 
+            className="sidebar-logout-btn"
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              width: '100%', 
+              padding: '10px 14px', 
+              borderRadius: '8px', 
+              background: 'rgba(239, 68, 68, 0.08)', 
+              border: '1px solid rgba(239, 68, 68, 0.2)', 
+              color: '#dc2626', 
+              fontWeight: 600, 
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              marginTop: '12px'
+            }}
+            onClick={() => {
+              logout();
+              if (onLogout) onLogout();
+            }}
+          >
+            <LogOut size={16} />
+            <span>Sign Out</span>
+          </button>
         </div>
       </aside>
 
       {/* 2. Dynamic Main Content View based on Active Tab */}
       <main className="dashboard-main">
+        {/* Persistent Top Header */}
+        <header className="dashboard-header">
+          <div>
+            <h1 className="header-greeting">Welcome back, Chef Bistro 👋</h1>
+            <p className="header-date">Friday, August 28, 2026 • Banani Zone</p>
+          </div>
+
+          <div className="header-actions">
+            <button 
+              className="theme-switch-btn"
+              onClick={() => toggleRoleTheme('restaurant')}
+              title="Toggle Light / Dark Mode"
+            >
+              {themeMode === 'dark' ? <Sun size={18} color="#f59e0b" /> : <Moon size={18} color="#059669" />}
+              <span>{themeMode === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+            </button>
+
+            <button 
+              className="theme-switch-btn"
+              onClick={() => {
+                logout();
+                if (onLogout) onLogout();
+              }}
+              style={{ borderColor: '#ef4444', color: '#dc2626' }}
+              title="Sign Out of Account"
+            >
+              <LogOut size={18} />
+              <span>Sign Out</span>
+            </button>
+
+            <button className="icon-notification-btn" aria-label="Notifications">
+              <Bell size={20} />
+              <span className="notification-dot"></span>
+            </button>
+
+            <div className="user-profile-avatar">
+              <img
+                src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=100&q=80"
+                alt="Chef Avatar"
+              />
+            </div>
+
+            <Button
+              variant="outline"
+              icon={Sparkles}
+              onClick={() => setIsAiScannerOpen(true)}
+              style={{ borderColor: '#059669', color: '#047857' }}
+            >
+              🤖 AI Hygiene & Photo Audit
+            </Button>
+
+            <Button
+              variant="primary"
+              icon={Plus}
+              onClick={() => setIsAiScannerOpen(true)}
+            >
+              Post Surplus Food
+            </Button>
+          </div>
+        </header>
+
         {/* Render Tab Views */}
         {activeTab === 'dashboard' && (
           <>
-            {/* Top Header */}
-            <header className="dashboard-header">
-              <div>
-                <h1 className="header-greeting">Welcome back, Chef Bistro 👋</h1>
-                <p className="header-date">Friday, August 28, 2026</p>
-              </div>
-
-              <div className="header-actions">
-                <button className="icon-notification-btn" aria-label="Notifications">
-                  <Bell size={20} />
-                  <span className="notification-dot"></span>
-                </button>
-
-                <div className="user-profile-avatar">
-                  <img
-                    src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=100&q=80"
-                    alt="Chef Avatar"
-                  />
-                </div>
-
-                <Button
-                  variant="outline"
-                  icon={Sparkles}
-                  onClick={() => setIsAiScannerOpen(true)}
-                  style={{ borderColor: '#059669', color: '#047857' }}
-                >
-                  🤖 AI Hygiene & Photo Audit
-                </Button>
-
-                <Button
-                  variant="primary"
-                  icon={Plus}
-                  onClick={() => setIsAiScannerOpen(true)}
-                >
-                  Post Surplus Food
-                </Button>
-              </div>
-            </header>
 
             {/* KPI Metrics Summary Row */}
             <div className="kpi-grid">

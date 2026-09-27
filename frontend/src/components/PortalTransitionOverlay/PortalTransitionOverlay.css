@@ -1,0 +1,344 @@
+/* ==========================================================================
+   Portal Entrance Transition Overlay (Hyper-Smooth & Theme Synchronized)
+   ========================================================================== */
+
+.portal-transition-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Light Theme Adaptability */
+[data-theme="light"] .portal-transition-backdrop {
+  background: rgba(248, 250, 252, 0.88);
+}
+
+.portal-transition-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.portal-transition-backdrop.exiting {
+  opacity: 0;
+  transform: scale(1.05);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Ambient Radial Glow Effect based on Role */
+.portal-ambient-glow {
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  filter: blur(130px);
+  opacity: 0.5;
+  pointer-events: none;
+  animation: portalPulseGlow 4s infinite alternate ease-in-out;
+}
+
+.glow-restaurant {
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.45) 0%, rgba(234, 88, 12, 0.08) 70%);
+}
+
+.glow-ngo {
+  background: radial-gradient(circle, rgba(5, 150, 105, 0.45) 0%, rgba(16, 185, 129, 0.08) 70%);
+}
+
+.glow-volunteer {
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.45) 0%, rgba(14, 165, 233, 0.08) 70%);
+}
+
+.glow-consumer {
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.45) 0%, rgba(217, 119, 6, 0.08) 70%);
+}
+
+.glow-admin {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.45) 0%, rgba(37, 99, 235, 0.08) 70%);
+}
+
+@keyframes portalPulseGlow {
+  0% { transform: scale(0.9) translate(-10px, -10px); opacity: 0.4; }
+  100% { transform: scale(1.15) translate(10px, 10px); opacity: 0.75; }
+}
+
+/* Floating Particles Container */
+.portal-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.portal-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: rgba(5, 150, 105, 0.35);
+  border-radius: 50%;
+  animation: floatUp 3.2s infinite ease-in-out;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+}
+
+/* Central Animated Glass Card */
+.portal-card {
+  position: relative;
+  width: 90%;
+  max-width: 440px;
+  background: rgba(30, 41, 59, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 38px 32px;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 35px rgba(5, 150, 105, 0.2);
+  backdrop-filter: blur(20px);
+  transform: translateY(20px) scale(0.95);
+  animation: portalCardEnter 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  color: #ffffff;
+}
+
+[data-theme="light"] .portal-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  box-shadow: 0 25px 60px rgba(5, 150, 105, 0.15), 0 10px 25px rgba(0, 0, 0, 0.05);
+  color: #0f172a;
+}
+
+@keyframes portalCardEnter {
+  0% { opacity: 0; transform: translateY(35px) scale(0.92); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Animated Ring Icon Badge */
+.portal-icon-wrapper {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 22px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.portal-ring-outer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px dashed rgba(5, 150, 105, 0.3);
+  animation: spinRing 14s linear infinite;
+}
+
+.portal-ring-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #fff 100%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #fff 100%);
+  animation: spinRing 2.2s linear infinite;
+}
+
+@keyframes spinRing {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.portal-avatar-badge {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3), 0 8px 20px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+  animation: avatarPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+[data-theme="light"] .portal-avatar-badge {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 1px solid rgba(5, 150, 105, 0.3);
+}
+
+@keyframes avatarPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Success Checkmark Circle Overlay */
+.portal-check-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid #1e293b;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+  z-index: 3;
+  transition: background 0.3s ease;
+  animation: checkBadgeBounce 0.5s 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+[data-theme="light"] .portal-check-badge {
+  border-color: #ffffff;
+}
+
+@keyframes checkBadgeBounce {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Typography */
+.portal-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.portal-welcome-title {
+  font-size: 23px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 6px;
+  letter-spacing: -0.4px;
+  line-height: 1.25;
+}
+
+[data-theme="light"] .portal-welcome-title {
+  color: #0f172a;
+}
+
+.portal-role-desc {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 26px;
+}
+
+[data-theme="light"] .portal-role-desc {
+  color: #64748b;
+}
+
+.portal-role-desc strong {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* Smooth Progress Bar */
+.portal-progress-section {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 16px;
+  padding: 16px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] .portal-progress-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.portal-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin-bottom: 10px;
+}
+
+[data-theme="light"] .portal-progress-header {
+  color: #475569;
+}
+
+.portal-progress-bar-bg {
+  width: 100%;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+[data-theme="light"] .portal-progress-bar-bg {
+  background: #e2e8f0;
+}
+
+.portal-progress-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.portal-progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+  animation: shimmerProgress 1.2s infinite;
+}
+
+@keyframes shimmerProgress {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.portal-status-text {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-top: 10px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 500;
+}
+
+[data-theme="light"] .portal-status-text {
+  color: #64748b;
+}
+
+/* Global View Mount Transition */
+.portal-page-fade-enter {
+  animation: pageFadeSlide 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageFadeSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.99);
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}

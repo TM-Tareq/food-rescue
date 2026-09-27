@@ -11,11 +11,14 @@ import Button from '../../../../components/Button/Button';
 import Badge from '../../../../components/Badge/Badge';
 import Modal from '../../../../components/Modal/Modal';
 import InAppChatModal from '../../../restaurant/components/InAppChatModal/InAppChatModal';
+import { useTheme } from '../../../../context/ThemeContext';
 import { 
   BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE, 
   BANANI_TO_BASHUNDHARA_ALT_ROUTE, 
+  BASHUNDHARA_LOCAL_RESCUE_ROUTE,
   PRIMARY_ROUTE_ETA_POS, 
   ALT_ROUTE_ETA_POS, 
+  getOsmTileLayer,
   createGoogleEtaBadgeMarker, 
   createGoogleCleanPinMarker 
 } from '../../../../services/dhakaRouteService';
@@ -40,6 +43,10 @@ const createLogisticsSvgPin = (color, emoji) => {
 };
 
 export default function NgoLogisticsTab({ onSwitchToDiscover }) {
+  const { roleThemes } = useTheme();
+  const themeMode = roleThemes.ngo;
+  const tileLayer = getOsmTileLayer(themeMode);
+
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [copiedOtp, setCopiedOtp] = useState(false);
@@ -62,15 +69,10 @@ export default function NgoLogisticsTab({ onSwitchToDiscover }) {
       otp: '4892',
       beneficiaries: 'Feeds 40 Children',
       isConfirmed: false,
-      path: [
-        [23.7937, 90.4047],
-        [23.7937, 90.4200],
-        [23.8050, 90.4210],
-        [23.8150, 90.4210]
-      ],
+      route: BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE,
       riderPos: [23.8050, 90.4210],
       restaurantPos: [23.7937, 90.4047],
-      shelterPos: [23.8150, 90.4210]
+      shelterPos: [23.8103, 90.4310]
     },
     {
       id: '8092',
@@ -89,14 +91,10 @@ export default function NgoLogisticsTab({ onSwitchToDiscover }) {
       otp: '9102',
       beneficiaries: 'Feeds 25 Children',
       isConfirmed: false,
-      path: [
-        [23.8220, 90.4270],
-        [23.8180, 90.4230],
-        [23.8150, 90.4210]
-      ],
-      riderPos: [23.8180, 90.4230],
+      route: BASHUNDHARA_LOCAL_RESCUE_ROUTE,
+      riderPos: [23.8180, 90.4250],
       restaurantPos: [23.8220, 90.4270],
-      shelterPos: [23.8150, 90.4210]
+      shelterPos: [23.8103, 90.4310]
     }
   ]);
 
@@ -362,29 +360,26 @@ export default function NgoLogisticsTab({ onSwitchToDiscover }) {
                     key={activeMission.id}
                   >
                     <TileLayer
-                      url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-                      attribution='&copy; <a href="https://maps.google.com">Google Maps</a>'
+                      url={tileLayer.url}
+                      attribution={tileLayer.attribution}
                     />
 
-                    {/* Alternate Route Polyline (Greyed Out - Like Image 2) */}
-                    <Polyline
-                      positions={BANANI_TO_BASHUNDHARA_ALT_ROUTE}
-                      pathOptions={{ color: '#94a3b8', weight: 5, opacity: 0.65, lineCap: 'round', lineJoin: 'round' }}
-                    />
+                    {/* Mission Specific Dynamic Polyline */}
+                    {activeMission.route && (
+                      <>
+                        <Polyline
+                          positions={activeMission.route}
+                          pathOptions={{ color: '#059669', weight: 8, opacity: 0.4, lineCap: 'round', lineJoin: 'round' }}
+                        />
+                        <Polyline
+                          positions={activeMission.route}
+                          pathOptions={{ color: '#10b981', weight: 5, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }}
+                        />
+                      </>
+                    )}
 
-                    {/* Primary Google Maps Navigation Polyline (Vibrant Blue - Like Image 2) */}
-                    <Polyline
-                      positions={BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE}
-                      pathOptions={{ color: '#1a73e8', weight: 9, opacity: 0.35, lineCap: 'round', lineJoin: 'round' }}
-                    />
-                    <Polyline
-                      positions={BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE}
-                      pathOptions={{ color: '#4285F4', weight: 6, opacity: 0.98, lineCap: 'round', lineJoin: 'round' }}
-                    />
-
-                    {/* Floating Google ETA Badges (Matching Image 2) */}
+                    {/* Floating OpenStreetMap ETA Badges */}
                     <Marker position={PRIMARY_ROUTE_ETA_POS} icon={createGoogleEtaBadgeMarker('১৪ মিনিট', '৩.৮ কিমি', true)} />
-                    <Marker position={ALT_ROUTE_ETA_POS} icon={createGoogleEtaBadgeMarker('১৫ মিনিট', '৬.১ কিমি', false)} />
 
                     <Marker position={activeMission.restaurantPos} icon={createLogisticsSvgPin('#ea580c', '🍲')}>
                       <Popup className="gmaps-clean-popup">
@@ -406,7 +401,7 @@ export default function NgoLogisticsTab({ onSwitchToDiscover }) {
                   </MapContainer>
 
                   <div className="gmaps-watermark-logo">
-                    <span className="gmaps-google-text">Google</span> <span className="gmaps-sub-text">Maps Live</span>
+                    <span className="gmaps-google-text">OpenStreetMap</span> <span className="gmaps-sub-text">+ Leaflet Live</span>
                   </div>
                 </div>
               </Card>

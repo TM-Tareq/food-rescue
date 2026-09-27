@@ -72,47 +72,46 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Registration successful", responseData));
     }
 
-    /**
-     * User Login Endpoint
-     * Verifies email & password against MySQL database (food_rescue_db.users)
-     */
     @PostMapping({"/login", "/signin"})
     public ResponseEntity<ApiResponse<Map<String, Object>>> loginUser(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         String password = request.get("password");
         String requestedRole = request.getOrDefault("role", request.getOrDefault("requestedRole", "RESTAURANT"));
 
-        log.info("Processing user login for email: {}", email);
+        log.info("Processing user login attempt for email: {}", email);
 
-        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Email address is required."));
+        }
 
-        User user;
-        if (userOptional.isPresent()) {
-            user = userOptional.get();
-            if (password != null && !password.equals(user.getPassword())) {
-                return ResponseEntity.badRequest()
-                        .body(ApiResponse.error("Invalid password. Please check your credentials."));
-            }
-        } else {
-            // Auto-register on first demo login for seamless testing
-            Role role;
-            try {
-                role = Role.valueOf(requestedRole.toUpperCase().replace("_MANAGER", "").replace("_REPRESENTATIVE", "").replace("_RIDER", ""));
-            } catch (Exception e) {
-                role = Role.RESTAURANT;
-            }
+        Optional<User> userOptional = userRepository.findByEmail(email.trim().toLowerCase());
 
-            user = User.builder()
-                    .name(email.split("@")[0])
-                    .email(email)
-                    .password(password != null ? password : "123456")
-                    .role(role)
-                    .phone("01700000000")
-                    .address("Dhaka, Bangladesh")
-                    .build();
+        if (userOptional.isEmpty()) {
+            log.warn("Login failed: User email {} not found in database.", email);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Account not found in database. Only registered database users can log in."));
+        }
 
-            user = userRepository.save(user);
-            log.info("Auto-registered new user in MySQL database during login: ID {}", user.getId());
+        User user = userOptional.get();
+
+        if ("DISABLED".equalsIgnoreCase(user.getStatus())) {
+            log.warn("Login blocked: Account {} is suspended.", email);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("⛔ Account is suspended by Super Admin. Please contact support."));
+        }
+
+        if (password == null || !password.equals(user.getPassword())) {
+            log.warn("Login failed: Incorrect password for user {}", email);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Invalid password. Please check your credentials."));
+        }
+
+        // Enforce strict Super Admin role check if attempting to log into Admin portal
+        if ("ADMIN".equalsIgnoreCase(requestedRole) && user.getRole() != Role.ADMIN) {
+            log.warn("Access denied: User {} with role {} attempted to log into Admin Portal.", email, user.getRole());
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Access denied. Admin portal requires Super Admin privileges."));
         }
 
         Map<String, Object> responseData = new HashMap<>();
@@ -124,6 +123,7 @@ public class AuthController {
         responseData.put("jwtAccessToken", "jwt-token-foodrescue-" + user.getId() + "-" + user.getRole().name());
         responseData.put("status", "ACTIVE");
 
+        log.info("User {} authenticated successfully as {}", user.getEmail(), user.getRole());
         return ResponseEntity.ok(ApiResponse.success("User authenticated successfully", responseData));
     }
 }

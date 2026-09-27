@@ -747,3 +747,25 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Dark Theme Overrides (Uber/Facebook True Black Standard)
+   ========================================================================== */
+.theme-dark .map-top-rider-pill,
+[data-theme="dark"] .map-top-rider-pill {
+  background: rgba(18, 18, 18, 0.95) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.theme-dark .otp-confirm-input,
+[data-theme="dark"] .otp-confirm-input {
+  background: #1e1e1e !important;
+  color: #38bdf8 !important;
+  border-color: rgba(56, 189, 248, 0.4) !important;
+}
+
+.theme-dark .otp-input-label,
+[data-theme="dark"] .otp-input-label {
+  color: #38bdf8 !important;
+}

@@ -49,44 +49,95 @@
   --transition-normal: 0.25s ease;
 }
 
-[data-theme="dark"] {
-  --bg-main: #0f172a;
-  --bg-surface: #1e293b;
-  --bg-subtle: #090d16;
-  --border-color: rgba(255, 255, 255, 0.12);
+[data-theme="dark"],
+.theme-dark {
+  --bg-main: #000000;
+  --bg-primary: #000000;
+  --bg-body: #000000;
+  --bg-surface: #121212;
+  --bg-secondary: #121212;
+  --bg-card: #121212;
+  --card-bg: #121212;
+  --bg-subtle: #1e1e1e;
+  --bg-input: #1e1e1e;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --card-border: rgba(255, 255, 255, 0.1);
   --border-hover: rgba(255, 255, 255, 0.25);
 
-  --text-main: #f8fafc;
-  --text-muted: #cbd5e1;
-  --text-light: #94a3b8;
+  --text-main: #ffffff;
+  --text-primary: #ffffff;
+  --text-sub: #e4e6eb;
+  --text-secondary: #b0b3b8;
+  --text-muted: #b0b3b8;
+  --text-light: #b0b3b8;
   --text-white: #ffffff;
 
-  --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.9);
 
-  --primary-light: rgba(5, 150, 105, 0.22);
-  --accent-orange-light: rgba(249, 115, 22, 0.22);
+  --primary: #10b981;
+  --primary-light: rgba(16, 185, 129, 0.15);
+  --accent-blue: #38bdf8;
+  --accent-cyan: #38bdf8;
+  --accent-green: #34d399;
+  --accent-amber: #fbbf24;
 }
 
-/* Global Dark Mode Contrast Overrides */
+/* Scoped Light Mode Input & Card Standards */
+.theme-light input,
+.theme-light select,
+.theme-light textarea,
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.theme-light input::placeholder,
+.theme-light textarea::placeholder,
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #64748b !important;
+}
+
+.theme-light .dashboard-sidebar,
+.theme-light .ngo-sidebar,
+[data-theme="light"] .dashboard-sidebar,
+[data-theme="light"] .ngo-sidebar {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Scoped Dark Mode Input & Card Standards (Facebook/Uber True Black Standard) */
+.theme-dark input,
+.theme-dark select,
+.theme-dark textarea,
 [data-theme="dark"] input,
 [data-theme="dark"] select,
 [data-theme="dark"] textarea {
-  background-color: #1e293b !important;
-  color: #f8fafc !important;
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
+.theme-dark input::placeholder,
+.theme-dark textarea::placeholder,
 [data-theme="dark"] input::placeholder,
 [data-theme="dark"] textarea::placeholder {
-  color: #94a3b8 !important;
+  color: #b0b3b8 !important;
 }
 
+.theme-dark .dashboard-sidebar,
+.theme-dark .ngo-sidebar,
 [data-theme="dark"] .dashboard-sidebar,
 [data-theme="dark"] .ngo-sidebar {
-  background: #0f172a !important;
+  background: #121212 !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
 }
 
 * {

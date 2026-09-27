@@ -12,27 +12,37 @@
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Light / Dark Mode Variables */
+/* Light / Dark Mode Variables (Root & Class Scoped) */
+[data-theme="dark"],
 .consumer-marketplace-wrapper.theme-dark {
-  --bg-primary: #0b0f17;
-  --bg-card: #151d2a;
-  --bg-input: #1e293b;
+  --bg-primary: #000000;
+  --bg-card: #121212;
+  --bg-input: #1e1e1e;
+  --bg-surface: #121212;
+  --bg-subtle: #1e1e1e;
   --border-color: rgba(255, 255, 255, 0.1);
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --accent-blue: #2563eb;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b3b8;
+  --text-main: #ffffff;
+  --text-muted: #b0b3b8;
+  --accent-blue: #059669;
   --accent-cyan: #38bdf8;
   --accent-green: #10b981;
-  --accent-amber: #f59e0b;
+  --accent-amber: #fbbf24;
 }
 
+[data-theme="light"],
 .consumer-marketplace-wrapper.theme-light {
   --bg-primary: #f8fafc;
   --bg-card: #ffffff;
   --bg-input: #f1f5f9;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f5f9;
   --border-color: #e2e8f0;
   --text-primary: #0f172a;
   --text-secondary: #475569;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
   --accent-blue: #059669; /* Eco-Green Primary */
   --accent-cyan: #0284c7;
   --accent-green: #059669;

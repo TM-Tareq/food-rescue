@@ -330,3 +330,43 @@
   color: #064e3b;
   line-height: 1.35;
 }
+
+/* ==========================================================================
+   Dark Theme Overrides (Uber/Facebook True Black Standard)
+   ========================================================================== */
+.theme-dark .analytics-card,
+[data-theme="dark"] .analytics-card {
+  background: #121212 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.theme-dark .chart-subtitle,
+[data-theme="dark"] .chart-subtitle,
+.theme-dark .chart-legend,
+[data-theme="dark"] .chart-legend,
+.theme-dark .footprint-desc,
+[data-theme="dark"] .footprint-desc {
+  color: #b0b3b8 !important;
+}
+
+.theme-dark .chart-highlight-pill,
+[data-theme="dark"] .chart-highlight-pill {
+  background: rgba(251, 191, 36, 0.15) !important;
+  border-color: rgba(251, 191, 36, 0.3) !important;
+  color: #fcd34d !important;
+}
+
+.theme-dark .tier-progress-card,
+[data-theme="dark"] .tier-progress-card {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(52, 211, 153, 0.3) !important;
+}
+
+.theme-dark .tier-name,
+[data-theme="dark"] .tier-name,
+.theme-dark .tier-count,
+[data-theme="dark"] .tier-count,
+.theme-dark .tier-desc,
+[data-theme="dark"] .tier-desc {
+  color: #34d399 !important;
+}
