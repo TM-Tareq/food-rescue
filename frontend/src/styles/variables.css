@@ -124,11 +124,24 @@
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
-.theme-dark input::placeholder,
-.theme-dark textarea::placeholder,
-[data-theme="dark"] input::placeholder,
-[data-theme="dark"] textarea::placeholder {
-  color: #b0b3b8 !important;
+/* Explicit standard for Auth Modal & Portal Login Input Fields (Always crisp White BG + Dark Text) */
+.modal-card input,
+.modal-card select,
+.modal-card textarea,
+.auth-form input,
+.partner-app-modal input,
+.partner-app-modal select,
+.partner-app-modal textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.modal-card input::placeholder,
+.auth-form input::placeholder,
+.partner-app-modal input::placeholder {
+  color: #64748b !important;
+  opacity: 1;
 }
 
 .theme-dark .dashboard-sidebar,
