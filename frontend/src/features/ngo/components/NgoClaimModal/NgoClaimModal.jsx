@@ -4,6 +4,7 @@ import Modal from '../../../../components/Modal/Modal';
 import Button from '../../../../components/Button/Button';
 import { ngoService } from '../../../../services/ngoService';
 import { supplyChainService } from '../../../../services/supplyChainService';
+import { surplusService } from '../../../../services/surplusService';
 import './NgoClaimModal.css';
 
 /**
@@ -60,6 +61,7 @@ export default function NgoClaimModal({ isOpen, onClose, foodItem, onConfirmClai
       claimedAt: new Date().toLocaleTimeString()
     };
     
+    surplusService.claimStoredListing(foodItem.id, claimPayload);
     const result = await ngoService.claimTier1Food(claimPayload);
 
     onConfirmClaim({

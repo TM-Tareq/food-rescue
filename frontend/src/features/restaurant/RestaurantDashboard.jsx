@@ -27,9 +27,11 @@ import LogisticsRescueTab from './components/LogisticsRescueTab/LogisticsRescueT
 import ImpactAnalyticsTab from './components/ImpactAnalyticsTab/ImpactAnalyticsTab';
 import SettingsTab from './components/SettingsTab/SettingsTab';
 import AiFoodSafetyScannerModal from './components/AiFoodSafetyScannerModal/AiFoodSafetyScannerModal';
+import LiveCountdownBadge from '../../components/LiveCountdownBadge/LiveCountdownBadge';
+import FoodLifecycleTimeline from '../../components/FoodLifecycleTimeline/FoodLifecycleTimeline';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { surplusService } from '../../services/surplusService';
+import { surplusService, getItemLogisticsStatus } from '../../services/surplusService';
 import './RestaurantDashboard.css';
 
 export default function RestaurantDashboard({ onLogout }) {
@@ -41,16 +43,29 @@ export default function RestaurantDashboard({ onLogout }) {
   const [isAiScannerOpen, setIsAiScannerOpen] = useState(false);
   const [selectedItemForDispatch, setSelectedItemForDispatch] = useState(null);
 
-  // Active listings data state
+  // Active listings data state & live clock for logistics sync
   const [activeListingsData, setActiveListingsData] = useState([]);
+  const [now, setNow] = useState(Date.now());
 
-  // Fetch live active listings from backend / fallback service on mount
+  // Fetch live active listings from surplusService on mount and on update events
   useEffect(() => {
     async function fetchListings() {
       const listings = await surplusService.getActiveListings();
       setActiveListingsData(listings);
     }
     fetchListings();
+
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+
+    const handleSurplusUpdated = () => {
+      fetchListings();
+    };
+
+    window.addEventListener('foodrescue_surplus_updated', handleSurplusUpdated);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('foodrescue_surplus_updated', handleSurplusUpdated);
+    };
   }, []);
 
   const handleOpenDispatch = (item = null) => {
@@ -59,8 +74,12 @@ export default function RestaurantDashboard({ onLogout }) {
   };
 
   const handleAiListingApproved = (newListing) => {
-    setActiveListingsData(prev => [newListing, ...prev]);
+    setActiveListingsData(prev => {
+      if (prev.some(item => item.id === newListing.id)) return prev;
+      return [newListing, ...prev];
+    });
   };
+
 
   return (
     <div className={`dashboard-root theme-${themeMode}`}>
@@ -324,24 +343,31 @@ export default function RestaurantDashboard({ onLogout }) {
                             </div>
                           </td>
                           <td>
-                            {item.expiryType === 'urgent' ? (
-                              <Badge theme="flash">🔥 {item.expiry}</Badge>
-                            ) : (
-                              <Badge theme="fresh">⏳ {item.expiry}</Badge>
-                            )}
+                            <LiveCountdownBadge 
+                              expiresAt={item.expiresAt} 
+                              ngoPriorityUntil={item.ngoPriorityUntil}
+                              defaultExpiry={item.expiry} 
+                              badgeTheme={true}
+                            />
+                            <FoodLifecycleTimeline 
+                              expiresAt={item.expiresAt}
+                              ngoPriorityUntil={item.ngoPriorityUntil}
+                              createdAt={item.createdAt}
+                              aiScore={item.aiScore || 100}
+                              compact={true}
+                            />
                           </td>
                           <td>
-                            <div className="status-cell">
-                              {item.statusType === 'success' ? (
-                                <span className="status-pill status-success">
-                                  <Truck size={14} /> {item.status}
-                                </span>
-                              ) : (
-                                <span className="status-pill status-pending">
-                                  <Clock size={14} /> {item.status}
-                                </span>
-                              )}
-                            </div>
+                            {(() => {
+                              const dynStatus = getItemLogisticsStatus(item, now);
+                              return (
+                                <div className="status-cell">
+                                  <span className={`status-pill ${dynStatus.pillClass}`}>
+                                    {dynStatus.isSuccess ? <Truck size={14} /> : <Clock size={14} />} {dynStatus.label}
+                                  </span>
+                                </div>
+                              );
+                            })()}
                           </td>
                           <td>
                             <Button
@@ -411,7 +437,8 @@ export default function RestaurantDashboard({ onLogout }) {
         )}
 
         {/* Render Active Listings Tab */}
-        {activeTab === 'inventory' && <ActiveListingsTab onOpenDispatch={handleOpenDispatch} />}
+        {activeTab === 'inventory' && <ActiveListingsTab onOpenDispatch={handleOpenDispatch} listings={activeListingsData} />}
+
 
         {/* Render Logistics & Rescue Tab */}
         {activeTab === 'logistics' && <LogisticsRescueTab />}

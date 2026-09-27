@@ -18,6 +18,8 @@ import NgoSettingsTab from './components/NgoSettingsTab/NgoSettingsTab';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { ngoService } from '../../services/ngoService';
+import { surplusService } from '../../services/surplusService';
+import LiveCountdownBadge from '../../components/LiveCountdownBadge/LiveCountdownBadge';
 import { 
   PRIMARY_ROUTE_ETA_POS, 
   ALT_ROUTE_ETA_POS, 
@@ -61,6 +63,12 @@ export default function NgoDashboard({ onLogout }) {
   // Active Claims Counter State
   const [claimedItems, setClaimedItems] = useState([]);
 
+  // Live Surplus Listings State
+  const [storedSurplusListings, setStoredSurplusListings] = useState(surplusService.getStoredListings());
+
+  // Live Ticking Clock State to auto-expire NGO Priority Window
+  const [now, setNow] = useState(Date.now());
+
   // Fetch live active claims for NGO from backend / fallback service on mount
   useEffect(() => {
     async function loadActiveClaims() {
@@ -73,81 +81,64 @@ export default function NgoDashboard({ onLogout }) {
       }
     }
     loadActiveClaims();
+
+    const loadSurplus = () => {
+      setStoredSurplusListings(surplusService.getStoredListings());
+    };
+
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+
+    window.addEventListener('foodrescue_surplus_updated', loadSurplus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('foodrescue_surplus_updated', loadSurplus);
+    };
   }, []);
 
-  // Surplus Food Mock Data with Real Road Coordinates & Road Distance
-  const surplusFeed = [
-    {
-      id: 'FOOD-101',
-      title: 'Spicy Chicken Biryani (20 Portions)',
-      donor: 'Star Chef Bistro',
-      area: 'Banani, Dhaka',
-      distance: '1.2 km via Kemal Ataturk & Progati Sarani',
-      beneficiaries: 'Feeds ~40 Children',
-      expiry: 'Expires in 35 mins',
-      urgency: 'HIGH',
-      safetyTags: ['Halal Certified', 'Hot Sealed Package'],
-      category: 'COOKED',
-      image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&auto=format&fit=crop&q=80',
-      coordinates: [23.7937, 90.4047], // Banani
-      // Real Road Waypoints (Following Kemal Ataturk Ave -> Progati Sarani Rd -> Anjuman Shelter)
-      roadPath: [
-        [23.7937, 90.4047], // Banani Kemal Ataturk Start
-        [23.7937, 90.4200], // Kemal Ataturk & Progati Sarani Intersection
-        [23.8050, 90.4210], // Progati Sarani North
-        [23.8150, 90.4210]  // Anjuman Shelter Destination
-      ]
-    },
-    {
-      id: 'FOOD-102',
-      title: 'Mixed Vegetable Curry & Parathas (35 Packs)',
-      donor: 'Harbor Cafe & Diner',
-      area: 'Gulshan 1, Dhaka',
-      distance: '2.4 km via Gulshan Ave & Progati Sarani',
-      beneficiaries: 'Feeds ~50 People',
-      expiry: 'Expires in 1h 45m',
-      urgency: 'NORMAL',
-      safetyTags: ['Vegetarian', 'Warm Pack'],
-      category: 'COOKED',
-      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&auto=format&fit=crop&q=80',
-      coordinates: [23.7880, 90.4120], // Gulshan 1
-      // Real Road Waypoints (Gulshan 1 -> Gulshan 2 -> Progati Sarani -> Anjuman Shelter)
-      roadPath: [
-        [23.7880, 90.4120], // Gulshan 1 Circle
-        [23.7980, 90.4150], // Gulshan 2 Circle
-        [23.8050, 90.4180], // Connecting Avenue
-        [23.8150, 90.4210]  // Anjuman Shelter Destination
-      ]
-    },
-    {
-      id: 'FOOD-103',
-      title: 'Fresh Artisan Bread & Croissant Basket',
-      donor: 'Daily Crust Bakery',
-      area: 'Bashundhara R/A, Dhaka',
-      distance: '1.1 km via Bashundhara Main Rd',
-      beneficiaries: 'Feeds ~25 Children',
-      expiry: 'Expires in 3h 10m',
-      urgency: 'NORMAL',
-      safetyTags: ['Bakery Fresh', 'Room Temp'],
-      category: 'BAKERY',
-      image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80',
-      coordinates: [23.8220, 90.4270], // Bashundhara R/A
-      // Real Road Waypoints (Bashundhara Main Rd -> Anjuman Shelter)
-      roadPath: [
-        [23.8220, 90.4270], // Bashundhara Main Rd
-        [23.8180, 90.4230], // Gate Entrance
-        [23.8150, 90.4210]  // Anjuman Shelter Destination
-      ]
-    }
-  ];
+  // Format stored surplus items for NGO Feed (Strict 1-to-1 matching with Restaurant listings)
+  const dynamicSurplusItems = storedSurplusListings
+    .filter((item, index, self) => index === self.findIndex(t => t.id === item.id))
+    .map(item => ({
+    id: `FOOD-${item.id}`,
+    title: `${item.name} (${item.quantity})`,
+    donor: item.donor || 'Star Chef Bistro',
+    area: item.area || 'Banani, Dhaka',
+    distance: '1.2 km via Kemal Ataturk & Progati Sarani',
+    beneficiaries: `Feeds ~${(parseInt(item.quantity) || 20) * 2} People`,
+    expiry: item.expiry || 'Expires in 3h',
+    expiresAt: item.expiresAt,
+    ngoPriorityUntil: item.ngoPriorityUntil,
+    extraText: item.extraText || '',
+    urgency: item.expiryType === 'urgent' ? 'HIGH' : 'NORMAL',
+    safetyTags: [item.sub?.includes('AI Certified') ? 'AI Certified Grade A+' : 'Fresh Pack', 'Hot Sealed Package'],
+    category: item.category || 'COOKED',
+    image: item.image || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&auto=format&fit=crop&q=80',
+    coordinates: [23.7937, 90.4047],
+    roadPath: [
+      [23.7937, 90.4047],
+      [23.7937, 90.4200],
+      [23.8050, 90.4210],
+      [23.8150, 90.4210]
+    ]
+  }));
+
+  // Strict single source of truth: surplusFeed matches stored listings exactly
+  const surplusFeed = dynamicSurplusItems;
+
 
   // Map Coordinates & NGO Location
   const ngoShelterPos = [23.8150, 90.4210]; // Anjuman Shelter (Bashundhara)
+
+  // Filter Feed: EXCLUDE items whose NGO Priority Window or total expiry has expired (shifted to B2C Flash Sale)
   const filteredFeed = surplusFeed.filter(item => {
+    const isNgoPriorityActive = !item.ngoPriorityUntil || now < item.ngoPriorityUntil;
+    const isNotExpired = !item.expiresAt || now < item.expiresAt;
+    const isAvailableForNgo = isNgoPriorityActive && isNotExpired;
+
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           item.donor.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'ALL' || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesCategory = selectedCategory === 'ALL' || item.category === selectedCategory || (selectedCategory === 'URGENT' && item.ngoPriorityUntil && (item.ngoPriorityUntil - now) <= 45 * 60 * 1000);
+    return isAvailableForNgo && matchesSearch && matchesCategory;
   });
 
   const focusedItem = filteredFeed.find(f => f.id === focusedFoodId) || filteredFeed[0] || surplusFeed[0];
@@ -366,62 +357,74 @@ export default function NgoDashboard({ onLogout }) {
 
               {/* Food Listings Feed Grid */}
               <div className="food-cards-feed">
-                {surplusFeed.map((food) => {
-                  const isFocused = food.id === focusedFoodId;
+                {filteredFeed.length === 0 ? (
+                  <div className="no-ngo-items-box">
+                    <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', background: 'var(--bg-card)', borderRadius: '12px' }}>
+                      ⚡ No active NGO priority free food available right now.<br />
+                      All priority windows have expired and shifted to B2C Flash Sale or been claimed.
+                    </p>
+                  </div>
+                ) : (
+                  filteredFeed.map((food) => {
+                    const isFocused = food.id === focusedFoodId;
 
-                  return (
-                    <Card
-                      key={food.id}
-                      hover={true}
-                      className={`food-feed-card ${isFocused ? 'food-card-focused' : ''}`}
-                      onClick={() => setFocusedFoodId(food.id)}
-                    >
-                      <div className="card-image-wrap">
-                        <img src={food.image} alt={food.title} className="food-card-img" />
-                        <div className={`expiry-floating-badge ${food.urgency === 'HIGH' ? 'urgent-bg' : ''}`}>
-                          <Flame size={14} /> {food.expiry}
+                    return (
+                      <Card
+                        key={food.id}
+                        hover={true}
+                        className={`food-feed-card ${isFocused ? 'food-card-focused' : ''}`}
+                        onClick={() => setFocusedFoodId(food.id)}
+                      >
+                        <div className="card-image-wrap">
+                          <img src={food.image} alt={food.title} className="food-card-img" />
+                          <LiveCountdownBadge 
+                            expiresAt={food.expiresAt} 
+                            ngoPriorityUntil={food.ngoPriorityUntil}
+                            defaultExpiry={food.expiry} 
+                            extraText={food.extraText || ''} 
+                          />
                         </div>
-                      </div>
 
-                      <div className="card-content-body">
-                        <div className="donor-meta-row">
-                          <span className="donor-name">🏪 {food.donor}</span>
-                          <span className="donor-dist"><Route size={13} /> {food.distance}</span>
-                        </div>
+                        <div className="card-content-body">
+                          <div className="donor-meta-row">
+                            <span className="donor-name">🏪 {food.donor}</span>
+                            <span className="donor-dist"><Route size={13} /> {food.distance}</span>
+                          </div>
 
-                        <h3 className="food-item-title">{food.title}</h3>
+                          <h3 className="food-item-title">{food.title}</h3>
 
-                        {/* Beneficiaries & Safety Tags */}
-                        <div className="tags-row">
-                          <span className="tag-chip feed-count-chip">
-                            <Users size={13} /> {food.beneficiaries}
-                          </span>
-                          {food.safetyTags.map((tag, idx) => (
-                            <span key={idx} className="tag-chip safety-chip">
-                              {tag}
+                          {/* Beneficiaries & Safety Tags */}
+                          <div className="tags-row">
+                            <span className="tag-chip feed-count-chip">
+                              <Users size={13} /> {food.beneficiaries}
                             </span>
-                          ))}
-                        </div>
+                            {food.safetyTags.map((tag, idx) => (
+                              <span key={idx} className="tag-chip safety-chip">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
 
-                        {/* Claim Action Bar */}
-                        <div className="card-action-bar">
-                          <Button
-                            variant="emerald"
-                            size="md"
-                            icon={HeartHandshake}
-                            onClick={(e) => { e.stopPropagation(); handleOpenClaimModal(food); }}
-                            className="claim-primary-btn"
-                          >
-                            🤝 Claim Surplus Food
-                          </Button>
-                          <Button variant="outline" size="md">
-                            View Details
-                          </Button>
+                          {/* Claim Action Bar */}
+                          <div className="card-action-bar">
+                            <Button
+                              variant="emerald"
+                              size="md"
+                              icon={HeartHandshake}
+                              onClick={(e) => { e.stopPropagation(); handleOpenClaimModal(food); }}
+                              className="claim-primary-btn"
+                            >
+                              🤝 Claim Surplus Food
+                            </Button>
+                            <Button variant="outline" size="md">
+                              View Details
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  );
-                })}
+                      </Card>
+                    );
+                  })
+                )}
               </div>
             </div>
 
@@ -432,11 +435,11 @@ export default function NgoDashboard({ onLogout }) {
                   {/* Floating Active Route Distance Badge */}
                   <div className="map-top-status-pill">
                     <Route size={15} className="icon-blue" />
-                    <span>Active Route: <strong>{focusedItem.distance}</strong></span>
+                    <span>Active Route: <strong>{focusedItem ? focusedItem.distance : '1.2 km'}</strong></span>
                   </div>
 
                   <MapContainer
-                    center={focusedItem.coordinates}
+                    center={focusedItem ? focusedItem.coordinates : ngoShelterPos}
                     zoom={13}
                     scrollWheelZoom={true}
                     className="leaflet-map-canvas"
@@ -462,7 +465,7 @@ export default function NgoDashboard({ onLogout }) {
                     </Marker>
 
                     {/* Donor Vector SVG Pins & Real Road Polylines */}
-                    {surplusFeed.map((item) => {
+                    {filteredFeed.map((item) => {
                       const isFocused = item.id === focusedFoodId;
                       const pinColor = getCategoryColor(item);
                       const pinEmoji = getCategoryEmoji(item);

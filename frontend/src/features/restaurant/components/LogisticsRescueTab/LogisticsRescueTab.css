@@ -164,6 +164,39 @@
   border-color: #f97316 !important;
 }
 
+.badge-searching {
+  color: #b45309 !important;
+  background: #fef3c7 !important;
+  border-color: #f59e0b !important;
+}
+
+.badge-waiting {
+  color: #475569 !important;
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.logistics-notice-box {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border-color);
+  line-height: 1.4;
+}
+
+.waiting-notice {
+  background: #f8fafc;
+  color: #64748b;
+  border-color: #cbd5e1;
+}
+
+.searching-notice {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fcd34d;
+}
+
 .live-dot {
   width: 8px;
   height: 8px;

@@ -93,13 +93,24 @@
 
 .card-top-image {
   position: relative;
-  height: 180px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 210px;
+  max-height: 250px;
+  background: #0f172a;
+  overflow: hidden;
 }
 
 .card-top-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.listing-item-card:hover .card-top-image img {
+  transform: scale(1.04);
 }
 
 .price-tag {

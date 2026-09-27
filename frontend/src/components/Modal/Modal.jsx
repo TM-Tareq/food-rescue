@@ -11,7 +11,23 @@ export default function Modal({ isOpen, onClose, children, title, className = ''
       if (e.key === 'Escape' && isOpen) onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      const scrollables = document.querySelectorAll('.dashboard-main, .ngo-main-content, .admin-main-content');
+      scrollables.forEach(el => el.style.overflow = 'hidden');
+    } else {
+      document.body.style.overflow = '';
+      const scrollables = document.querySelectorAll('.dashboard-main, .ngo-main-content, .admin-main-content');
+      scrollables.forEach(el => el.style.overflow = '');
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+      const scrollables = document.querySelectorAll('.dashboard-main, .ngo-main-content, .admin-main-content');
+      scrollables.forEach(el => el.style.overflow = '');
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;

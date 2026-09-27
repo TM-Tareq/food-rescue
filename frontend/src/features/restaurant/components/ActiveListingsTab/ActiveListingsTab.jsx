@@ -1,44 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, Plus, Clock, Edit2, Trash2, Radio } from 'lucide-react';
 import Card from '../../../../components/Card/Card';
 import Button from '../../../../components/Button/Button';
 import Badge from '../../../../components/Badge/Badge';
+import { surplusService, getItemLogisticsStatus } from '../../../../services/surplusService';
+import LiveCountdownBadge from '../../../../components/LiveCountdownBadge/LiveCountdownBadge';
+import FoodLifecycleTimeline from '../../../../components/FoodLifecycleTimeline/FoodLifecycleTimeline';
 import './ActiveListingsTab.css';
 
-export default function ActiveListingsTab({ onOpenDispatch }) {
+export default function ActiveListingsTab({ onOpenDispatch, listings: propListings }) {
   const [filter, setFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
+  const [listings, setListings] = useState(propListings || surplusService.getStoredListings());
+  const [now, setNow] = useState(Date.now());
 
-  const listings = [
-    {
-      id: 1,
-      name: 'Spicy Chicken Biryani & Kebabs',
-      sub: 'Cooked 1h ago',
-      image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=400&q=80',
-      quantity: '20 Portions (8.5 kg)',
-      category: 'Cooked Food',
-      temp: 'Hot (60°C+)',
-      expiry: 'Expires in 35m',
-      expiryType: 'urgent',
-      price: 'Free Donation',
-      status: 'Volunteer En Route (Tanvir)',
-      statusType: 'success'
-    },
-    {
-      id: 2,
-      name: 'Assorted Pastries & Croissant Package',
-      sub: 'Morning Fresh Bake',
-      image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=400&q=80',
-      quantity: '15 Packs',
-      category: 'Bakery',
-      temp: 'Room Temp',
-      expiry: 'Expires in 2h 10m',
-      expiryType: 'warning',
-      price: '50% Off (৳ 120/pack)',
-      status: 'Matching NGO / Customer...',
-      statusType: 'pending'
+  useEffect(() => {
+    const refreshListings = () => {
+      setListings(surplusService.getStoredListings());
+    };
+
+    if (!propListings) {
+      refreshListings();
+    } else {
+      setListings(propListings);
     }
-  ];
+
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+
+    window.addEventListener('foodrescue_surplus_updated', refreshListings);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('foodrescue_surplus_updated', refreshListings);
+    };
+  }, [propListings]);
+
 
   return (
     <div className="active-listings-tab">
@@ -91,12 +86,21 @@ export default function ActiveListingsTab({ onOpenDispatch }) {
             <div className="card-body-content">
               <div className="meta-row">
                 <Badge theme="dark">{item.category}</Badge>
-                {item.expiryType === 'urgent' ? (
-                  <Badge theme="flash">🔥 {item.expiry}</Badge>
-                ) : (
-                  <Badge theme="fresh">⏳ {item.expiry}</Badge>
-                )}
+                <LiveCountdownBadge 
+                  expiresAt={item.expiresAt} 
+                  ngoPriorityUntil={item.ngoPriorityUntil}
+                  defaultExpiry={item.expiry} 
+                  badgeTheme={true}
+                />
               </div>
+
+              <FoodLifecycleTimeline 
+                expiresAt={item.expiresAt}
+                ngoPriorityUntil={item.ngoPriorityUntil}
+                createdAt={item.createdAt}
+                aiScore={item.aiScore || 100}
+                compact={true}
+              />
 
               <h3 className="food-title">{item.name}</h3>
               <p className="food-sub">{item.sub} • Storage: {item.temp}</p>
@@ -104,7 +108,7 @@ export default function ActiveListingsTab({ onOpenDispatch }) {
 
               <div className="status-box">
                 <Clock size={14} />
-                <span>Status: {item.status}</span>
+                <span>Status: {getItemLogisticsStatus(item, now).label}</span>
               </div>
 
               <div className="card-actions-row">

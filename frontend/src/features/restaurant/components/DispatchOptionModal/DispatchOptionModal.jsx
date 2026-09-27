@@ -3,6 +3,7 @@ import { Zap, Building2, Clock, ShieldAlert, Check } from 'lucide-react';
 import Modal from '../../../../components/Modal/Modal';
 import Button from '../../../../components/Button/Button';
 import Badge from '../../../../components/Badge/Badge';
+import FoodLifecycleTimeline from '../../../../components/FoodLifecycleTimeline/FoodLifecycleTimeline';
 import './DispatchOptionModal.css';
 
 /**
@@ -23,7 +24,7 @@ export default function DispatchOptionModal({ isOpen, onClose, selectedItem }) {
 
   const handleConfirmDispatch = (e) => {
     e.preventDefault();
-    const itemTitle = selectedItem?.title || 'Selected Surplus Food';
+    const itemTitle = selectedItem?.name || selectedItem?.title || 'Selected Surplus Food';
 
     if (selectedChoice === 'EMERGENCY') {
       alert(`⚡ EMERGENCY BROADCAST SENT!\n\nItem: "${itemTitle}"\n\nNotification sent to ALL nearby NGOs & Volunteers within 5 km radius for instant pickup!`);
@@ -43,10 +44,18 @@ export default function DispatchOptionModal({ isOpen, onClose, selectedItem }) {
         <div>
           <h2 className="dispatch-title">Broadcast & Dispatch Options</h2>
           <p className="dispatch-sub">
-            Choose how you want to route <strong>{selectedItem?.title || 'surplus food'}</strong>.
+            Choose how you want to route <strong>{selectedItem?.name || selectedItem?.title || 'surplus food'}</strong>.
           </p>
         </div>
       </div>
+
+      {/* Complete Food Rescue Lifetime & Phase Timeline Card */}
+      <FoodLifecycleTimeline 
+        expiresAt={selectedItem?.expiresAt}
+        ngoPriorityUntil={selectedItem?.ngoPriorityUntil}
+        createdAt={selectedItem?.createdAt}
+        aiScore={selectedItem?.aiScore || 100}
+      />
 
       <form onSubmit={handleConfirmDispatch} className="dispatch-form">
         {/* Choice Selection Grid */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { PhoneCall, MessageSquare, ShieldCheck, Clock, MapPin, Search, CheckCircle2, PackageCheck, AlertCircle, Plus } from 'lucide-react';
@@ -7,12 +7,11 @@ import Button from '../../../../components/Button/Button';
 import Badge from '../../../../components/Badge/Badge';
 import InAppChatModal from '../InAppChatModal/InAppChatModal';
 import { useTheme } from '../../../../context/ThemeContext';
+import { surplusService } from '../../../../services/surplusService';
 import { 
   BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE, 
-  BANANI_TO_BASHUNDHARA_ALT_ROUTE, 
   BASHUNDHARA_LOCAL_RESCUE_ROUTE,
   PRIMARY_ROUTE_ETA_POS, 
-  ALT_ROUTE_ETA_POS, 
   getOsmTileLayer,
   createGoogleEtaBadgeMarker, 
   createGoogleCleanPinMarker 
@@ -31,84 +30,100 @@ export default function LogisticsRescueTab() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mapSearchText, setMapSearchText] = useState('প্রগতি সরণি, ঢাকা');
 
-  // State for Corner Case Demonstrations
-  const [demoState, setDemoState] = useState('MULTIPLE'); // 'SINGLE', 'MULTIPLE', 'EMPTY'
-  const [selectedMissionId, setSelectedMissionId] = useState('RES-8041');
+  // Filter State: 'ALL', 'RIDER_ACCEPTED', 'SEARCHING_RIDER', 'AWAITING_CLAIM'
+  const [statusFilter, setStatusFilter] = useState('ALL');
 
-  // Mock Active Missions Data
-  const mockMissions = [
-    {
-      id: 'RES-8041',
-      item: 'Spicy Chicken Biryani (20 Portions)',
-      volunteer: 'Tanvir Hossain',
-      rating: '4.9 ⭐',
-      vehicle: 'Motorcycle (DHAKA-METRO-HA-4819)',
-      phone: '+880 1712-345678',
-      pickupETA: '21 mins away (Progati Sarani)',
-      destination: 'Anjuman Orphanage Shelter (Bashundhara)',
-      otpRequired: '4892',
-      urgency: 'HIGH',
-      route: BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE,
+  // Real Stored Surplus Listings State
+  const [storedListings, setStoredListings] = useState(surplusService.getStoredListings());
+  const [selectedMissionId, setSelectedMissionId] = useState(null);
+
+  useEffect(() => {
+    const refresh = () => setStoredListings(surplusService.getStoredListings());
+    window.addEventListener('foodrescue_surplus_updated', refresh);
+    return () => window.removeEventListener('foodrescue_surplus_updated', refresh);
+  }, []);
+
+  // Format active surplus listings into dynamic Logistics Missions
+  const allMissions = storedListings.map((item, index) => {
+    const isVolunteerAssigned = item.status?.includes('Tanvir') || item.statusType === 'success';
+    const isClaimed = isVolunteerAssigned || item.status?.includes('Matching NGO') || item.status?.includes('Claimed');
+
+    let missionStatus = 'AWAITING_CLAIM';
+    let readableStatusText = '⏳ Waiting for NGO / Consumer Claim';
+    let statusBadgeClass = 'badge-waiting';
+
+    if (isVolunteerAssigned) {
+      missionStatus = 'RIDER_ACCEPTED';
+      readableStatusText = '🛵 Rider Tanvir is Coming to Pick Up Food (ETA 12m)';
+      statusBadgeClass = 'readable-status-badge';
+    } else if (isClaimed) {
+      missionStatus = 'SEARCHING_RIDER';
+      readableStatusText = '🟡 🔎 Searching Nearby Volunteer Rider...';
+      statusBadgeClass = 'badge-searching';
+    }
+
+    return {
+      id: `RES-${item.id}`,
+      originalId: item.id,
+      item: `${item.name} (${item.quantity})`,
+      category: item.category || 'COOKED',
+      volunteer: isVolunteerAssigned ? 'Tanvir Hossain' : (isClaimed ? 'Assigning Volunteer Rider...' : 'N/A (Unclaimed)'),
+      rating: isVolunteerAssigned ? '4.9 ⭐' : 'N/A',
+      vehicle: isVolunteerAssigned ? 'Motorcycle (DHAKA-METRO-HA-4819)' : (isClaimed ? 'Auto Dispatch Engine' : 'N/A'),
+      phone: isVolunteerAssigned ? '+880 1712-345678' : 'N/A',
+      pickupETA: isVolunteerAssigned ? '12 mins away (Progati Sarani)' : (isClaimed ? 'Awaiting Rider Acceptance' : 'N/A'),
+      destination: isClaimed ? 'Anjuman Orphanage Shelter (Bashundhara)' : 'NGO Shelter / B2C Buyer (Pending)',
+      otpRequired: isClaimed ? `${4000 + (item.id % 5000)}` : 'N/A (Pending Claim)',
+      urgency: item.expiryType === 'urgent' ? 'HIGH' : 'NORMAL',
+      missionStatus,
+      readableStatusText,
+      statusBadgeClass,
+      route: index % 2 === 0 ? BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE : BASHUNDHARA_LOCAL_RESCUE_ROUTE,
       coordinates: {
         restPos: [23.7937, 90.4047],
-        riderPos: [23.8050, 90.4210],
+        riderPos: isVolunteerAssigned ? [23.8050, 90.4210] : (isClaimed ? [23.7980, 90.4120] : [23.7937, 90.4047]),
         ngoPos: [23.8103, 90.4310]
       }
-    },
-    {
-      id: 'RES-8042',
-      item: 'Assorted Pastries Package (15 Packs)',
-      volunteer: 'Rahim Uddin',
-      rating: '4.8 ⭐',
-      vehicle: 'Bicycle (Dhaka North)',
-      phone: '+880 1819-987654',
-      pickupETA: '8 mins away (Bashundhara)',
-      destination: 'Anjuman Orphanage Shelter (Bashundhara)',
-      otpRequired: '7103',
-      urgency: 'NORMAL',
-      route: BASHUNDHARA_LOCAL_RESCUE_ROUTE,
-      coordinates: {
-        restPos: [23.8220, 90.4270],
-        riderPos: [23.8180, 90.4250],
-        ngoPos: [23.8103, 90.4310]
-      }
-    }
-  ];
+    };
+  });
 
-  // Determine active missions based on selected Demo State
-  const activeMissions = demoState === 'EMPTY' 
-    ? [] 
-    : demoState === 'SINGLE' 
-    ? [mockMissions[0]] 
-    : mockMissions;
+  // Apply status filter
+  const filteredMissions = statusFilter === 'ALL' 
+    ? allMissions 
+    : allMissions.filter(m => m.missionStatus === statusFilter);
 
-  // Selected Mission object for map focusing (First Load defaults to Most Urgent)
-  const currentSelectedMission = activeMissions.find(m => m.id === selectedMissionId) || activeMissions[0];
-
-  const centerPos = currentSelectedMission ? currentSelectedMission.coordinates.riderPos : [23.8050, 90.4180];
+  // Default focus to selected or first mission
+  const activeSelectedMission = filteredMissions.find(m => m.id === selectedMissionId) || filteredMissions[0] || allMissions[0];
+  const centerPos = activeSelectedMission ? activeSelectedMission.coordinates.riderPos : [23.8050, 90.4180];
 
   return (
     <div className="logistics-tab">
-      {/* Corner Case Demo Control Bar */}
+      {/* Dynamic Lifecycle State Filter Bar */}
       <div className="corner-case-demo-bar">
-        <span className="demo-label">🧪 Test Order States:</span>
+        <span className="demo-label">📌 Supply Chain State Filter:</span>
         <button
-          className={`case-btn ${demoState === 'MULTIPLE' ? 'case-active' : ''}`}
-          onClick={() => { setDemoState('MULTIPLE'); setSelectedMissionId('RES-8041'); }}
+          className={`case-btn ${statusFilter === 'ALL' ? 'case-active' : ''}`}
+          onClick={() => setStatusFilter('ALL')}
         >
-          2️⃣ Multiple Active Orders (Multi-Rescue)
+          All Listings ({allMissions.length})
         </button>
         <button
-          className={`case-btn ${demoState === 'SINGLE' ? 'case-active' : ''}`}
-          onClick={() => { setDemoState('SINGLE'); setSelectedMissionId('RES-8041'); }}
+          className={`case-btn ${statusFilter === 'RIDER_ACCEPTED' ? 'case-active' : ''}`}
+          onClick={() => setStatusFilter('RIDER_ACCEPTED')}
         >
-          1️⃣ Single Active Order (Auto-Focused)
+          🛵 Rider Assigned & Heading to Pickup ({allMissions.filter(m => m.missionStatus === 'RIDER_ACCEPTED').length})
         </button>
         <button
-          className={`case-btn ${demoState === 'EMPTY' ? 'case-active' : ''}`}
-          onClick={() => { setDemoState('EMPTY'); }}
+          className={`case-btn ${statusFilter === 'SEARCHING_RIDER' ? 'case-active' : ''}`}
+          onClick={() => setStatusFilter('SEARCHING_RIDER')}
         >
-          0️⃣ No Active Orders (Empty State)
+          🟡 Searching Rider ({allMissions.filter(m => m.missionStatus === 'SEARCHING_RIDER').length})
+        </button>
+        <button
+          className={`case-btn ${statusFilter === 'AWAITING_CLAIM' ? 'case-active' : ''}`}
+          onClick={() => setStatusFilter('AWAITING_CLAIM')}
+        >
+          ⏳ Waiting for Claim ({allMissions.filter(m => m.missionStatus === 'AWAITING_CLAIM').length})
         </button>
       </div>
 
@@ -116,47 +131,42 @@ export default function LogisticsRescueTab() {
         <div>
           <h1 className="tab-title">Logistics & Live Rescue Tracking</h1>
           <p className="tab-sub">
-            {demoState === 'EMPTY' 
+            {allMissions.length === 0 
               ? 'No active rescue missions in progress. System is ready for new listings.'
-              : `Tracking ${activeMissions.length} active rescue mission${activeMissions.length > 1 ? 's' : ''} across Dhaka City.`}
+              : `Tracking ${allMissions.length} active surplus food listings across Dhaka City.`}
           </p>
         </div>
-        {demoState !== 'EMPTY' && (
-          <Badge theme={activeMissions.length > 1 ? 'flash' : 'ngo'}>
-            {activeMissions.length} Active Live Rescue{activeMissions.length > 1 ? 's' : ''}
+        {allMissions.length > 0 && (
+          <Badge theme="ngo">
+            {allMissions.length} Active Surplus Listing{allMissions.length > 1 ? 's' : ''}
           </Badge>
         )}
       </div>
 
-      {/* CORNER CASE 1: EMPTY STATE VIEW (No Active Orders) */}
-      {demoState === 'EMPTY' ? (
+      {/* EMPTY STATE */}
+      {allMissions.length === 0 ? (
         <div className="empty-state-container">
           <Card hover={false} className="empty-state-card">
             <div className="empty-icon-wrapper">
               <PackageCheck size={48} className="empty-icon" />
             </div>
-            <h2 className="empty-title">All Caught Up! No Active Rescue Missions</h2>
+            <h2 className="empty-title">All Caught Up! No Active Surplus Listings</h2>
             <p className="empty-desc">
-              All surplus food donations are currently completed or waiting for new donor listings. When a volunteer or NGO claims food, live tracking will appear here automatically.
+              All surplus food donations are currently completed or waiting for new donor listings. When a restaurant posts food, tracking options will appear here automatically.
             </p>
-            <div className="empty-actions">
-              <Button variant="primary" icon={Plus} onClick={() => alert('Opening Create Surplus Post form...')}>
-                Post Surplus Food Now
-              </Button>
-            </div>
           </Card>
         </div>
       ) : (
-        /* CORNER CASE 2 & 3: ACTIVE & MULTI-ORDER STATE VIEW */
+        /* ACTIVE & MULTI-ORDER STATE VIEW */
         <div className="logistics-split-grid">
           {/* Left Column: Active Mission Cards List */}
           <div className="missions-list">
             <div className="multi-order-notice">
-              <span>💡 Select a mission card to focus map tracking</span>
+              <span>💡 Click a mission card to focus Leaflet Live GPS map tracking</span>
             </div>
 
-            {activeMissions.map((mission) => {
-              const isSelected = mission.id === currentSelectedMission?.id;
+            {filteredMissions.map((mission) => {
+              const isSelected = mission.id === activeSelectedMission?.id;
 
               return (
                 <Card
@@ -167,45 +177,60 @@ export default function LogisticsRescueTab() {
                 >
                   <div className="mission-top">
                     <div>
-                      <span className="mission-id">Mission #{mission.id}</span>
+                      <span className="mission-id">Listing ID #{mission.id}</span>
                       <h3 className="mission-item-title">{mission.item}</h3>
                     </div>
                     
                     {/* Readable Status Badge */}
-                    <div className={`readable-status-badge ${mission.urgency === 'HIGH' ? 'urgent-badge' : ''}`}>
+                    <div className={`readable-status-badge ${mission.statusBadgeClass}`}>
                       <span className="live-dot"></span>
-                      <span>🚚 On The Way ({mission.pickupETA.split('(')[1]?.replace(')', '') || 'Dhaka'})</span>
+                      <span>{mission.readableStatusText}</span>
                     </div>
                   </div>
 
-                  {/* Volunteer Details Box */}
-                  <div className="volunteer-info-box">
-                    <div className="volunteer-profile">
-                      <div className="v-avatar">🛵</div>
-                      <div>
-                        <span className="v-name">{mission.volunteer}</span>
-                        <span className="v-meta">{mission.vehicle} • {mission.rating}</span>
+                  {/* Rider / Supply Chain Subtext Explanation */}
+                  {mission.missionStatus === 'AWAITING_CLAIM' && (
+                    <div className="logistics-notice-box waiting-notice">
+                      <span>⏳ Listed in NGO Priority Window. Live GPS tracking will activate as soon as an NGO or buyer claims this item.</span>
+                    </div>
+                  )}
+
+                  {mission.missionStatus === 'SEARCHING_RIDER' && (
+                    <div className="logistics-notice-box searching-notice">
+                      <span>🟡 Claim confirmed by NGO! Finding nearest volunteer rider within 2 km...</span>
+                    </div>
+                  )}
+
+                  {/* Volunteer Details Box (Active when Rider Accepted) */}
+                  {mission.missionStatus === 'RIDER_ACCEPTED' && (
+                    <div className="volunteer-info-box">
+                      <div className="volunteer-profile">
+                        <div className="v-avatar">🛵</div>
+                        <div>
+                          <span className="v-name">{mission.volunteer}</span>
+                          <span className="v-meta">{mission.vehicle} • {mission.rating}</span>
+                        </div>
+                      </div>
+
+                      <div className="contact-actions-row">
+                        <button
+                          className="action-circle-btn green-call-btn"
+                          title="Call Volunteer"
+                          onClick={(e) => { e.stopPropagation(); alert(`Calling ${mission.volunteer}...`); }}
+                        >
+                          <PhoneCall size={18} />
+                        </button>
+
+                        <button
+                          className="action-circle-btn message-chat-btn"
+                          title="In-App Chat"
+                          onClick={(e) => { e.stopPropagation(); setIsChatOpen(true); }}
+                        >
+                          <MessageSquare size={18} />
+                        </button>
                       </div>
                     </div>
-
-                    <div className="contact-actions-row">
-                      <button
-                        className="action-circle-btn green-call-btn"
-                        title="Call Volunteer"
-                        onClick={(e) => { e.stopPropagation(); alert(`Calling ${mission.volunteer}...`); }}
-                      >
-                        <PhoneCall size={18} />
-                      </button>
-
-                      <button
-                        className="action-circle-btn message-chat-btn"
-                        title="In-App Chat"
-                        onClick={(e) => { e.stopPropagation(); setIsChatOpen(true); }}
-                      >
-                        <MessageSquare size={18} />
-                      </button>
-                    </div>
-                  </div>
+                  )}
 
                   {/* Details */}
                   <div className="logistics-details-list">
@@ -217,10 +242,12 @@ export default function LogisticsRescueTab() {
                       <MapPin size={16} className="icon-orange" />
                       <span>Destination: <strong>{mission.destination}</strong></span>
                     </div>
-                    <div className="detail-row otp-row">
-                      <ShieldCheck size={16} className="icon-blue" />
-                      <span>Verification Code: <strong className="otp-code">{mission.otpRequired}</strong></span>
-                    </div>
+                    {mission.missionStatus === 'RIDER_ACCEPTED' && (
+                      <div className="detail-row otp-row">
+                        <ShieldCheck size={16} className="icon-blue" />
+                        <span>Verification Code: <strong className="otp-code">{mission.otpRequired}</strong></span>
+                      </div>
+                    )}
                   </div>
                 </Card>
               );
@@ -246,7 +273,7 @@ export default function LogisticsRescueTab() {
                   zoom={13}
                   scrollWheelZoom={true}
                   className="leaflet-map-canvas"
-                  key={currentSelectedMission?.id || 'map'}
+                  key={activeSelectedMission?.id || 'map'}
                 >
                   <TileLayer
                     url={tileLayer.url}
@@ -254,34 +281,40 @@ export default function LogisticsRescueTab() {
                   />
 
                   {/* Active Selected Mission Route Polyline */}
-                  {currentSelectedMission && (
+                  {activeSelectedMission && activeSelectedMission.missionStatus === 'RIDER_ACCEPTED' && (
                     <>
                       <Polyline
-                        positions={currentSelectedMission.route}
+                        positions={activeSelectedMission.route}
                         pathOptions={{ color: '#059669', weight: 8, opacity: 0.4, lineCap: 'round', lineJoin: 'round' }}
                       />
                       <Polyline
-                        positions={currentSelectedMission.route}
+                        positions={activeSelectedMission.route}
                         pathOptions={{ color: '#10b981', weight: 5, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }}
                       />
                     </>
                   )}
 
                   {/* Floating OpenStreetMap ETA Badges */}
-                  <Marker position={PRIMARY_ROUTE_ETA_POS} icon={createGoogleEtaBadgeMarker('১৪ মিনিট', '৩.৮ কিমি', true)} />
+                  {activeSelectedMission && activeSelectedMission.missionStatus === 'RIDER_ACCEPTED' && (
+                    <Marker position={PRIMARY_ROUTE_ETA_POS} icon={createGoogleEtaBadgeMarker('১৪ মিনিট', '৩.৮ কিমি', true)} />
+                  )}
 
-                  {/* Clean Marker Pins without overlapping text bubbles */}
-                  {activeMissions.map((m) => (
+                  {/* Clean Marker Pins */}
+                  {filteredMissions.map((m) => (
                     <React.Fragment key={m.id}>
                       <Marker position={m.coordinates.restPos} icon={restIcon}>
                         <Popup>🏪 Restaurant: {m.item.split('(')[0]}</Popup>
                       </Marker>
-                      <Marker position={m.coordinates.riderPos} icon={riderIcon}>
-                        <Popup>🛵 Rider: {m.volunteer}</Popup>
-                      </Marker>
-                      <Marker position={m.coordinates.ngoPos} icon={ngoIcon}>
-                        <Popup>🏢 Destination: {m.destination}</Popup>
-                      </Marker>
+                      {m.missionStatus === 'RIDER_ACCEPTED' && (
+                        <Marker position={m.coordinates.riderPos} icon={riderIcon}>
+                          <Popup>🛵 Rider: {m.volunteer}</Popup>
+                        </Marker>
+                      )}
+                      {(m.missionStatus === 'RIDER_ACCEPTED' || m.missionStatus === 'SEARCHING_RIDER') && (
+                        <Marker position={m.coordinates.ngoPos} icon={ngoIcon}>
+                          <Popup>🏢 Destination: {m.destination}</Popup>
+                        </Marker>
+                      )}
                     </React.Fragment>
                   ))}
                 </MapContainer>
@@ -299,7 +332,7 @@ export default function LogisticsRescueTab() {
       <InAppChatModal
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
-        volunteerName={currentSelectedMission?.volunteer || 'Tanvir Hossain'}
+        volunteerName={activeSelectedMission?.volunteer || 'Tanvir Hossain'}
       />
     </div>
   );

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, ShieldCheck, Camera, CheckCircle2, AlertTriangle, 
-  Thermometer, Clock, Leaf, RefreshCw, Upload, FileCheck, Utensils
+  Thermometer, Clock, Leaf, RefreshCw, Upload, FileCheck, Utensils,
+  PackageCheck, PackageX, Image as ImageIcon
 } from 'lucide-react';
 import Modal from '../../../../components/Modal/Modal';
 import Button from '../../../../components/Button/Button';
@@ -19,20 +20,30 @@ export default function AiFoodSafetyScannerModal({
   
   const [foodName, setFoodName] = useState('Royal Mutton Kacchi Biryani');
   const [portions, setPortions] = useState(25);
-  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   
-  // Business Owner Pricing & Discount Timer Settings
+  // Pricing & Tier Strategy
   const [basePrice, setBasePrice] = useState(500);
-  const [tier2Discount, setTier2Discount] = useState(50); // Default 50%
-  const [tier3Discount, setTier3Discount] = useState(80); // Default 80%
-  const [expiryHours, setExpiryHours] = useState(3);      // Default 3 Hours
-  const [activeDemoImage, setActiveDemoImage] = useState('');
+  const [tier2Discount, setTier2Discount] = useState(50);
+  const [tier3Discount, setTier3Discount] = useState(80);
+  const [expiryHours, setExpiryHours] = useState(3);
   
-  // AI Audit States
+  // Configured Master Image & Custom Uploaded Image
+  const [masterImage, setMasterImage] = useState('');
+  const [customUploadImage, setCustomUploadImage] = useState(null);
+  
+  // AI Packaging Sealing Inspection Mode ('SEALED', 'SEMI_SEALED', 'UNSEALED')
+  const [packagingState, setPackagingState] = useState('SEALED');
+  
+  // Thermal & Visual Freshness Parameters
+  const [storageTemp, setStorageTemp] = useState('HOT'); // 'HOT', 'ROOM_TEMP', 'CHILLED'
+  const [visualFreshness, setVisualFreshness] = useState('FRESH'); // 'FRESH', 'MODERATE', 'RISK_WARNING'
+  
+  // AI Audit Output States
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Load Master Menu Items from localStorage / masterMenuService on mount/open
+  // Load Master Menu Items from localStorage / masterMenuService on open
   useEffect(() => {
     if (isOpen) {
       const items = masterMenuService.getMasterMenuItems();
@@ -50,7 +61,9 @@ export default function AiFoodSafetyScannerModal({
     setTier2Discount(item.tier2Discount || 50);
     setTier3Discount(item.tier3Discount || 80);
     setExpiryHours(item.expiryHours || 3);
-    setActiveDemoImage(item.demoImage || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80');
+    setMasterImage(item.demoImage || '');
+    setCustomUploadImage(null);
+    setScanResult(null);
   };
 
   const handleDropdownChange = (e) => {
@@ -62,24 +75,21 @@ export default function AiFoodSafetyScannerModal({
     }
   };
 
-  // Sample Food Package Images for AI Vision Audit
-  const samplePhotos = [
-    {
-      title: 'Sealed Thermal Pack (Demo Saved Image)',
-      url: activeDemoImage || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=500&q=80',
-      quality: 'pass'
-    },
-    {
-      title: 'Sealed Thermal Foil Pack (Recommended)',
-      url: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=500&q=80',
-      quality: 'pass'
-    },
-    {
-      title: 'Unsealed Open Container (Fails Audit)',
-      url: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80',
-      quality: 'fail'
+  const handleFileUpload = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        setCustomUploadImage(uploadEvent.target.result);
+        setScanResult(null);
+      };
+      reader.readAsDataURL(file);
     }
-  ];
+  };
+
+  const getActiveDisplayImage = () => {
+    return customUploadImage || masterImage || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80';
+  };
 
   const handleRunAiAudit = () => {
     setIsScanning(true);
@@ -87,102 +97,171 @@ export default function AiFoodSafetyScannerModal({
 
     setTimeout(() => {
       setIsScanning(false);
-      const chosenPhoto = samplePhotos[selectedPhotoIndex];
-
-      // Auto-match menu item if needed
       const matched = masterMenuItems.find(m => m.id === selectedMenuId) || masterMenuItems[0];
+      const itemTitle = matched ? matched.title : foodName;
 
-      if (chosenPhoto.quality === 'pass') {
+      let baseScore = 100;
+      let auditGrade = 'Grade A+ (100% AI Certified)';
+      let isApproved = true;
+      let sealingMsg = '';
+      let tempMsg = '';
+      let spoilageMsg = '';
+
+      // 1. Packaging Sealing Impact
+      if (packagingState === 'UNSEALED') {
+        baseScore -= 60;
+        isApproved = false;
+        auditGrade = 'Grade F (Failed Audit)';
+        sealingMsg = 'Open / Unsealed Container Detected (High Airborne Contamination Risk)';
+      } else if (packagingState === 'SEMI_SEALED') {
+        baseScore -= 18;
+        sealingMsg = `Standard Container Box for "${itemTitle}" (Minor Thermal Air Gap Detected)`;
+      } else {
+        sealingMsg = `Hermetically Sealed Thermal Packaging Verified for "${itemTitle}" (100% Insulation)`;
+      }
+
+      // 2. Thermal Vision Temperature Impact
+      if (storageTemp === 'ROOM_TEMP') {
+        baseScore -= 12;
+        tempMsg = 'Room Temp Storage (25°C) — Accelerated Microbial Window';
+      } else if (storageTemp === 'HOT') {
+        tempMsg = 'Hot Thermal Storage (62°C+) — Bacterial Activity Suppressed';
+      } else {
+        tempMsg = 'Regulated Cold Storage (4°C) Verified';
+      }
+
+      // 3. Computer Vision Freshness Impact
+      if (visualFreshness === 'MODERATE') {
+        baseScore -= 8;
+        spoilageMsg = 'Slight Surface Moisture Loss Detected (2-4h Batch)';
+      } else if (visualFreshness === 'RISK_WARNING') {
+        baseScore -= 18;
+        spoilageMsg = 'Edge Drying & Color Fading Detected by AI Computer Vision';
+      } else {
+        spoilageMsg = 'Zero Mold / Zero Discoloration / Perfect Surface Texture Integrity';
+      }
+
+      const finalScore = Math.max(38, Math.min(100, baseScore));
+      if (finalScore < 60) {
+        isApproved = false;
+        auditGrade = 'Grade F (Audit Failed)';
+      } else if (finalScore >= 95) {
+        auditGrade = `Grade A+ (${finalScore}% AI Certified)`;
+      } else if (finalScore >= 80) {
+        auditGrade = `Grade B (${finalScore}% AI Verified)`;
+      } else {
+        auditGrade = `Grade C (${finalScore}% Moderate Freshness)`;
+      }
+
+      const calculatedNgoMinutes = Math.max(1, Math.round(45 * (finalScore / 100)));
+
+      if (isApproved) {
         setScanResult({
           status: 'APPROVED',
-          hygieneScore: 98,
-          grade: 'Grade A+ (Certified)',
-          sealingDetection: `Hermetically Sealed Thermal Container for "${matched ? matched.title : foodName}" (99.4% Confidence)`,
-          temperatureEst: 'Hot Storage (62°C+) • Freshly Cooked',
-          spoilageCheck: 'Zero Mold / Zero Discoloration Detected',
-          expiryRecommendation: 'Safe Window: 45 Mins Max for High Temperature',
-          aiSummary: `Passed AI Thermal Vision & Hygiene Standards. Matched with Master Menu Item "${matched ? matched.title : foodName}". High-res pre-saved demo image linked.`
+          hygieneScore: finalScore,
+          ngoPriorityMinutes: calculatedNgoMinutes,
+          grade: auditGrade,
+          sealingDetection: sealingMsg,
+          temperatureEst: tempMsg,
+          spoilageCheck: spoilageMsg,
+          expiryRecommendation: `Safe Window: ${expiryHours} Hours Max | NGO Priority: ${calculatedNgoMinutes} Mins (${finalScore}% AI Score)`,
+          aiSummary: `Passed AI Computer Vision & Hygiene Audit with ${finalScore}% Freshness Score. Assigned ${calculatedNgoMinutes}-min NGO Priority Window.`
         });
       } else {
         setScanResult({
           status: 'REJECTED',
-          hygieneScore: 42,
-          grade: 'Grade F (Failed)',
-          sealingDetection: 'Open / Unsealed Food Pack Detected (High Risk)',
-          temperatureEst: 'Ambient Unregulated Storage',
-          spoilageCheck: 'Potential Exposure to Foreign Contaminants',
+          hygieneScore: finalScore,
+          ngoPriorityMinutes: 0,
+          grade: auditGrade,
+          sealingDetection: sealingMsg,
+          temperatureEst: tempMsg,
+          spoilageCheck: spoilageMsg,
           expiryRecommendation: 'Listing Blocked',
-          aiSummary: '⚠️ AI Audit Failed: Food must be properly covered and sealed in thermal packaging before listing.'
+          aiSummary: `⚠️ AI Audit Failed (${finalScore}% Score): Food container is improperly sealed or exposed. Safe packaging required.`
         });
       }
-    }, 1800);
+    }, 1500);
   };
 
   const handleCompleteListing = async () => {
-    if (!scanResult || scanResult.status !== 'APPROVED') return;
+    if (!scanResult || scanResult.status !== 'APPROVED' || isSubmitting) return;
 
-    const matched = masterMenuItems.find(m => m.id === selectedMenuId);
-    const finalImage = matched ? matched.demoImage : (samplePhotos[selectedPhotoIndex].url || activeDemoImage);
+    try {
+      setIsSubmitting(true);
+      const matched = masterMenuItems.find(m => m.id === selectedMenuId);
+      const officialMasterImage = matched ? matched.demoImage : (masterImage || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80');
 
-    const payload = {
-      foodItemTitle: foodName,
-      quantityPortions: portions,
-      initialPriceBDT: basePrice,
-      tier2DiscountPercent: tier2Discount,
-      tier3DiscountPercent: tier3Discount,
-      expiryHours: expiryHours,
-      imageUrl: finalImage,
-      skipAiAudit: false
-    };
+      const payload = {
+        foodItemTitle: foodName,
+        quantityPortions: portions,
+        initialPriceBDT: basePrice,
+        tier2DiscountPercent: tier2Discount,
+        tier3DiscountPercent: tier3Discount,
+        expiryHours: expiryHours,
+        imageUrl: officialMasterImage,
+        aiScore: scanResult ? scanResult.hygieneScore : 100,
+        skipAiAudit: false
+      };
 
-    const newListing = await surplusService.createSurplusListing(payload);
-    onListingApproved({
-      ...newListing,
-      image: finalImage
-    });
-    onClose();
+      const newListing = await surplusService.createSurplusListing(payload);
+      onListingApproved({
+        ...newListing,
+        image: officialMasterImage
+      });
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSkipAiAudit = async () => {
-    const matched = masterMenuItems.find(m => m.id === selectedMenuId);
-    const finalImage = matched ? matched.demoImage : (samplePhotos[selectedPhotoIndex].url || activeDemoImage);
+    if (isSubmitting) return;
 
-    const payload = {
-      foodItemTitle: foodName,
-      quantityPortions: portions,
-      initialPriceBDT: basePrice,
-      tier2DiscountPercent: tier2Discount,
-      tier3DiscountPercent: tier3Discount,
-      expiryHours: expiryHours,
-      imageUrl: finalImage,
-      skipAiAudit: true
-    };
+    try {
+      setIsSubmitting(true);
+      const matched = masterMenuItems.find(m => m.id === selectedMenuId);
+      const officialMasterImage = matched ? matched.demoImage : (masterImage || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80');
 
-    const unverifiedListing = await surplusService.createSurplusListing(payload);
-    onListingApproved({
-      ...unverifiedListing,
-      image: finalImage
-    });
-    onClose();
+      const payload = {
+        foodItemTitle: foodName,
+        quantityPortions: portions,
+        initialPriceBDT: basePrice,
+        tier2DiscountPercent: tier2Discount,
+        tier3DiscountPercent: tier3Discount,
+        expiryHours: expiryHours,
+        imageUrl: officialMasterImage,
+        aiScore: 60,
+        skipAiAudit: true
+      };
+
+      const unverifiedListing = await surplusService.createSurplusListing(payload);
+      onListingApproved({
+        ...unverifiedListing,
+        image: officialMasterImage
+      });
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="🤖 AI Thermal Vision & Master Menu Surplus Food Engine"
+      title="🤖 AI Thermal Vision & Food Safety Audit Engine"
     >
       <div className="ai-audit-modal-content">
         {/* Header Alert Banner */}
         <div className="ai-intro-banner">
           <Sparkles size={22} color="#059669" />
           <div>
-            <h4>Automated AI Hygiene & Master Menu Matching</h4>
-            <p>Select an item from your <strong>Settings Master Menu Catalog</strong> or scan raw photos to auto-populate high-res demo pictures and tier pricing.</p>
+            <h4>Automated AI Hygiene & Freshness Inspection</h4>
+            <p>Scan food packaging with computer vision to issue an official <strong>AI Safety Seal</strong> before posting surplus food.</p>
           </div>
         </div>
 
-        {/* MASTER MENU DROPDOWN SELECTOR */}
+        {/* 1. MASTER MENU ITEM DROPDOWN SELECTOR */}
         <div style={{
           background: '#f0fdf4',
           border: '1.5px solid #86efac',
@@ -207,7 +286,7 @@ export default function AiFoodSafetyScannerModal({
           </select>
         </div>
 
-        {/* Form Inputs */}
+        {/* 2. ITEM TITLE & QUANTITY INPUTS */}
         <div className="form-row-grid">
           <div className="form-group">
             <label className="lbl">Selected Food Item Title:</label>
@@ -230,7 +309,7 @@ export default function AiFoodSafetyScannerModal({
           </div>
         </div>
 
-        {/* Business Owner Pricing & Discount Strategy Controls */}
+        {/* 3. BUSINESS OWNER PRICING & TIER DISCOUNT CONTROLS */}
         <div className="business-pricing-card" style={{
           background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
           border: '1.5px solid #cbd5e1',
@@ -299,24 +378,247 @@ export default function AiFoodSafetyScannerModal({
           </div>
         </div>
 
-        {/* Photo Selection Grid for AI Audit */}
-        <div className="photo-selection-section">
-          <label className="lbl">Select Packaging Photo / Demo Picture for AI Inspection:</label>
-          <div className="photo-thumbs-grid">
-            {samplePhotos.map((photo, idx) => (
-              <div 
-                key={idx} 
-                className={`thumb-card ${selectedPhotoIndex === idx ? 'thumb-active' : ''}`}
-                onClick={() => { setSelectedPhotoIndex(idx); setScanResult(null); }}
-              >
-                <img src={photo.url} alt={photo.title} className="thumb-img" />
-                <span className="thumb-caption">{photo.title}</span>
-              </div>
-            ))}
+        {/* 4. FOOD ITEM IMAGE & PACKAGING PHOTO SELECTION */}
+        <div style={{
+          background: '#ffffff',
+          border: '1px solid #cbd5e1',
+          borderRadius: '12px',
+          padding: '16px',
+          marginBottom: '18px'
+        }}>
+          <h5 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            📸 Food Item Image & Packaging Inspection Photo
+          </h5>
+
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <div style={{ width: '110px', height: '100px', borderRadius: '10px', overflow: 'hidden', border: '2px solid #2563eb', flexShrink: 0 }}>
+              <img src={getActiveDisplayImage()} alt={foodName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', display: 'block', marginBottom: '4px' }}>
+                {customUploadImage ? '📷 Custom Package Photo Uploaded' : '📖 Pre-saved Master Menu Image (Settings Catalog)'}
+              </span>
+              <p style={{ fontSize: '11px', color: '#64748b', margin: '0 0 8px 0', lineHeight: 1.4 }}>
+                This image will be shown on the NGO surplus feed and B2C marketplace deal card.
+              </p>
+
+              <label style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                background: '#eff6ff',
+                border: '1px solid #93c5fd',
+                color: '#1d4ed8',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}>
+                <Upload size={14} />
+                <span>Upload Current Package Photo (Device Gallery)</span>
+                <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} />
+              </label>
+
+              {customUploadImage && (
+                <button 
+                  type="button" 
+                  onClick={() => setCustomUploadImage(null)}
+                  style={{ marginLeft: '8px', background: 'none', border: 'none', color: '#ef4444', fontSize: '11px', textDecoration: 'underline', cursor: 'pointer' }}
+                >
+                  Reset to Settings Image
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Run AI Audit Button */}
+        {/* 5. DYNAMIC AI COMPUTER VISION PARAMETERS TUNING */}
+        <div style={{
+          background: '#f8fafc',
+          border: '1.5px solid #e2e8f0',
+          borderRadius: '12px',
+          padding: '14px',
+          marginBottom: '18px'
+        }}>
+          <h5 style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#0f172a', fontWeight: 700 }}>
+            🧪 AI Inspection Controls (Tuning & Testing Parameters)
+          </h5>
+
+          {/* Parameter A: Packaging Condition */}
+          <div style={{ marginBottom: '12px' }}>
+            <label className="lbl" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '6px', display: 'block' }}>
+              📦 Packaging Insulation & Container Seal:
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+              <button 
+                type="button"
+                onClick={() => { setPackagingState('SEALED'); setScanResult(null); }}
+                style={{
+                  padding: '8px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  border: packagingState === 'SEALED' ? '2px solid #10b981' : '1px solid #cbd5e1',
+                  background: packagingState === 'SEALED' ? '#f0fdf4' : '#ffffff',
+                  color: packagingState === 'SEALED' ? '#166534' : '#475569',
+                  cursor: 'pointer'
+                }}
+              >
+                🟢 Sealed Thermal (+0%)
+              </button>
+              <button 
+                type="button"
+                onClick={() => { setPackagingState('SEMI_SEALED'); setScanResult(null); }}
+                style={{
+                  padding: '8px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  border: packagingState === 'SEMI_SEALED' ? '2px solid #f59e0b' : '1px solid #cbd5e1',
+                  background: packagingState === 'SEMI_SEALED' ? '#fffbeb' : '#ffffff',
+                  color: packagingState === 'SEMI_SEALED' ? '#92400e' : '#475569',
+                  cursor: 'pointer'
+                }}
+              >
+                🟡 Semi-Lidded (-18%)
+              </button>
+              <button 
+                type="button"
+                onClick={() => { setPackagingState('UNSEALED'); setScanResult(null); }}
+                style={{
+                  padding: '8px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  border: packagingState === 'UNSEALED' ? '2px solid #ef4444' : '1px solid #cbd5e1',
+                  background: packagingState === 'UNSEALED' ? '#fef2f2' : '#ffffff',
+                  color: packagingState === 'UNSEALED' ? '#991b1b' : '#475569',
+                  cursor: 'pointer'
+                }}
+              >
+                🔴 Unsealed (-60% Fail)
+              </button>
+            </div>
+          </div>
+
+          {/* Parameter B: Thermal Storage Temperature */}
+          <div style={{ marginBottom: '12px' }}>
+            <label className="lbl" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '6px', display: 'block' }}>
+              🌡️ Thermal Vision Temperature Storage:
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+              <button 
+                type="button"
+                onClick={() => { setStorageTemp('HOT'); setScanResult(null); }}
+                style={{
+                  padding: '8px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  border: storageTemp === 'HOT' ? '2px solid #059669' : '1px solid #cbd5e1',
+                  background: storageTemp === 'HOT' ? '#ecfdf5' : '#ffffff',
+                  color: storageTemp === 'HOT' ? '#047857' : '#475569',
+                  cursor: 'pointer'
+                }}
+              >
+                ♨️ Hot Storage 62°C (+0%)
+              </button>
+              <button 
+                type="button"
+                onClick={() => { setStorageTemp('ROOM_TEMP'); setScanResult(null); }}
+                style={{
+                  padding: '8px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  border: storageTemp === 'ROOM_TEMP' ? '2px solid #f59e0b' : '1px solid #cbd5e1',
+                  background: storageTemp === 'ROOM_TEMP' ? '#fffbeb' : '#ffffff',
+                  color: storageTemp === 'ROOM_TEMP' ? '#b45309' : '#475569',
+                  cursor: 'pointer'
+                }}
+              >
+                🌤️ Room Temp 25°C (-12%)
+              </button>
+              <button 
+                type="button"
+                onClick={() => { setStorageTemp('CHILLED'); setScanResult(null); }}
+                style={{
+                  padding: '8px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  border: storageTemp === 'CHILLED' ? '2px solid #3b82f6' : '1px solid #cbd5e1',
+                  background: storageTemp === 'CHILLED' ? '#eff6ff' : '#ffffff',
+                  color: storageTemp === 'CHILLED' ? '#1d4ed8' : '#475569',
+                  cursor: 'pointer'
+                }}
+              >
+                🧊 Chilled 4°C (+0%)
+              </button>
+            </div>
+          </div>
+
+          {/* Parameter C: Visual Surface Freshness */}
+          <div>
+            <label className="lbl" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '6px', display: 'block' }}>
+              👁️ Computer Vision Visual Surface Texture:
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+              <button 
+                type="button"
+                onClick={() => { setVisualFreshness('FRESH'); setScanResult(null); }}
+                style={{
+                  padding: '8px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  border: visualFreshness === 'FRESH' ? '2px solid #10b981' : '1px solid #cbd5e1',
+                  background: visualFreshness === 'FRESH' ? '#f0fdf4' : '#ffffff',
+                  color: visualFreshness === 'FRESH' ? '#15803d' : '#475569',
+                  cursor: 'pointer'
+                }}
+              >
+                ✨ Fresh Batch (+0%)
+              </button>
+              <button 
+                type="button"
+                onClick={() => { setVisualFreshness('MODERATE'); setScanResult(null); }}
+                style={{
+                  padding: '8px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  border: visualFreshness === 'MODERATE' ? '2px solid #f59e0b' : '1px solid #cbd5e1',
+                  background: visualFreshness === 'MODERATE' ? '#fffbeb' : '#ffffff',
+                  color: visualFreshness === 'MODERATE' ? '#92400e' : '#475569',
+                  cursor: 'pointer'
+                }}
+              >
+                ⏳ 2-4h Stored (-8%)
+              </button>
+              <button 
+                type="button"
+                onClick={() => { setVisualFreshness('RISK_WARNING'); setScanResult(null); }}
+                style={{
+                  padding: '8px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  border: visualFreshness === 'RISK_WARNING' ? '2px solid #dc2626' : '1px solid #cbd5e1',
+                  background: visualFreshness === 'RISK_WARNING' ? '#fef2f2' : '#ffffff',
+                  color: visualFreshness === 'RISK_WARNING' ? '#b91c1c' : '#475569',
+                  cursor: 'pointer'
+                }}
+              >
+                ⚠️ Edge Drying (-18%)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 6. RUN AI AUDIT BUTTON */}
         <button 
           className="btn-run-ai-scan"
           onClick={handleRunAiAudit}
@@ -325,12 +627,12 @@ export default function AiFoodSafetyScannerModal({
           {isScanning ? (
             <>
               <RefreshCw size={18} className="spin-icon" />
-              <span>Scanning Computer Vision & Matching Master Menu...</span>
+              <span>Scanning Computer Vision Features & Packaging Insulation...</span>
             </>
           ) : (
             <>
               <Sparkles size={18} />
-              <span>Run AI Vision & Master Menu Verification ➔</span>
+              <span>Run AI Vision & Food Safety Inspection ➔</span>
             </>
           )}
         </button>
@@ -341,18 +643,18 @@ export default function AiFoodSafetyScannerModal({
           onClick={handleSkipAiAudit}
           type="button"
         >
-          ⚠️ Skip AI Audit (Post using Saved Master Menu Demo Image directly)
+          ⚠️ Skip AI Audit (Post using Saved Master Menu Image directly)
         </button>
 
         {/* Live AI Scanner Overlay Beam Animation */}
         {isScanning && (
           <div className="ai-scanning-overlay">
             <div className="scan-beam"></div>
-            <p className="scan-status-text">Matching Item with Master Menu Catalog & Inspecting Sealing Integrity...</p>
+            <p className="scan-status-text">Analyzing Thermal Insulation & Packaging Integrity...</p>
           </div>
         )}
 
-        {/* AI Scan Results Output Box */}
+        {/* 7. AI SCAN RESULTS OUTPUT BOX */}
         {scanResult && (
           <div className={`ai-results-card ${scanResult.status === 'APPROVED' ? 'res-pass' : 'res-fail'}`}>
             <div className="res-header">
@@ -394,7 +696,7 @@ export default function AiFoodSafetyScannerModal({
                 className="btn-approve-post"
                 onClick={handleCompleteListing}
               >
-                ✨ Publish AI Certified Listing with Saved Master Image ➔
+                ✨ Publish AI Certified Listing with Saved Image ➔
               </button>
             )}
           </div>

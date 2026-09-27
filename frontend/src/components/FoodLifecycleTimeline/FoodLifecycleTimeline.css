@@ -1,0 +1,190 @@
+.food-lifecycle-timeline-card {
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  font-family: 'Inter', sans-serif;
+}
+
+.timeline-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.header-title-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-title-box h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.total-window-badge {
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid #cbd5e1;
+}
+
+/* Visual Segment Track */
+.timeline-track-wrap {
+  display: flex;
+  height: 28px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  border: 1px solid #cbd5e1;
+}
+
+.track-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.ngo-segment {
+  background: #d1fae5;
+  color: #047857;
+  border-right: 2px solid #ffffff;
+}
+
+.b2c-segment {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.segment-active {
+  box-shadow: inset 0 0 0 2px #059669;
+}
+
+/* Detail Grid */
+.phases-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.phase-detail-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  transition: all 0.2s ease;
+}
+
+.active-phase-box {
+  border-color: #059669 !important;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15) !important;
+  background: #f0fdf4 !important;
+}
+
+.phase-box-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.phase-pill {
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ngo-theme { color: #059669; }
+.b2c-theme { color: #d97706; }
+.lock-theme { color: #dc2626; }
+
+.live-now-tag {
+  font-size: 9px;
+  font-weight: 800;
+  background: #10b981;
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  animation: pulseTag 1.5s infinite;
+}
+
+.yellow-tag { background: #f59e0b; color: #ffffff; }
+.red-tag { background: #ef4444; color: #ffffff; }
+
+@keyframes pulseTag {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.phase-timer-val {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.phase-box-sub {
+  font-size: 10px;
+  color: #64748b;
+}
+
+/* Compact Mode */
+.compact-lifecycle-badge {
+  margin-top: 4px;
+}
+
+.compact-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.meta-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.total-pill {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.ngo-pill {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.b2c-pill {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.expired-pill {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
