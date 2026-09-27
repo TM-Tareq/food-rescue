@@ -68,8 +68,8 @@ CREATE TABLE IF NOT EXISTS surplus_food_posts (
     discount_price DECIMAL(10,2) DEFAULT 0.00,
     is_donatable_to_ngo BOOLEAN DEFAULT TRUE,
     storage_temp ENUM('HOT', 'COLD', 'ROOM_TEMP') DEFAULT 'ROOM_TEMP',
-    prep_time TIMESTAMP,
-    pickup_deadline TIMESTAMP NOT NULL,
+    prep_time TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    pickup_deadline TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     status ENUM('POSTED', 'NGO_CLAIMED', 'FLASH_SALE', 'PICKED_UP', 'DELIVERED', 'EXPIRED') DEFAULT 'POSTED',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS deliveries (
     delivery_otp VARCHAR(6),
     status ENUM('ASSIGNED', 'PICKED_UP', 'DELIVERED', 'FAILED') DEFAULT 'ASSIGNED',
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    delivered_at TIMESTAMP,
+    delivered_at TIMESTAMP NULL,
     FOREIGN KEY (claim_id) REFERENCES claims(id) ON DELETE CASCADE,
     FOREIGN KEY (volunteer_id) REFERENCES volunteers(id) ON DELETE SET NULL
 );
