@@ -98,12 +98,12 @@ export const authService = {
     if (userManagementService.isUserDisabled(cleanEmail)) {
       throw new Error('⛔ Your account has been suspended by Super Admin. Please contact support.');
     }
-    
+
     try {
-      const response = await apiClient.post('/auth/login', { 
-        email: cleanEmail, 
-        password: password, 
-        requestedRole: requestedRole ? requestedRole.toUpperCase() : undefined 
+      const response = await apiClient.post('/auth/login', {
+        email: cleanEmail,
+        password: password,
+        requestedRole: requestedRole ? requestedRole.toUpperCase() : undefined
       });
 
       const resData = (response && response.data) ? response.data : response;
@@ -112,7 +112,7 @@ export const authService = {
         throw new Error(resData.message || 'Invalid email or password.');
       }
 
-      const userRole = (resData.role || requestedRole || 'CONSUMER').toUpperCase();
+      const userRole = (requestedRole || resData.role || 'CONSUMER').toUpperCase();
       const userAvatar = this.getAvatarForRole(userRole);
 
       if (resData.jwtAccessToken) {
@@ -128,11 +128,10 @@ export const authService = {
       // If backend port 8080 is offline or connection refused, fallback gracefully to demo authentication
       if (error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
         console.info('[Auth Fallback Engine]: Backend offline or connection refused. Signing in via client engine.');
-        const detectedRole = KNOWN_DEMO_USERS[cleanEmail] || requestedRole || 'ADMIN';
-        const userRole = detectedRole.toUpperCase();
+        const userRole = (requestedRole || KNOWN_DEMO_USERS[cleanEmail] || 'CONSUMER').toUpperCase();
         const userAvatar = this.getAvatarForRole(userRole);
         const fallbackJwt = 'jwt-fallback-token-2026';
-        
+
         localStorage.setItem('foodrescue_jwt', fallbackJwt);
 
         return {
