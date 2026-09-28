@@ -99,6 +99,14 @@ export const authService = {
       throw new Error('⛔ Your account has been suspended by Super Admin. Please contact support.');
     }
 
+    // Strict Portal Role Validation
+    const registeredRole = this.getRegisteredRoleForEmail(cleanEmail);
+    const reqRoleUpper = (requestedRole || '').toUpperCase();
+
+    if (registeredRole && reqRoleUpper && registeredRole.toUpperCase() !== reqRoleUpper) {
+      throw new Error(`⛔ Access Denied: Account '${cleanEmail}' is registered as ${registeredRole.toUpperCase()}, not ${reqRoleUpper}. Please select the ${registeredRole.toUpperCase()} portal tab or use a ${reqRoleUpper} credential.`);
+    }
+
     try {
       const response = await apiClient.post('/auth/login', {
         email: cleanEmail,
