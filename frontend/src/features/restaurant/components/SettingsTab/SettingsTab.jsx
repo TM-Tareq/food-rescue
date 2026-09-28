@@ -28,7 +28,7 @@ export default function SettingsTab() {
   const [itemDemoImage, setItemDemoImage] = useState('https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80');
   const [itemDescription, setItemDescription] = useState('');
 
-  // Sample Preset Demo Photos
+  // Sample Preset Demo Photos with HD Food Photography
   const presetPhotos = [
     { title: 'Mutton Kacchi', url: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80' },
     { title: 'Chicken Polao', url: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=600&q=80' },

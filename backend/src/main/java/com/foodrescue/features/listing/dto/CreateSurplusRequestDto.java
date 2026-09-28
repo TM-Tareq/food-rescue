@@ -16,6 +16,9 @@ public class CreateSurplusRequestDto {
     @NotNull(message = "Restaurant ID is required")
     private Long restaurantId;
 
+    private String restaurantName;
+    private String restaurantArea;
+
     @NotBlank(message = "Food item title cannot be blank")
     @Size(min = 3, max = 120, message = "Title must be between 3 and 120 characters")
     private String foodItemTitle;

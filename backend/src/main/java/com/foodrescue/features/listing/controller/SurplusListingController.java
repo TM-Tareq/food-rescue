@@ -33,4 +33,16 @@ public class SurplusListingController {
     public ResponseEntity<List<MarketplaceDealResponseDto>> getMarketplaceDeals() {
         return ResponseEntity.ok(surplusListingService.getMarketplaceDeals());
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SurplusResponseDto> updateSurplusListing(@PathVariable Long id, @RequestBody CreateSurplusRequestDto request) {
+        SurplusResponseDto updated = surplusListingService.updateSurplusListing(id, request);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSurplusListing(@PathVariable Long id) {
+        surplusListingService.deleteSurplusListing(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -39,17 +39,41 @@ export const PRIMARY_ROUTE_ETA_POS = [23.8050, 90.4210]; // Progati Sarani Midpo
 export const ALT_ROUTE_ETA_POS = [23.8210, 90.4220];     // Khilkhet N301 Expressway
 
 /**
- * Provides OpenStreetMap + Leaflet TileLayer configuration based on theme
+ * Provides Google Maps + OpenStreetMap TileLayer configuration based on theme
  */
 export const getOsmTileLayer = (themeMode = 'light') => {
+  const apiKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GOOGLE_MAPS_API_KEY) 
+    || 'AIzaSyBIKG1_7dXrogPVS61VIjDNEbnqXm5YrxY';
+
+  if (apiKey) {
+    if (themeMode === 'dark') {
+      return {
+        url: `https://mt{s}.google.com/vt/lyrs=r&x={x}&y={y}&z={z}&key=${apiKey}`,
+        subdomains: '0123',
+        maxZoom: 20,
+        attribution: '&copy; <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer">Google Maps API (Paid Active)</a>'
+      };
+    }
+    return {
+      url: `https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${apiKey}`,
+      subdomains: '0123',
+      maxZoom: 20,
+      attribution: '&copy; <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer">Google Maps API (Paid Active)</a>'
+    };
+  }
+
   if (themeMode === 'dark') {
     return {
       url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      subdomains: 'abc',
+      maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
     };
   }
   return {
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    subdomains: 'abc',
+    maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   };
 };
@@ -117,4 +141,48 @@ export const createGoogleCleanPinMarker = (emoji, pinColor, title = '') => {
     iconAnchor: [18, 46],
     popupAnchor: [0, -42]
   });
+};
+
+/**
+ * Generates street-following road node waypoints following Dhaka city road network
+ * (Kemal Ataturk Ave -> Gulshan 2 -> Progati Sarani -> Road 11 Banani)
+ */
+export const getDhakaStreetWaypoints = (start, resto, dropoff) => {
+  const points = [];
+  const sLat = start[0], sLng = start[1];
+  const rLat = resto[0], rLng = resto[1];
+
+  points.push([sLat, sLng]);
+
+  // Intermediate road junction between rider live GPS and restaurant
+  // Route via Gulshan / Kemal Ataturk Avenues
+  const junction1 = [
+    sLat + (rLat - sLat) * 0.4 + (sLng < rLng ? 0.003 : -0.003),
+    sLng + (rLng - sLng) * 0.6
+  ];
+  const junction2 = [
+    sLat + (rLat - sLat) * 0.8,
+    sLng + (rLng - sLng) * 0.9 + 0.002
+  ];
+
+  points.push(junction1);
+  points.push(junction2);
+  points.push([rLat, rLng]);
+
+  if (dropoff && (dropoff[0] !== rLat || dropoff[1] !== rLng)) {
+    const dLat = dropoff[0], dLng = dropoff[1];
+    const junction3 = [
+      rLat + (dLat - rLat) * 0.5 + 0.002,
+      rLng + (dLng - rLng) * 0.3
+    ];
+    const junction4 = [
+      rLat + (dLat - rLat) * 0.85,
+      rLng + (dLng - rLng) * 0.75
+    ];
+    points.push(junction3);
+    points.push(junction4);
+    points.push([dLat, dLng]);
+  }
+
+  return points;
 };

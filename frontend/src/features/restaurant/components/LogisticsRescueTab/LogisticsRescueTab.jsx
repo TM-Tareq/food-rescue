@@ -8,6 +8,7 @@ import Badge from '../../../../components/Badge/Badge';
 import InAppChatModal from '../InAppChatModal/InAppChatModal';
 import { useTheme } from '../../../../context/ThemeContext';
 import { surplusService } from '../../../../services/surplusService';
+import { supplyChainService } from '../../../../services/supplyChainService';
 import { 
   BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE, 
   BASHUNDHARA_LOCAL_RESCUE_ROUTE,
@@ -40,52 +41,90 @@ export default function LogisticsRescueTab() {
   useEffect(() => {
     const refresh = () => setStoredListings(surplusService.getStoredListings());
     window.addEventListener('foodrescue_surplus_updated', refresh);
-    return () => window.removeEventListener('foodrescue_surplus_updated', refresh);
+    window.addEventListener('foodrescue_supply_chain_updated', refresh);
+    window.addEventListener('storage', refresh);
+    return () => {
+      window.removeEventListener('foodrescue_surplus_updated', refresh);
+      window.removeEventListener('foodrescue_supply_chain_updated', refresh);
+      window.removeEventListener('storage', refresh);
+    };
   }, []);
 
-  // Format active surplus listings into dynamic Logistics Missions
-  const allMissions = storedListings.map((item, index) => {
-    const isVolunteerAssigned = item.status?.includes('Tanvir') || item.statusType === 'success';
-    const isClaimed = isVolunteerAssigned || item.status?.includes('Matching NGO') || item.status?.includes('Claimed');
+  const supplyBatches = supplyChainService.getBatches();
 
-    let missionStatus = 'AWAITING_CLAIM';
-    let readableStatusText = '⏳ Waiting for NGO / Consumer Claim';
-    let statusBadgeClass = 'badge-waiting';
+  // Format active surplus listings and supply chain batches into dynamic Logistics Missions
+  const allMissions = [
+    ...supplyBatches.filter(b => b.status !== 'DELIVERED').map((b) => {
+      const isAssigned = b.riderName && !b.riderName.includes('Pending') && !b.riderName.includes('Searching');
+      return {
+        id: `SC-${b.id}`,
+        originalId: b.id,
+        item: `${b.title || b.name} (${b.portions || 1} Portions)`,
+        category: b.category || 'COOKED',
+        volunteer: isAssigned ? b.riderName : 'Assigning Volunteer Rider...',
+        rating: isAssigned ? '4.9 ⭐' : 'N/A',
+        vehicle: isAssigned ? 'Motorcycle (DHAKA-METRO-HA-4819)' : 'Auto Dispatch Engine',
+        phone: b.riderPhone || '+880 1711-987654',
+        pickupETA: isAssigned ? (b.eta || '12 mins away') : 'Awaiting Rider Acceptance',
+        destination: b.recipient || b.customerAddress || 'Banani, Dhaka',
+        otpRequired: b.pickupOtp || '1794',
+        urgency: 'HIGH',
+        missionStatus: isAssigned ? 'RIDER_ACCEPTED' : 'SEARCHING_RIDER',
+        readableStatusText: isAssigned 
+          ? `🛵 ${b.riderName} is Coming to Pick Up Food (${b.eta || 'ETA 12m'})`
+          : '🟡 🔎 Order Confirmed! Searching Nearby Volunteer Rider...',
+        statusBadgeClass: isAssigned ? 'readable-status-badge' : 'badge-searching',
+        route: BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE,
+        coordinates: {
+          restPos: b.pickupCoords || [23.7937, 90.4047],
+          riderPos: b.riderCoords || [23.8110, 90.4200],
+          ngoPos: b.dropoffCoords || [23.8103, 90.4310]
+        }
+      };
+    }),
+    ...storedListings.filter(item => !supplyBatches.some(b => b.id === item.id || b.title === item.name)).map((item, index) => {
+      const isClaimed = Boolean(item.claimedByNgo || item.claimedByConsumer);
+      const isVolunteerAssigned = isClaimed && Boolean(item.riderAssigned);
 
-    if (isVolunteerAssigned) {
-      missionStatus = 'RIDER_ACCEPTED';
-      readableStatusText = '🛵 Rider Tanvir is Coming to Pick Up Food (ETA 12m)';
-      statusBadgeClass = 'readable-status-badge';
-    } else if (isClaimed) {
-      missionStatus = 'SEARCHING_RIDER';
-      readableStatusText = '🟡 🔎 Searching Nearby Volunteer Rider...';
-      statusBadgeClass = 'badge-searching';
-    }
+      let missionStatus = 'AWAITING_CLAIM';
+      let readableStatusText = '⏳ Listed (Awaiting NGO / Consumer Claim)';
+      let statusBadgeClass = 'badge-waiting';
 
-    return {
-      id: `RES-${item.id}`,
-      originalId: item.id,
-      item: `${item.name} (${item.quantity})`,
-      category: item.category || 'COOKED',
-      volunteer: isVolunteerAssigned ? 'Tanvir Hossain' : (isClaimed ? 'Assigning Volunteer Rider...' : 'N/A (Unclaimed)'),
-      rating: isVolunteerAssigned ? '4.9 ⭐' : 'N/A',
-      vehicle: isVolunteerAssigned ? 'Motorcycle (DHAKA-METRO-HA-4819)' : (isClaimed ? 'Auto Dispatch Engine' : 'N/A'),
-      phone: isVolunteerAssigned ? '+880 1712-345678' : 'N/A',
-      pickupETA: isVolunteerAssigned ? '12 mins away (Progati Sarani)' : (isClaimed ? 'Awaiting Rider Acceptance' : 'N/A'),
-      destination: isClaimed ? 'Anjuman Orphanage Shelter (Bashundhara)' : 'NGO Shelter / B2C Buyer (Pending)',
-      otpRequired: isClaimed ? `${4000 + (item.id % 5000)}` : 'N/A (Pending Claim)',
-      urgency: item.expiryType === 'urgent' ? 'HIGH' : 'NORMAL',
-      missionStatus,
-      readableStatusText,
-      statusBadgeClass,
-      route: index % 2 === 0 ? BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE : BASHUNDHARA_LOCAL_RESCUE_ROUTE,
-      coordinates: {
-        restPos: [23.7937, 90.4047],
-        riderPos: isVolunteerAssigned ? [23.8050, 90.4210] : (isClaimed ? [23.7980, 90.4120] : [23.7937, 90.4047]),
-        ngoPos: [23.8103, 90.4310]
+      if (isVolunteerAssigned) {
+        missionStatus = 'RIDER_ACCEPTED';
+        readableStatusText = `🛵 ${item.riderName || 'Rider Tanvir Hossain'} is Coming to Pick Up Food (ETA 12m)`;
+        statusBadgeClass = 'readable-status-badge';
+      } else if (isClaimed) {
+        missionStatus = 'SEARCHING_RIDER';
+        readableStatusText = '🟡 🔎 Claim Confirmed! Searching Nearby Volunteer Rider...';
+        statusBadgeClass = 'badge-searching';
       }
-    };
-  });
+
+      return {
+        id: `RES-${item.id}`,
+        originalId: item.id,
+        item: `${item.name} (${item.quantity})`,
+        category: item.category || 'COOKED',
+        volunteer: isVolunteerAssigned ? (item.riderName || 'Tanvir Hossain') : (isClaimed ? 'Assigning Volunteer Rider...' : 'N/A (Unclaimed)'),
+        rating: isVolunteerAssigned ? '4.9 ⭐' : 'N/A',
+        vehicle: isVolunteerAssigned ? 'Motorcycle (DHAKA-METRO-HA-4819)' : (isClaimed ? 'Auto Dispatch Engine' : 'N/A'),
+        phone: isVolunteerAssigned ? '+880 1712-345678' : 'N/A',
+        pickupETA: isVolunteerAssigned ? '12 mins away (Progati Sarani)' : (isClaimed ? 'Awaiting Rider Acceptance' : 'N/A (Pending Claim)'),
+        destination: isClaimed ? (item.claimedByNgoName || item.customerAddress || 'Anjuman Orphanage Shelter (Bashundhara)') : 'NGO Shelter / B2C Buyer (Pending Claim)',
+        otpRequired: isClaimed ? `${4000 + (item.id % 5000)}` : 'N/A (Pending Claim)',
+        urgency: item.expiryType === 'urgent' ? 'HIGH' : 'NORMAL',
+        missionStatus,
+        readableStatusText,
+        statusBadgeClass,
+        route: index % 2 === 0 ? BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE : BASHUNDHARA_LOCAL_RESCUE_ROUTE,
+        coordinates: {
+          restPos: [23.7937, 90.4047],
+          riderPos: isVolunteerAssigned ? [23.8110, 90.4200] : (isClaimed ? [23.7980, 90.4120] : [23.7937, 90.4047]),
+          ngoPos: [23.8103, 90.4310]
+        }
+      };
+    })
+  ];
 
   // Apply status filter
   const filteredMissions = statusFilter === 'ALL' 
@@ -278,6 +317,7 @@ export default function LogisticsRescueTab() {
                   <TileLayer
                     url={tileLayer.url}
                     attribution={tileLayer.attribution}
+                    subdomains={tileLayer.subdomains || '0123'}
                   />
 
                   {/* Active Selected Mission Route Polyline */}

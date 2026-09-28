@@ -1,184 +1,148 @@
 // Supply Chain & Multi-Party OTP Service for FoodRescue
 
-const INITIAL_BATCHES = [
-  {
-    id: 'BATCH-8091',
-    title: 'Kacchi Biryani & Borhani Combo',
-    restaurant: 'Star Chef Bistro',
-    restaurantAddress: 'Gulshan 2, Dhaka',
-    category: 'COOKED_MEAL',
-    portions: 50,
-    portionsClaimedNgo: 30,
-    portionsSoldConsumer: 20,
-    hygieneScore: 96,
-    aiGrade: 'GRADE_A_PREMIUM',
-    prepTime: '08:15 PM',
-    expiryTime: '11:45 PM',
-    currentStage: 4, // 1: Listed, 2: Allocated, 3: Pickup Verified, 4: In Transit, 5: Delivered
-    status: 'IN_TRANSIT',
-    deliveryMode: 'VOLUNTEER_RIDER', // 'VOLUNTEER_RIDER' or 'NGO_SELF_PICKUP'
-    recipient: 'Anjuman Orphanage Shelter (Dhanmondi)',
-    recipientType: 'NGO',
-    riderName: 'Tanvir Ahmed (Hero Rider)',
-    riderPhone: '+880 1711-987654',
-    riderAvatar: '🛵',
-    pickupOtp: '4892',
-    pickupOtpVerified: true,
-    pickupOtpStatus: 'EXPIRED_REMOVED',
-    deliveryOtp: '7842',
-    deliveryOtpVerified: false,
-    deliveryOtpStatus: 'ACTIVE_VISIBLE',
-    eta: '9 mins remaining',
-    distanceKm: '4.2 km',
-    foodSavedKg: 25,
-    co2SavedKg: 37.5
-  },
-  {
-    id: 'BATCH-8092',
-    title: 'Special Chicken Polao & Egg',
-    restaurant: 'Sultan\'s Dine Banani',
-    restaurantAddress: 'Banani Block 11, Dhaka',
-    category: 'COOKED_MEAL',
-    portions: 35,
-    portionsClaimedNgo: 35,
-    portionsSoldConsumer: 0,
-    hygieneScore: 94,
-    aiGrade: 'GRADE_A_PREMIUM',
-    prepTime: '08:30 PM',
-    expiryTime: '11:59 PM',
-    currentStage: 5,
-    status: 'DELIVERED',
-    deliveryMode: 'NGO_SELF_PICKUP',
-    recipient: 'Chhoto Moni Nibash (Tejgaon)',
-    recipientType: 'NGO',
-    riderName: 'NGO Transport Van',
-    riderPhone: '+880 1819-445566',
-    riderAvatar: '🚐',
-    pickupOtp: '9153',
-    pickupOtpVerified: true,
-    pickupOtpStatus: 'EXPIRED_REMOVED',
-    deliveryOtp: '9153',
-    deliveryOtpVerified: true,
-    deliveryOtpStatus: 'EXPIRED_REMOVED',
-    eta: 'Delivered',
-    distanceKm: '3.1 km',
-    foodSavedKg: 17.5,
-    co2SavedKg: 26.2
-  },
-  {
-    id: 'BATCH-8093',
-    title: 'Traditional Mutton Mezban & Dal',
-    restaurant: 'Dhakaiya Mezban Gulshan',
-    restaurantAddress: 'Gulshan 1, Dhaka',
-    category: 'COOKED_MEAL',
-    portions: 40,
-    portionsClaimedNgo: 15,
-    portionsSoldConsumer: 25,
-    hygieneScore: 91,
-    aiGrade: 'GRADE_A_FRESH',
-    prepTime: '07:45 PM',
-    expiryTime: '11:15 PM',
-    currentStage: 3,
-    status: 'PICKUP_VERIFIED',
-    deliveryMode: 'VOLUNTEER_RIDER',
-    recipient: 'Shanti Old Age Home & Marketplace Buyers',
-    recipientType: 'HYBRID',
-    riderName: 'Farhan Kabir',
-    riderPhone: '+880 1912-778899',
-    riderAvatar: '🛵',
-    pickupOtp: '3310',
-    pickupOtpVerified: true,
-    pickupOtpStatus: 'EXPIRED_REMOVED',
-    deliveryOtp: '6124',
-    deliveryOtpVerified: false,
-    deliveryOtpStatus: 'ACTIVE_VISIBLE',
-    eta: '18 mins remaining',
-    distanceKm: '5.8 km',
-    foodSavedKg: 20,
-    co2SavedKg: 30.0
-  },
-  {
-    id: 'BATCH-8094',
-    title: 'Fresh Artisan Pastry & Milk Buns',
-    restaurant: 'Bread & Butter Bakery',
-    restaurantAddress: 'Uttara Sector 3, Dhaka',
-    category: 'BAKERY',
-    portions: 60,
-    portionsClaimedNgo: 20,
-    portionsSoldConsumer: 40,
-    hygieneScore: 98,
-    aiGrade: 'GRADE_A_PREMIUM',
-    prepTime: '06:00 PM',
-    expiryTime: '11:00 PM',
-    currentStage: 2,
-    status: 'CLAIMED_PENDING_PICKUP',
-    deliveryMode: 'NGO_SELF_PICKUP',
-    recipient: 'Uttara Street Children Care',
-    recipientType: 'NGO',
-    riderName: 'NGO Self-Pickup Team',
-    riderPhone: '+880 1712-009988',
-    riderAvatar: '🏠',
-    pickupOtp: '5582',
-    pickupOtpVerified: false,
-    pickupOtpStatus: 'ACTIVE_VISIBLE',
-    deliveryOtp: '5582',
-    deliveryOtpVerified: false,
-    deliveryOtpStatus: 'ACTIVE_VISIBLE',
-    eta: 'Awaiting NGO Self-Pickup',
-    distanceKm: '2.0 km',
-    foodSavedKg: 18,
-    co2SavedKg: 27.0
-  },
-  {
-    id: 'BATCH-8095',
-    title: 'Morog Polao & Firni Dessert',
-    restaurant: 'Kacchi Bhai Dhanmondi',
-    restaurantAddress: 'Dhanmondi 27, Dhaka',
-    category: 'COOKED_MEAL',
-    portions: 25,
-    portionsClaimedNgo: 25,
-    portionsSoldConsumer: 0,
-    hygieneScore: 93,
-    aiGrade: 'GRADE_A_FRESH',
-    prepTime: '09:00 PM',
-    expiryTime: '12:30 AM',
-    currentStage: 1,
-    status: 'AI_AUDITED_LISTED',
-    deliveryMode: 'VOLUNTEER_RIDER',
-    recipient: 'Broadcasted to Tier 1 NGO Shelters',
-    recipientType: 'BROADCAST',
-    riderName: 'Pending Claim',
-    riderPhone: 'N/A',
-    riderAvatar: '🏪',
-    pickupOtp: null,
-    pickupOtpVerified: false,
-    pickupOtpStatus: 'UNGENERATED',
-    deliveryOtp: null,
-    deliveryOtpVerified: false,
-    deliveryOtpStatus: 'UNGENERATED',
-    eta: 'Tier 1 Free NGO Window Active',
-    distanceKm: 'N/A',
-    foodSavedKg: 12.5,
-    co2SavedKg: 18.7
-  }
-];
+const INITIAL_BATCHES = [];
+
+// Modern HTML5 BroadcastChannel for 100% reliable cross-tab/cross-window live sync
+const syncChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('foodrescue_live_channel') : null;
+
+const getCoordsFromAddress = (addr = '') => {
+  const t = (addr || '').toLowerCase();
+  if (t.includes('gulshan')) return [23.7979, 90.4143];
+  if (t.includes('dhanmondi')) return [23.7516, 90.3774];
+  if (t.includes('uttara')) return [23.8722, 90.3989];
+  if (t.includes('bashundhara')) return [23.8103, 90.4125];
+  if (t.includes('mirpur')) return [23.8069, 90.3687];
+  return [23.7937, 90.4066]; // Default Banani
+};
 
 export const supplyChainService = {
   getBatches() {
+    let batches = [];
     try {
-      const raw = localStorage.getItem('foodrescue_supply_chain_batches');
-      if (raw) return JSON.parse(raw);
+      const raw = localStorage.getItem('foodrescue_supply_chain_batches_v14_real_only');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          // Remove legacy test orders (e.g. Kacchi Bhai Banani test items)
+          batches = parsed.filter(b => b.restaurant !== 'Kacchi Bhai Banani' && b.title !== 'Royal Mutton Kacchi & Borhani Combo');
+        }
+      }
     } catch (e) {
       console.warn('Failed to parse supply chain batches from localStorage:', e);
     }
-    localStorage.setItem('foodrescue_supply_chain_batches', JSON.stringify(INITIAL_BATCHES));
-    return INITIAL_BATCHES;
+
+    // Auto-reconcile active consumer delivery orders from 'foodrescue_consumer_orders'
+    try {
+      const rawConsumerOrders = localStorage.getItem('foodrescue_consumer_orders');
+      if (rawConsumerOrders) {
+        const consumerOrders = JSON.parse(rawConsumerOrders);
+        if (Array.isArray(consumerOrders)) {
+          let updated = false;
+          consumerOrders.forEach(order => {
+            const isDelivery = !order.fulfillmentType || order.fulfillmentType === 'delivery' || order.fulfillmentType === 'VOLUNTEER_RIDER';
+            if (isDelivery && order.status !== 'DELIVERED') {
+              const batchIdToMatch = order.batchId || order.id;
+              const existingIndex = batches.findIndex(b => b.id === batchIdToMatch || b.id === order.id);
+              
+              const pCoords = getCoordsFromAddress(order.restaurantAddress || order.restaurantName);
+              const customerNameStr = order.customerName || 'Farhan Ahmed';
+              const custAddrStr = order.customerAddress || 'House 42, Road 11, Block D, Banani, Dhaka';
+              const custPhoneStr = order.customerPhone || '+880 1712-345678';
+              const dCoords = getCoordsFromAddress(custAddrStr);
+              const recipientLabel = `${customerNameStr} (${custAddrStr})`;
+
+              if (existingIndex !== -1) {
+                // Update existing batch with latest real consumer order info
+                batches[existingIndex] = {
+                  ...batches[existingIndex],
+                  title: order.itemTitle || batches[existingIndex].title,
+                  name: order.itemTitle || batches[existingIndex].name,
+                  restaurant: order.restaurantName || batches[existingIndex].restaurant,
+                  donor: order.restaurantName || batches[existingIndex].donor,
+                  restaurantAddress: order.restaurantAddress || batches[existingIndex].restaurantAddress,
+                  area: order.restaurantAddress || batches[existingIndex].area,
+                  customerName: customerNameStr,
+                  customerAddress: custAddrStr,
+                  customerPhone: custPhoneStr,
+                  recipient: recipientLabel,
+                  recipientType: 'CONSUMER',
+                  pickupOtp: order.pinCode || batches[existingIndex].pickupOtp,
+                  deliveryOtp: order.pinCode || batches[existingIndex].deliveryOtp,
+                  deliveryMode: 'VOLUNTEER_RIDER',
+                  pickupCoords: pCoords,
+                  dropoffCoords: dCoords
+                };
+                updated = true;
+              } else {
+                const newBatch = {
+                  id: batchIdToMatch,
+                  title: order.itemTitle || 'Gourmet Beef Tehari & Salad Package',
+                  name: order.itemTitle || 'Gourmet Beef Tehari & Salad Package',
+                  restaurant: order.restaurantName || 'Star Chef Bistro',
+                  donor: order.restaurantName || 'Star Chef Bistro',
+                  restaurantAddress: order.restaurantAddress || 'Block D, Banani Rd 11, Dhaka',
+                  area: order.restaurantAddress || 'Banani, Dhaka',
+                  customerName: customerNameStr,
+                  customerAddress: custAddrStr,
+                  customerPhone: custPhoneStr,
+                  category: 'COOKED_MEAL',
+                  portions: order.quantity || 1,
+                  portionsClaimedNgo: 0,
+                  portionsSoldConsumer: order.quantity || 1,
+                  hygieneScore: 98,
+                  aiGrade: 'GRADE_A_PREMIUM',
+                  prepTime: order.timestamp || 'Just now',
+                  expiryTime: 'Expires in 45 mins',
+                  currentStage: order.riderAssigned ? 4 : 2,
+                  status: order.riderAssigned ? 'IN_TRANSIT' : 'CLAIMED_PENDING_PICKUP',
+                  deliveryMode: 'VOLUNTEER_RIDER',
+                  recipient: recipientLabel,
+                  recipientType: 'CONSUMER',
+                  riderName: order.riderName || 'Pending Rider Acceptance',
+                  riderPhone: order.riderPhone || '+880 1711-987654',
+                  riderAvatar: order.riderAvatar || '🛵',
+                  pickupOtp: order.pinCode || '1794',
+                  deliveryOtp: order.pinCode || '1794',
+                  eta: order.eta || '12 mins ETA',
+                  distanceKm: order.distanceKm || '0.8 km',
+                  pickupCoords: pCoords,
+                  dropoffCoords: dCoords,
+                  foodSavedKg: 1.8,
+                  co2SavedKg: 2.7,
+                  createdAt: order.createdAt || Date.now(),
+                  isDemo: false
+                };
+                batches.unshift(newBatch);
+                updated = true;
+              }
+            }
+          });
+          if (updated) {
+            try {
+              localStorage.setItem('foodrescue_supply_chain_batches_v14_real_only', JSON.stringify(batches));
+            } catch(e) {}
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Error auto-reconciling consumer orders into supply chain:', e);
+    }
+
+    return batches;
   },
 
   saveBatches(batches) {
     try {
-      localStorage.setItem('foodrescue_supply_chain_batches', JSON.stringify(batches));
+      localStorage.setItem('foodrescue_supply_chain_batches_v14_real_only', JSON.stringify(batches));
+      
+      // Dispatch in-page events
       window.dispatchEvent(new Event('foodrescue_supply_chain_updated'));
+      window.dispatchEvent(new Event('foodrescue_surplus_updated'));
+
+      // Broadcast across all open browser tabs/windows
+      if (syncChannel) {
+        syncChannel.postMessage({ type: 'SUPPLY_CHAIN_UPDATED', timestamp: Date.now() });
+      }
     } catch (e) {
       console.error('Error saving supply chain batches:', e);
     }

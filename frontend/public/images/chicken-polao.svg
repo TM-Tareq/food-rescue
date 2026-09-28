@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#312e81"/>
+    </linearGradient>
+    <linearGradient id="polaoGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fffbeb"/>
+      <stop offset="100%" stop-color="#fef3c7"/>
+    </linearGradient>
+    <linearGradient id="roastGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#9a3412"/>
+    </linearGradient>
+    <filter id="shadow2" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="10" stdDeviation="15" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="600" height="400" fill="url(#bgGrad2)"/>
+  
+  <!-- White Ceramic Dish -->
+  <ellipse cx="300" cy="200" rx="170" ry="130" fill="#f8fafc" stroke="#cbd5e1" stroke-width="6" filter="url(#shadow2)"/>
+  
+  <!-- Polao Bed -->
+  <ellipse cx="300" cy="200" rx="150" ry="110" fill="url(#polaoGrad)"/>
+  
+  <!-- Chicken Roast Leg -->
+  <path d="M 220,180 C 230,130 310,130 330,170 C 350,210 270,230 220,180 Z" fill="url(#roastGrad)"/>
+  <circle cx="210" cy="180" r="14" fill="#fed7aa"/>
+
+  <!-- Fried Boiled Egg -->
+  <ellipse cx="370" cy="210" rx="22" ry="18" fill="#fef08a" stroke="#f59e0b" stroke-width="2"/>
+  <circle cx="370" cy="210" r="10" fill="#eab308"/>
+
+  <!-- Beresta (Fried Onion Crisp) -->
+  <circle cx="270" cy="150" r="4" fill="#78350f"/>
+  <circle cx="290" cy="160" r="5" fill="#78350f"/>
+  <circle cx="310" cy="230" r="4" fill="#78350f"/>
+
+  <!-- Overlay Text Badge -->
+  <rect x="25" y="25" width="230" height="38" rx="19" fill="rgba(15, 23, 42, 0.85)"/>
+  <text x="140" y="49" font-family="Arial, sans-serif" font-weight="bold" font-size="14" fill="#38bdf8" text-anchor="middle">🍗 CHICKEN POLAO PLATTER</text>
+</svg>

@@ -21,12 +21,18 @@ export default function ConsumerMarketplace({ onLogout }) {
   const themeMode = roleThemes.consumer;
   
   // User Profile & Settings State
-  const [userInfo, setUserInfo] = useState({
-    name: 'Farhan Ahmed',
-    phone: '+880 1712-345678',
-    address: 'House 42, Road 11, Block D, Banani, Dhaka',
-    avatarEmoji: '👨‍💼',
-    level: 'Level 3 Food Saver'
+  const [userInfo, setUserInfo] = useState(() => {
+    try {
+      const saved = localStorage.getItem('foodrescue_user_profile');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return {
+      name: 'Farhan Ahmed',
+      phone: '+880 1712-345678',
+      address: 'House 42, Road 11, Block D, Banani, Dhaka',
+      avatarEmoji: '👨‍💼',
+      level: 'Level 3 Food Saver'
+    };
   });
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
@@ -34,25 +40,34 @@ export default function ConsumerMarketplace({ onLogout }) {
   const [cartItems, setCartItems] = useState([]);
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   
-  // Orders & Digital QR Pass State
-  const [activeOrders, setActiveOrders] = useState([
-    {
-      id: 'PASS-98402',
-      restaurantName: 'Star Kabab & Restaurant',
-      restaurantAddress: 'Block D, Banani Road 11, Dhaka',
-      restaurantPhone: '+880 1711-987654',
-      itemTitle: '3x Mutton Kacchi Biryani & Borhani Boxes',
-      quantity: 3,
-      totalAmount: 420,
-      fulfillmentType: 'pickup',
-      paymentMethod: 'BKASH',
-      pinCode: '7892',
-      timestamp: '10:30 AM'
+  // Orders & Digital QR Pass State (Persisted in LocalStorage)
+  const [activeOrders, setActiveOrders] = useState(() => {
+    try {
+      const saved = localStorage.getItem('foodrescue_consumer_orders');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          // Filter out legacy fake seed order
+          return parsed.filter(o => o.id !== 'PASS-98402');
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse active orders from localStorage:', e);
     }
-  ]);
+    return [];
+  });
 
   const [selectedQrOrder, setSelectedQrOrder] = useState(null);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+
+  // Sync active orders to localStorage whenever changed
+  useEffect(() => {
+    try {
+      localStorage.setItem('foodrescue_consumer_orders', JSON.stringify(activeOrders));
+    } catch (e) {
+      console.warn('Failed to save active orders:', e);
+    }
+  }, [activeOrders]);
 
   // Toggle Theme Mode Effect
   useEffect(() => {
@@ -61,10 +76,13 @@ export default function ConsumerMarketplace({ onLogout }) {
 
   // User Profile Update Handler
   const handleUpdateUserInfo = (updatedInfo) => {
-    setUserInfo(prev => ({
-      ...prev,
-      ...updatedInfo
-    }));
+    setUserInfo(prev => {
+      const updated = { ...prev, ...updatedInfo };
+      try {
+        localStorage.setItem('foodrescue_user_profile', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
   };
 
   // Cart Management Handlers
@@ -83,11 +101,14 @@ export default function ConsumerMarketplace({ onLogout }) {
   };
 
   const handleCheckoutSuccess = (newOrder) => {
-    setActiveOrders(prev => [newOrder, ...prev]);
-    setActiveTab('orders');
-    // Open QR pass automatically for immediate pickup
-    setSelectedQrOrder(newOrder);
-    setIsQrModalOpen(true);
+    setActiveOrders(prev => {
+      const updated = [newOrder, ...prev];
+      try {
+        localStorage.setItem('foodrescue_consumer_orders', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+    setActiveTab('orders'); // Switch tab to Active Orders (Foodpanda live order tracker)
   };
 
   const handleOpenQrPass = (order) => {
@@ -210,6 +231,7 @@ export default function ConsumerMarketplace({ onLogout }) {
         isOpen={isCartModalOpen}
         onClose={() => setIsCartModalOpen(false)}
         cartItems={cartItems}
+        userInfo={userInfo}
         onRemoveFromCart={handleRemoveFromCart}
         onClearCart={handleClearCart}
         onCheckoutSuccess={handleCheckoutSuccess}

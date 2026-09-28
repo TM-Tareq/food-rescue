@@ -18,7 +18,7 @@ import NgoSettingsTab from './components/NgoSettingsTab/NgoSettingsTab';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { ngoService } from '../../services/ngoService';
-import { surplusService } from '../../services/surplusService';
+import { surplusService, parseTimestamp } from '../../services/surplusService';
 import LiveCountdownBadge from '../../components/LiveCountdownBadge/LiveCountdownBadge';
 import { 
   PRIMARY_ROUTE_ETA_POS, 
@@ -89,25 +89,51 @@ export default function NgoDashboard({ onLogout }) {
     const interval = setInterval(() => setNow(Date.now()), 1000);
 
     window.addEventListener('foodrescue_surplus_updated', loadSurplus);
+    window.addEventListener('foodrescue_claims_updated', loadActiveClaims);
     return () => {
       clearInterval(interval);
       window.removeEventListener('foodrescue_surplus_updated', loadSurplus);
+      window.removeEventListener('foodrescue_claims_updated', loadActiveClaims);
     };
   }, []);
 
-  // Format stored surplus items for NGO Feed (Strict 1-to-1 matching with Restaurant listings)
   const dynamicSurplusItems = storedSurplusListings
     .filter((item, index, self) => index === self.findIndex(t => t.id === item.id))
-    .map(item => ({
-    id: `FOOD-${item.id}`,
-    title: `${item.name} (${item.quantity})`,
-    donor: item.donor || 'Star Chef Bistro',
-    area: item.area || 'Banani, Dhaka',
-    distance: '1.2 km via Kemal Ataturk & Progati Sarani',
-    beneficiaries: `Feeds ~${(parseInt(item.quantity) || 20) * 2} People`,
-    expiry: item.expiry || 'Expires in 3h',
-    expiresAt: item.expiresAt,
-    ngoPriorityUntil: item.ngoPriorityUntil,
+    .map(item => {
+      const ngoEndMs = parseTimestamp(item.ngoEndAt || item.ngoPriorityUntil);
+      const expiresAtMs = parseTimestamp(item.expiresAt || item.consumerEndAt);
+      const nowMs = Date.now();
+      
+      let dynamicExpiryText = 'Expires Soon';
+      if (ngoEndMs && nowMs < ngoEndMs) {
+        const diffMs = ngoEndMs - nowMs;
+        const mins = Math.max(0, Math.ceil(diffMs / 60000));
+        const hrs = Math.floor(mins / 60);
+        const remMins = mins % 60;
+        dynamicExpiryText = hrs > 0 ? `NGO Priority: ${hrs}h ${remMins}m left` : `NGO Priority: ${remMins}m left`;
+      } else if (expiresAtMs && nowMs < expiresAtMs) {
+        const diffMs = expiresAtMs - nowMs;
+        const mins = Math.max(0, Math.ceil(diffMs / 60000));
+        const hrs = Math.floor(mins / 60);
+        const remMins = mins % 60;
+        dynamicExpiryText = hrs > 0 ? `Expires in ${hrs}h ${remMins}m` : `Expires in ${remMins}m`;
+      }
+
+      return {
+        id: `FOOD-${item.id}`,
+        title: `${item.name} (${item.quantity})`,
+        donor: item.donor || 'Star Chef Bistro',
+        area: item.area || 'Banani, Dhaka',
+        distance: '1.2 km via Kemal Ataturk & Progati Sarani',
+        beneficiaries: `Feeds ~${typeof item.quantityPortions === 'number' && item.quantityPortions > 0 ? item.quantityPortions : (parseInt(item.quantity, 10) || 20)} People`,
+        expiry: dynamicExpiryText,
+        createdAt: item.createdAt,
+        ngoStartAt: item.ngoStartAt || item.createdAt,
+        ngoEndAt: item.ngoEndAt || item.ngoPriorityUntil,
+        consumerStartAt: item.consumerStartAt || item.ngoEndAt || item.ngoPriorityUntil,
+        consumerEndAt: item.consumerEndAt || item.expiresAt,
+        expiresAt: item.expiresAt,
+        ngoPriorityUntil: item.ngoEndAt || item.ngoPriorityUntil,
     extraText: item.extraText || '',
     urgency: item.expiryType === 'urgent' ? 'HIGH' : 'NORMAL',
     safetyTags: [item.sub?.includes('AI Certified') ? 'AI Certified Grade A+' : 'Fresh Pack', 'Hot Sealed Package'],
@@ -120,24 +146,33 @@ export default function NgoDashboard({ onLogout }) {
       [23.8050, 90.4210],
       [23.8150, 90.4210]
     ]
-  }));
+  };
+});
 
   // Strict single source of truth: surplusFeed matches stored listings exactly
   const surplusFeed = dynamicSurplusItems;
 
-
   // Map Coordinates & NGO Location
   const ngoShelterPos = [23.8150, 90.4210]; // Anjuman Shelter (Bashundhara)
 
-  // Filter Feed: EXCLUDE items whose NGO Priority Window or total expiry has expired (shifted to B2C Flash Sale)
+  // Filter Feed: EXCLUDE items whose NGO Priority Window (ngoEndAt) or total expiry (expiresAt) has passed
   const filteredFeed = surplusFeed.filter(item => {
-    const isNgoPriorityActive = !item.ngoPriorityUntil || now < item.ngoPriorityUntil;
-    const isNotExpired = !item.expiresAt || now < item.expiresAt;
-    const isAvailableForNgo = isNgoPriorityActive && isNotExpired;
+    const ngoStartMs = parseTimestamp(item.ngoStartAt || item.createdAt);
+    const ngoEndMs = parseTimestamp(item.ngoEndAt || item.ngoPriorityUntil);
+    const expiresAtMs = parseTimestamp(item.expiresAt || item.consumerEndAt);
+
+    const isNgoPriorityActive = ngoStartMs && ngoEndMs 
+      ? (now >= ngoStartMs && now < ngoEndMs) 
+      : (ngoEndMs ? now < ngoEndMs : true);
+
+    const isNotExpired = expiresAtMs ? now < expiresAtMs : true;
+    const isNotClaimed = !item.claimedByNgo;
+
+    const isAvailableForNgo = isNgoPriorityActive && isNotExpired && isNotClaimed;
 
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           item.donor.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'ALL' || item.category === selectedCategory || (selectedCategory === 'URGENT' && item.ngoPriorityUntil && (item.ngoPriorityUntil - now) <= 45 * 60 * 1000);
+    const matchesCategory = selectedCategory === 'ALL' || item.category === selectedCategory || (selectedCategory === 'URGENT' && ngoEndMs && (ngoEndMs - now) <= 45 * 60 * 1000);
     return isAvailableForNgo && matchesSearch && matchesCategory;
   });
 
@@ -448,6 +483,7 @@ export default function NgoDashboard({ onLogout }) {
                     <TileLayer
                       url={getOsmTileLayer(themeMode).url}
                       attribution={getOsmTileLayer(themeMode).attribution}
+                      subdomains={getOsmTileLayer(themeMode).subdomains || '0123'}
                     />
 
                     {/* NGO Shelter Destination Vector SVG Pin */}

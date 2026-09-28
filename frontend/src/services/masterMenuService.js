@@ -55,14 +55,60 @@ const DEFAULT_MASTER_MENU = [
   }
 ];
 
+const MASTER_MENU_STORAGE_VERSION = 'v8_hd_restored_photos';
+
+const getHdPhotoForTitle = (title = '', defaultImg = '') => {
+  if (defaultImg && !defaultImg.includes('.svg')) return defaultImg;
+  const t = (title || '').toLowerCase();
+  if (t.includes('kacchi') || t.includes('mutton')) {
+    return 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80';
+  }
+  if (t.includes('tehari') || t.includes('beef')) {
+    return 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=600&q=80';
+  }
+  if (t.includes('chicken') || t.includes('polao') || t.includes('biryani')) {
+    return 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=600&q=80';
+  }
+  if (t.includes('pastry') || t.includes('bakery') || t.includes('croissant')) {
+    return 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80';
+  }
+  return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80';
+};
+
 export const masterMenuService = {
   getMasterMenuItems() {
     try {
+      const storedVersion = localStorage.getItem('foodrescue_master_menu_version');
       const raw = localStorage.getItem('foodrescue_master_menu_items');
-      if (raw) return JSON.parse(raw);
+      
+      if (storedVersion !== MASTER_MENU_STORAGE_VERSION) {
+        localStorage.setItem('foodrescue_master_menu_version', MASTER_MENU_STORAGE_VERSION);
+        localStorage.setItem('foodrescue_master_menu_items', JSON.stringify(DEFAULT_MASTER_MENU));
+        return DEFAULT_MASTER_MENU;
+      }
+
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          let updated = false;
+          const sanitized = parsed.map(item => {
+            const currentImg = item.demoImage || '';
+            if (currentImg.includes('.svg') || !currentImg) {
+              updated = true;
+              return { ...item, demoImage: getHdPhotoForTitle(item.title, currentImg) };
+            }
+            return item;
+          });
+          if (updated) {
+            localStorage.setItem('foodrescue_master_menu_items', JSON.stringify(sanitized));
+          }
+          return sanitized;
+        }
+      }
     } catch (e) {
       console.warn('Failed to read master menu items from localStorage:', e);
     }
+    localStorage.setItem('foodrescue_master_menu_version', MASTER_MENU_STORAGE_VERSION);
     localStorage.setItem('foodrescue_master_menu_items', JSON.stringify(DEFAULT_MASTER_MENU));
     return DEFAULT_MASTER_MENU;
   },

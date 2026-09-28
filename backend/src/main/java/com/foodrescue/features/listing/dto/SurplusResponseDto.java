@@ -15,8 +15,11 @@ import java.time.LocalDateTime;
 public class SurplusResponseDto {
     private Long id;
     private Long restaurantId;
+    private String restaurantName;
+    private String restaurantArea;
     private String foodItemTitle;
     private Integer quantityPortions;
+    private Double initialPriceBDT;
     private Double currentPriceBDT;
     private ListingTier currentTier;
     private AiGrade aiQualityGrade;
@@ -25,4 +28,9 @@ public class SurplusResponseDto {
     private String packagingPhotoUrl;
     private LocalDateTime finalExpiryTimestamp;
     private LocalDateTime createdAt;
+    private LocalDateTime ngoStartAt;
+    private LocalDateTime ngoEndAt;
+    private LocalDateTime consumerStartAt;
+    private LocalDateTime consumerEndAt;
+    private LocalDateTime expiresAt;
 }

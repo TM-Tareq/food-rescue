@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Clock, MapPin, Truck, CheckCircle2, ShieldCheck, PhoneCall, 
   MessageSquare, QrCode, Copy, Check, Sparkles, Search, PackageX, ArrowRight 
@@ -8,6 +8,7 @@ import Button from '../../../../components/Button/Button';
 import Badge from '../../../../components/Badge/Badge';
 import Modal from '../../../../components/Modal/Modal';
 import InAppChatModal from '../../../restaurant/components/InAppChatModal/InAppChatModal';
+import { ngoService } from '../../../../services/ngoService';
 import './NgoActiveClaimsTab.css';
 
 export default function NgoActiveClaimsTab({ onSwitchToDiscover }) {
@@ -18,39 +19,23 @@ export default function NgoActiveClaimsTab({ onSwitchToDiscover }) {
   const [selectedFilter, setSelectedFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Initial Claims List matching Stitch mockup
-  const [claimsList, setClaimsList] = useState([
-    {
-      id: 'CLM-8091',
-      title: 'Spicy Chicken Biryani (20 Portions)',
-      donor: 'Star Chef Bistro (Banani - 0.8 km)',
-      claimedTime: '6:45 PM Today',
-      beneficiaries: 'Feeds ~40 Orphan Children',
-      transportMethod: '🛵 Volunteer Rider Assigned',
-      volunteerName: 'Tanvir Hossain (Motorcycle)',
-      rating: '4.9 ⭐',
-      deliveryOTP: '4892',
-      statusCategory: 'ON_THE_WAY',
-      statusLabel: '🚚 Rider On The Way to Shelter',
-      urgency: 'HIGH',
-      eta: 'Arrival ETA: 12 minutes away'
-    },
-    {
-      id: 'CLM-8092',
-      title: 'Artisan Bread Basket (15 Packs)',
-      donor: 'Daily Crust Bakery (Bashundhara)',
-      claimedTime: '5:30 PM Today',
-      beneficiaries: 'Feeds ~25 Children',
-      transportMethod: '🚚 NGO Self Pickup Van',
-      volunteerName: 'Shelter Driver Rafiq (NGO Van)',
-      rating: '5.0 ⭐',
-      deliveryOTP: '9102',
-      statusCategory: 'READY_PICKUP',
-      statusLabel: '🏪 Ready at Store',
-      urgency: 'NORMAL',
-      eta: '🚚 NGO Van On The Way for Pickup (ETA 15m)'
-    }
-  ]);
+  // Live Claims List fetched dynamically from database / LocalStorage
+  const [claimsList, setClaimsList] = useState([]);
+
+  const refreshClaims = async () => {
+    const claims = await ngoService.getActiveClaims('NGO-DHAKA-1');
+    setClaimsList(Array.isArray(claims) ? claims : []);
+  };
+
+  useEffect(() => {
+    refreshClaims();
+    window.addEventListener('foodrescue_claims_updated', refreshClaims);
+    window.addEventListener('foodrescue_surplus_updated', refreshClaims);
+    return () => {
+      window.removeEventListener('foodrescue_claims_updated', refreshClaims);
+      window.removeEventListener('foodrescue_surplus_updated', refreshClaims);
+    };
+  }, []);
 
   const handleCopyOtp = (otp, id) => {
     navigator.clipboard.writeText(otp);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { 
@@ -12,6 +12,7 @@ import Badge from '../../../../components/Badge/Badge';
 import Modal from '../../../../components/Modal/Modal';
 import InAppChatModal from '../../../restaurant/components/InAppChatModal/InAppChatModal';
 import { useTheme } from '../../../../context/ThemeContext';
+import { ngoService } from '../../../../services/ngoService';
 import { 
   BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE, 
   BANANI_TO_BASHUNDHARA_ALT_ROUTE, 
@@ -51,54 +52,73 @@ export default function NgoLogisticsTab({ onSwitchToDiscover }) {
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [copiedOtp, setCopiedOtp] = useState(false);
 
-  // Active Rescue Missions Array
-  const [activeMissionsList, setActiveMissionsList] = useState([
-    {
-      id: '8091',
-      foodTitle: 'Spicy Chicken Biryani (20 Portions)',
-      donor: 'Star Chef Bistro (Banani - 0.8 km)',
-      destination: 'Anjuman Orphanage Shelter (Bashundhara)',
-      volunteerName: 'Tanvir Hossain',
-      vehicle: 'Motorcycle',
-      plateNumber: 'DHAKA-METRO-HA-4819',
-      rating: '4.9 ⭐',
-      phone: '+880 1712-345678',
-      currentLocationText: '🚚 Rider Tanvir Hossain is currently on Progati Sarani Rd',
-      eta: '8 mins remaining',
-      claimedAt: '6:45 PM Today',
-      otp: '4892',
-      beneficiaries: 'Feeds 40 Children',
-      isConfirmed: false,
-      route: BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE,
-      riderPos: [23.8050, 90.4210],
-      restaurantPos: [23.7937, 90.4047],
-      shelterPos: [23.8103, 90.4310]
-    },
-    {
-      id: '8092',
-      title: 'Artisan Bread Basket (15 Packs)',
-      foodTitle: 'Fresh Artisan Bread & Pastry Basket (15 Packs)',
-      donor: 'Daily Crust Bakery (Bashundhara - 1.5 km)',
-      destination: 'Anjuman Orphanage Shelter (Bashundhara)',
-      volunteerName: 'Shelter Driver Rafiq',
-      vehicle: 'NGO Van',
-      plateNumber: 'DHAKA-METRO-GA-1102',
-      rating: '5.0 ⭐',
-      phone: '+880 1819-112233',
-      currentLocationText: '🚚 Driver Rafiq is returning via Bashundhara Main Rd',
-      eta: '14 mins remaining',
-      claimedAt: '5:30 PM Today',
-      otp: '9102',
-      beneficiaries: 'Feeds 25 Children',
-      isConfirmed: false,
-      route: BASHUNDHARA_LOCAL_RESCUE_ROUTE,
-      riderPos: [23.8180, 90.4250],
-      restaurantPos: [23.8220, 90.4270],
-      shelterPos: [23.8103, 90.4310]
-    }
-  ]);
+  // Active Rescue Missions State (Fetched dynamically from ngoService / Database)
+  const [activeMissionsList, setActiveMissionsList] = useState([]);
+  const [activeMissionId, setActiveMissionId] = useState(null);
 
-  const [activeMissionId, setActiveMissionId] = useState('8091');
+  const refreshMissions = async () => {
+    const claims = await ngoService.getActiveClaims('NGO-DHAKA-1');
+    if (Array.isArray(claims) && claims.length > 0) {
+      const mapped = claims.map((claim, idx) => {
+        const isConfirmed = Boolean(claim.isConfirmed || claim.statusCategory === 'DELIVERED');
+        const isVolunteer = claim.transportMethod?.includes('Volunteer') || claim.volunteerName?.includes('Tanvir') || claim.statusCategory === 'ON_THE_WAY';
+
+        // Stage 1: Claimed, Stage 2: Assigned, Stage 3: On The Way, Stage 4: Delivered
+        let stage = 1;
+        if (isConfirmed) {
+          stage = 4;
+        } else if (isVolunteer && claim.statusCategory === 'ON_THE_WAY') {
+          stage = 3;
+        } else if (isVolunteer) {
+          stage = 2;
+        } else if (claim.statusCategory === 'READY_PICKUP') {
+          stage = 2;
+        }
+
+        const idStr = String(claim.id).replace('CLM-', '');
+        return {
+          id: idStr,
+          originalClaimId: claim.id,
+          foodTitle: claim.title || 'Surplus Meal Package',
+          donor: claim.donor || 'Star Chef Bistro (Banani - 0.8 km)',
+          destination: 'Anjuman Orphanage Shelter (Bashundhara)',
+          volunteerName: claim.volunteerName || 'Tanvir Hossain',
+          vehicle: isVolunteer ? 'Motorcycle' : 'NGO Van',
+          plateNumber: isVolunteer ? 'DHAKA-METRO-HA-4819' : 'DHAKA-METRO-GA-1102',
+          rating: claim.rating || '4.9 ⭐',
+          phone: '+880 1712-345678',
+          currentLocationText: claim.statusLabel || (isVolunteer ? '🚚 Rider Tanvir Hossain is currently on Progati Sarani Rd' : '🚚 NGO Van On The Way for Pickup'),
+          eta: claim.eta || '12 mins remaining',
+          claimedAt: claim.claimedTime || 'Just Now',
+          otp: claim.deliveryOTP || '4892',
+          beneficiaries: claim.beneficiaries || 'Feeds ~25 Children',
+          isConfirmed: isConfirmed,
+          stage: stage,
+          route: idx % 2 === 0 ? BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE : BASHUNDHARA_LOCAL_RESCUE_ROUTE,
+          riderPos: [23.8050, 90.4210],
+          restaurantPos: [23.7937, 90.4047],
+          shelterPos: [23.8103, 90.4310]
+        };
+      });
+      setActiveMissionsList(mapped);
+      if (!activeMissionId || !mapped.some(m => m.id === activeMissionId)) {
+        setActiveMissionId(mapped[0]?.id || null);
+      }
+    } else {
+      setActiveMissionsList([]);
+      setActiveMissionId(null);
+    }
+  };
+
+  useEffect(() => {
+    refreshMissions();
+    window.addEventListener('foodrescue_claims_updated', refreshMissions);
+    window.addEventListener('foodrescue_surplus_updated', refreshMissions);
+    return () => {
+      window.removeEventListener('foodrescue_claims_updated', refreshMissions);
+      window.removeEventListener('foodrescue_surplus_updated', refreshMissions);
+    };
+  }, []);
 
   const activeMission = activeMissionsList.find(m => m.id === activeMissionId) || activeMissionsList[0];
 
@@ -131,39 +151,6 @@ export default function NgoLogisticsTab({ onSwitchToDiscover }) {
           <Badge theme="ngo">
             <Sparkles size={14} /> {activeMissionsList.length} Active Missions Live
           </Badge>
-          <button 
-            className="empty-state-toggle-btn"
-            onClick={() => setActiveMissionsList(activeMissionsList.length > 0 ? [] : [
-              {
-                id: 'RESCUE-9821',
-                foodTitle: 'Spicy Chicken Biryani (20 Portions)',
-                donor: 'Star Chef Bistro (Banani - 0.8 km)',
-                destination: 'Anjuman Orphanage Shelter (Bashundhara)',
-                volunteerName: 'Tanvir Hossain',
-                vehicle: 'Motorcycle',
-                plateNumber: 'DHAKA-METRO-HA-4819',
-                rating: '4.9 ⭐',
-                phone: '+880 1712-345678',
-                currentLocationText: '🚚 Rider Tanvir Hossain is currently on Progati Sarani Rd',
-                eta: '8 mins remaining',
-                claimedAt: '6:45 PM Today',
-                otp: '4892',
-                beneficiaries: 'Feeds ~40 Children',
-                isConfirmed: false,
-                path: [
-                  [23.7937, 90.4047],
-                  [23.7937, 90.4200],
-                  [23.8050, 90.4210],
-                  [23.8150, 90.4210]
-                ],
-                riderPos: [23.8050, 90.4210],
-                restaurantPos: [23.7937, 90.4047],
-                shelterPos: [23.8150, 90.4210]
-              }
-            ])}
-          >
-            {activeMissionsList.length > 0 ? '🧪 Test 0 Missions Empty View' : '🧪 Restore Missions View'}
-          </button>
         </div>
       </div>
 
@@ -229,23 +216,23 @@ export default function NgoLogisticsTab({ onSwitchToDiscover }) {
 
                 {/* Uber-Style 4-Stage Visual Progress Stepper */}
                 <div className="logistics-stepper-box">
-                  <div className="stepper-item completed">
+                  <div className={`stepper-item ${activeMission.stage >= 1 ? 'completed' : ''}`}>
                     <div className="stepper-node">✓</div>
                     <span className="stepper-label">Claimed</span>
                   </div>
-                  <div className="stepper-line active"></div>
-                  <div className="stepper-item completed">
-                    <div className="stepper-node">✓</div>
+                  <div className={`stepper-line ${activeMission.stage >= 2 ? 'active' : ''}`}></div>
+                  <div className={`stepper-item ${activeMission.stage >= 2 ? (activeMission.stage > 2 ? 'completed' : 'active') : ''}`}>
+                    <div className="stepper-node">{activeMission.stage > 2 ? '✓' : '👤'}</div>
                     <span className="stepper-label">Assigned</span>
                   </div>
-                  <div className="stepper-line active"></div>
-                  <div className={`stepper-item ${activeMission.isConfirmed ? 'completed' : 'active'}`}>
-                    <div className="stepper-node">{activeMission.isConfirmed ? '✓' : '🛵'}</div>
+                  <div className={`stepper-line ${activeMission.stage >= 3 ? 'active' : ''}`}></div>
+                  <div className={`stepper-item ${activeMission.stage === 3 ? 'active' : (activeMission.stage > 3 ? 'completed' : '')}`}>
+                    <div className="stepper-node">{activeMission.stage > 3 ? '✓' : '🛵'}</div>
                     <span className="stepper-label">On The Way</span>
                   </div>
-                  <div className={`stepper-line ${activeMission.isConfirmed ? 'active' : ''}`}></div>
-                  <div className={`stepper-item ${activeMission.isConfirmed ? 'completed' : ''}`}>
-                    <div className="stepper-node">{activeMission.isConfirmed ? '✓' : '🏢'}</div>
+                  <div className={`stepper-line ${activeMission.stage >= 4 ? 'active' : ''}`}></div>
+                  <div className={`stepper-item ${activeMission.stage >= 4 ? 'completed' : ''}`}>
+                    <div className="stepper-node">{activeMission.stage >= 4 ? '✓' : '🏢'}</div>
                     <span className="stepper-label">Delivered</span>
                   </div>
                 </div>
@@ -362,6 +349,7 @@ export default function NgoLogisticsTab({ onSwitchToDiscover }) {
                     <TileLayer
                       url={tileLayer.url}
                       attribution={tileLayer.attribution}
+                      subdomains={tileLayer.subdomains || '0123'}
                     />
 
                     {/* Mission Specific Dynamic Polyline */}

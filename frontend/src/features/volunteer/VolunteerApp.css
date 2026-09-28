@@ -1206,6 +1206,348 @@
   color: #ffffff !important;
 }
 
+/* AREA DATABASE EMPTY STATE & REAL ORDER TAG STYLES */
+.v-empty-surplus-card {
+  background: #ffffff;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 16px;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.theme-dark .v-empty-surplus-card,
+[data-theme="dark"] .v-empty-surplus-card {
+  background: #121212 !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #e2e8f0;
+}
+
+.v-empty-icon-ring {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.2rem;
+}
+
+.v-empty-title {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.theme-dark .v-empty-title,
+[data-theme="dark"] .v-empty-title {
+  color: #ffffff !important;
+}
+
+.v-empty-sub {
+  font-size: 0.74rem;
+  color: #64748b;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.theme-dark .v-empty-sub,
+[data-theme="dark"] .v-empty-sub {
+  color: #94a3b8 !important;
+}
+
+.v-db-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  color: #334155;
+}
+
+.theme-dark .v-db-status-badge,
+[data-theme="dark"] .v-db-status-badge {
+  background: #1e1e1e !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #cbd5e1 !important;
+}
+
+.v-empty-action-box {
+  margin-top: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.v-sim-lbl {
+  font-size: 0.71rem;
+  color: #64748b;
+}
+
+.v-btn-create-test-order {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+  transition: all 0.2s ease;
+}
+
+.v-btn-create-test-order:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35);
+}
+
+.v-db-tag {
+  display: inline-block;
+  margin-left: 0.4rem;
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   Volunteer GPS & Location Modal Styling
+   ========================================================================== */
+.v-gps-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.v-gps-desc {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.v-mobile-app-container.theme-light .v-gps-desc {
+  color: #64748b;
+}
+
+.v-gps-desc strong {
+  color: #10b981;
+}
+
+/* Mode Switcher Tabs */
+.v-loc-mode-switcher {
+  display: flex;
+  gap: 0.4rem;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.3rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.v-mobile-app-container.theme-light .v-loc-mode-switcher {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.v-mode-tab {
+  flex: 1;
+  padding: 0.55rem 0.4rem;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.v-mobile-app-container.theme-light .v-mode-tab {
+  color: #64748b;
+}
+
+.v-mode-tab.active {
+  background: #10b981;
+  color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Manual Location Section */
+.v-manual-loc-section {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.v-mobile-app-container.theme-light .v-manual-loc-section {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.v-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  display: block;
+}
+
+.v-mobile-app-container.theme-light .v-label {
+  color: #334155;
+}
+
+.v-preset-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.v-preset-chip {
+  padding: 0.35rem 0.65rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  color: #e2e8f0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.v-mobile-app-container.theme-light .v-preset-chip {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+.v-preset-chip:hover {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #34d399;
+}
+
+.v-input-text {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 0.78rem;
+  outline: none;
+}
+
+.v-mobile-app-container.theme-light .v-input-text {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.v-input-text:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.v-btn-apply-manual {
+  padding: 0.5rem 0.9rem;
+  background: #3b82f6;
+  border: none;
+  border-radius: 10px;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.v-btn-apply-manual:hover {
+  background: #2563eb;
+}
+
+/* Radius Buttons Grid */
+.v-radius-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.45rem;
+  margin-top: 0.3rem;
+}
+
+.v-rad-btn {
+  padding: 0.55rem 0.4rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #cbd5e1;
+  font-size: 0.73rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.v-mobile-app-container.theme-light .v-rad-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.v-rad-btn:hover {
+  border-color: #10b981;
+  color: #ffffff;
+}
+
+.v-rad-btn.active {
+  background: rgba(16, 185, 129, 0.18);
+  border: 1.5px solid #10b981;
+  color: #34d399;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+}
+
+.v-mobile-app-container.theme-light .v-rad-btn.active {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.v-gps-status-msg {
+  padding: 0.55rem 0.8rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 10px;
+  color: #34d399;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.v-mobile-app-container.theme-light .v-gps-status-msg {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+
 
 
 

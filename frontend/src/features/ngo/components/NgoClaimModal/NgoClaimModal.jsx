@@ -15,24 +15,64 @@ export default function NgoClaimModal({ isOpen, onClose, foodItem, onConfirmClai
 
   if (!isOpen || !foodItem) return null;
 
+  const getModalExpiryDisplay = (item) => {
+    const parseTarget = (val) => {
+      if (!val) return null;
+      if (typeof val === 'number') return val;
+      const parsed = new Date(val).getTime();
+      return isNaN(parsed) ? null : parsed;
+    };
+    const now = Date.now();
+    const ngoEndMs = parseTarget(item.ngoEndAt || item.ngoPriorityUntil);
+    const expiresAtMs = parseTarget(item.expiresAt || item.consumerEndAt);
+
+    if (ngoEndMs && now < ngoEndMs) {
+      const diffMs = ngoEndMs - now;
+      const mins = Math.max(0, Math.ceil(diffMs / 60000));
+      const hrs = Math.floor(mins / 60);
+      const remMins = mins % 60;
+      return hrs > 0 ? `NGO Priority: ${hrs}h ${remMins}m left` : `NGO Priority: ${remMins}m left`;
+    }
+
+    if (expiresAtMs && now < expiresAtMs) {
+      const diffMs = expiresAtMs - now;
+      const mins = Math.max(0, Math.ceil(diffMs / 60000));
+      const hrs = Math.floor(mins / 60);
+      const remMins = mins % 60;
+      return hrs > 0 ? `Expires in ${hrs}h ${remMins}m` : `Expires in ${remMins}m`;
+    }
+
+    return item.expiry || 'Expires Soon';
+  };
+
   const handleConfirm = async () => {
     const pickupCode = Math.floor(1000 + Math.random() * 9000).toString();
     const deliveryCode = Math.floor(1000 + Math.random() * 9000).toString();
 
     const batchId = `BATCH-${Math.floor(8000 + Math.random() * 999)}`;
+    const foodTitle = foodItem.title || foodItem.name || 'Royal Mutton Kacchi Biryani & Borhani Combo';
+    const restaurantName = foodItem.donor || foodItem.restaurant || foodItem.restaurantName || 'Star Chef Bistro';
+    const restaurantAddr = foodItem.area || foodItem.address || foodItem.restaurantAddress || 'Kemal Ataturk & Progati Sarani, Banani';
+    const expiryStr = getModalExpiryDisplay(foodItem) || foodItem.expiry || 'Expires in 45 mins';
+    const portionsCount = parseInt(foodItem.quantity || foodItem.portions || '25', 10) || 25;
+
     const newBatch = {
       id: batchId,
-      title: foodItem.title,
-      restaurant: foodItem.donor || 'Star Chef Bistro',
-      restaurantAddress: foodItem.area || 'Banani, Dhaka',
+      title: foodTitle,
+      name: foodTitle,
+      restaurant: restaurantName,
+      donor: restaurantName,
+      restaurantAddress: restaurantAddr,
+      area: restaurantAddr,
       category: foodItem.category || 'COOKED_MEAL',
-      portions: 30,
-      portionsClaimedNgo: 30,
+      portions: portionsCount,
+      portionsClaimedNgo: portionsCount,
       portionsSoldConsumer: 0,
       hygieneScore: 96,
       aiGrade: 'GRADE_A_PREMIUM',
-      prepTime: '08:30 PM',
-      expiryTime: foodItem.expiry || 'Expires in 45 mins',
+      prepTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      expiryTime: expiryStr,
+      expiresAt: foodItem.expiresAt || foodItem.ngoEndAt || (Date.now() + 45 * 60 * 1000),
       currentStage: 2, // Claimed / Allocated Pending Pickup
       status: 'CLAIMED_PENDING_PICKUP',
       deliveryMode: transportChoice === 'VOLUNTEER' ? 'VOLUNTEER_RIDER' : 'NGO_SELF_PICKUP',
@@ -48,17 +88,25 @@ export default function NgoClaimModal({ isOpen, onClose, foodItem, onConfirmClai
       deliveryOtpVerified: false,
       deliveryOtpStatus: 'ACTIVE_VISIBLE',
       eta: transportChoice === 'VOLUNTEER' ? 'Awaiting Volunteer Rider' : 'NGO Self-Pickup',
-      distanceKm: '2.4 km',
-      foodSavedKg: 15,
-      co2SavedKg: 22.5
+      distanceKm: foodItem.distance || foodItem.dist || '1.2 km',
+      pickupCoords: foodItem.pickupCoords || [23.7937, 90.4066],
+      dropoffCoords: foodItem.dropoffCoords || [23.8103, 90.4125],
+      foodSavedKg: Math.round(portionsCount * 0.5 * 10) / 10,
+      co2SavedKg: Math.round(portionsCount * 0.75 * 10) / 10,
+      createdAt: Date.now()
     };
 
     supplyChainService.addOrUpdateBatch(newBatch);
 
     const claimPayload = {
       foodId: foodItem.id,
+      title: foodTitle,
+      donor: restaurantName,
+      beneficiaries: foodItem.beneficiaries || `Feeds ~${portionsCount} People`,
       transportChoice,
-      claimedAt: new Date().toLocaleTimeString()
+      pickupOtp: pickupCode,
+      deliveryOtp: deliveryCode,
+      claimedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' Today'
     };
     
     surplusService.claimStoredListing(foodItem.id, claimPayload);
@@ -66,8 +114,8 @@ export default function NgoClaimModal({ isOpen, onClose, foodItem, onConfirmClai
 
     onConfirmClaim({
       id: batchId,
-      title: foodItem.title,
-      donor: foodItem.donor,
+      title: foodTitle,
+      donor: restaurantName,
       claimedAt: new Date().toLocaleTimeString(),
       status: result.status || (transportChoice === 'VOLUNTEER' ? 'DISPATCHING_RIDER' : 'SELF_PICKUP_ASSIGNED'),
       eta: '15 mins',
@@ -93,7 +141,7 @@ export default function NgoClaimModal({ isOpen, onClose, foodItem, onConfirmClai
           <span className="summary-donor">🏪 {foodItem.donor} ({foodItem.distance})</span>
           <div className="summary-meta-chips">
             <span className="summary-chip feed-chip">👨‍👩‍👧‍👦 {foodItem.beneficiaries}</span>
-            <span className="summary-chip expiry-chip">🔥 {foodItem.expiry}</span>
+            <span className="summary-chip expiry-chip">🔥 {getModalExpiryDisplay(foodItem)}</span>
           </div>
         </div>
       </div>

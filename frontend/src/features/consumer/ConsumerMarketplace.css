@@ -1456,3 +1456,255 @@
   justify-content: flex-end;
   margin-top: 0.5rem;
 }
+
+/* ==========================================================================
+   FOODPANDA-STYLE LIVE ORDER & RIDER TRACKER STYLES
+   ========================================================================== */
+.orders-sub {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  display: block;
+  margin-top: 0.2rem;
+}
+
+.foodpanda-style-card {
+  border: 1.5px solid var(--border-color);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: all 0.25 ease;
+}
+
+.pass-id-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.3rem;
+}
+
+.payment-pill {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+}
+
+.payment-pill.cod-pill {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.payment-pill.escrow-pill {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+.fulfillment-badge.delivery-badge {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+}
+
+.fulfillment-badge.pickup-badge {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+}
+
+.foodpanda-rider-tracker-banner {
+  margin: 0.8rem 0;
+}
+
+.rider-active-card {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #ffffff;
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
+}
+
+.rider-avatar-box {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.live-dot-green {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 11px;
+  height: 11px;
+  background: #34d399;
+  border: 2px solid #047857;
+  border-radius: 50%;
+}
+
+.rider-details-meta {
+  flex: 1;
+}
+
+.r-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.r-title-row h5 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.r-rating {
+  font-size: 0.72rem;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0.15rem 0.45rem;
+  border-radius: 10px;
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.r-status-txt {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  color: #ecfdf5;
+  line-height: 1.35;
+}
+
+.btn-call-rider {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.8rem;
+  background: #ffffff;
+  color: #047857;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+}
+
+.rider-searching-card {
+  background: #f0f9ff;
+  border: 1.5px dashed #38bdf8;
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+[data-theme="dark"] .rider-searching-card {
+  background: #0c4a6e !important;
+  border-color: #0284c7 !important;
+  color: #e0f2fe;
+}
+
+.searching-icon-pulse {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e0f2fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.searching-info {
+  flex: 1;
+}
+
+.searching-info h5 {
+  margin: 0 0 0.15rem;
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: #0369a1;
+}
+
+[data-theme="dark"] .searching-info h5 {
+  color: #38bdf8 !important;
+}
+
+.searching-info p {
+  margin: 0;
+  font-size: 0.73rem;
+  color: #0284c7;
+}
+
+[data-theme="dark"] .searching-info p {
+  color: #bae6fd !important;
+}
+
+.btn-simulate-accept {
+  padding: 0.45rem 0.75rem;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.foodpanda-stepper {
+  margin: 0.8rem 0;
+}
+
+.foodpanda-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.8rem;
+  border-top: 1px dashed var(--border-color);
+}
+
+.saved-otp-box {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  padding: 0.45rem 0.85rem;
+  border-radius: 12px;
+}
+
+.otp-lbl {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  display: block;
+}
+
+.otp-code {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--accent-green);
+  letter-spacing: 2px;
+}
+

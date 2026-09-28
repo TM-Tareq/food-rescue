@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#022c22"/>
+    </linearGradient>
+    <linearGradient id="tehariGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#eab308"/>
+    </linearGradient>
+    <filter id="shadow4" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="10" stdDeviation="15" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="600" height="400" fill="url(#bgGrad4)"/>
+  
+  <!-- Brass Thali -->
+  <circle cx="300" cy="200" r="160" fill="#ca8a04" stroke="#fef08a" stroke-width="6" filter="url(#shadow4)"/>
+  
+  <!-- Tehari Mound -->
+  <circle cx="300" cy="200" r="135" fill="url(#tehariGrad)"/>
+  
+  <!-- Small Beef Cubes -->
+  <rect x="230" y="160" width="25" height="20" rx="4" fill="#451a03"/>
+  <rect x="280" y="140" width="22" height="24" rx="4" fill="#451a03"/>
+  <rect x="330" y="170" width="28" height="22" rx="4" fill="#451a03"/>
+  <rect x="260" y="210" width="24" height="26" rx="4" fill="#451a03"/>
+  <rect x="320" y="220" width="26" height="20" rx="4" fill="#451a03"/>
+
+  <!-- Green Chili Garnish -->
+  <path d="M 210,190 Q 230,170 240,200" stroke="#16a34a" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M 360,180 Q 370,160 380,190" stroke="#16a34a" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+  <!-- Salad Side Bowl -->
+  <circle cx="470" cy="270" r="45" fill="#f8fafc" filter="url(#shadow4)"/>
+  <circle cx="470" cy="270" r="38" fill="#22c55e"/>
+  <circle cx="460" cy="260" r="8" fill="#ef4444"/>
+  <circle cx="480" cy="280" r="10" fill="#ffffff"/>
+
+  <!-- Overlay Text Badge -->
+  <rect x="25" y="25" width="230" height="38" rx="19" fill="rgba(15, 23, 42, 0.85)"/>
+  <text x="140" y="49" font-family="Arial, sans-serif" font-weight="bold" font-size="14" fill="#fef08a" text-anchor="middle">🍲 GOURMET BEEF TEHARI</text>
+</svg>

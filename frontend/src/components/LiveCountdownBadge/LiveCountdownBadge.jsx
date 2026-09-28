@@ -16,10 +16,17 @@ export default function LiveCountdownBadge({
   const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
+    const parseTarget = (val) => {
+      if (!val) return null;
+      if (typeof val === 'number') return val;
+      const parsed = new Date(val).getTime();
+      return isNaN(parsed) ? null : parsed;
+    };
+
     const updateTimer = () => {
       const now = Date.now();
-      const totalTarget = expiresAt || (now + 3 * 3600 * 1000);
-      const ngoTarget = ngoPriorityUntil || (totalTarget - 2 * 3600 * 1000);
+      const totalTarget = parseTarget(expiresAt) || (now + 3 * 3600 * 1000);
+      const ngoTarget = parseTarget(ngoPriorityUntil) || (totalTarget - 2 * 3600 * 1000);
 
       const inNgoWindow = now < ngoTarget;
       setIsNgoPhase(inNgoWindow);

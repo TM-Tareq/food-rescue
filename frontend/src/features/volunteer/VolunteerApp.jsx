@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle } from 'react-leaflet';
-import L from 'leaflet';
-import { 
-  Bike, Navigation, ShieldCheck, Clock, MapPin, CheckCircle2, 
-  AlertTriangle, PhoneCall, Star, Award, Heart, Sparkles, Zap, 
-  ChevronRight, ArrowLeft, RefreshCw, User, Settings, LogOut, 
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Bike, Navigation, ShieldCheck, Clock, MapPin, CheckCircle2,
+  AlertTriangle, PhoneCall, Star, Award, Heart, Sparkles, Zap,
+  ChevronRight, ArrowLeft, RefreshCw, User, Settings, LogOut,
   Layers, Check, Copy, Bell, Maximize2, Minimize2, CheckSquare,
   TrendingUp, Shield, Flame, AlertCircle, FileText, Share2, Compass,
   Truck, PackageCheck, HeartHandshake, Phone, Smartphone, Monitor, Radio,
@@ -17,22 +15,214 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { volunteerService } from '../../services/volunteerService';
 import { supplyChainService } from '../../services/supplyChainService';
-import { 
-  BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE, 
-  BANANI_TO_BASHUNDHARA_ALT_ROUTE, 
-  PRIMARY_ROUTE_ETA_POS, 
-  ALT_ROUTE_ETA_POS, 
-  getOsmTileLayer,
-  createGoogleEtaBadgeMarker, 
-  createGoogleCleanPinMarker 
+import { surplusService } from '../../services/surplusService';
+import {
+  BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE,
+  BANANI_TO_BASHUNDHARA_ALT_ROUTE,
+  getDhakaStreetWaypoints
 } from '../../services/dhakaRouteService';
-import 'leaflet/dist/leaflet.css';
 import './VolunteerApp.css';
 
-// Leaflet Custom Pin Markers
-const riderPin = createGoogleCleanPinMarker('🛵', '#10b981', 'Rider');
-const restaurantPin = createGoogleCleanPinMarker('🏪', '#ef4444', 'Restaurant');
-const shelterPin = createGoogleCleanPinMarker('🏠', '#3b82f6', 'Shelter');
+/**
+ * Native Paid Google Maps JS API Viewport Component
+ */
+function GoogleMapsNativeView({
+  centerCoords,
+  radarRadius,
+  activeMission,
+  themeMode,
+  riderLocationName,
+  locationMode
+}) {
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markersRef = useRef([]);
+  const circleRef = useRef(null);
+  const polylineRef = useRef([]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    if (typeof window === 'undefined' || !window.google || !window.google.maps) {
+      console.warn('Google Maps JS SDK initializing...');
+      return;
+    }
+
+    const center = { lat: centerCoords[0], lng: centerCoords[1] };
+
+    const darkMapStyles = [
+      { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
+      { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
+      { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+      { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
+      { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
+      { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#263c3f' }] },
+      { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#6b9a76' }] },
+      { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#38414e' }] },
+      { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#212a37' }] },
+      { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#9ca5b3' }] },
+      { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#746855' }] },
+      { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#1f2835' }] },
+      { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [{ color: '#f3d19c' }] },
+      { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#2f3948' }] },
+      { featureType: 'transit.station', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
+      { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#17263c' }] },
+      { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#515c6d' }] },
+      { featureType: 'water', elementType: 'labels.text.stroke', stylers: [{ color: '#17263c' }] }
+    ];
+
+    if (!mapInstanceRef.current) {
+      mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
+        center,
+        zoom: 14,
+        styles: themeMode === 'dark' ? darkMapStyles : [],
+        disableDefaultUI: true,
+        zoomControl: true,
+        gestureHandling: 'greedy'
+      });
+    } else {
+      mapInstanceRef.current.setCenter(center);
+      mapInstanceRef.current.setOptions({
+        styles: themeMode === 'dark' ? darkMapStyles : []
+      });
+    }
+
+    const map = mapInstanceRef.current;
+
+    // Clear previous markers
+    markersRef.current.forEach(m => m.setMap(null));
+    markersRef.current = [];
+
+    // Clear previous polylines
+    polylineRef.current.forEach(p => p.setMap(null));
+    polylineRef.current = [];
+
+    // Google Maps Radar Geofence Circle Ring
+    if (circleRef.current) circleRef.current.setMap(null);
+    circleRef.current = new window.google.maps.Circle({
+      strokeColor: locationMode === 'live' ? '#10b981' : '#f59e0b',
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: locationMode === 'live' ? '#10b981' : '#f59e0b',
+      fillOpacity: 0.12,
+      map,
+      center,
+      radius: radarRadius * 1000
+    });
+
+    const createGooglePinSvg = (emoji, color) => `
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="46" viewBox="0 0 36 46">
+        <path d="M18 0C8.05 0 0 8.05 0 18c0 13.5 18 28 18 28s18-14.5 18-28C36 8.05 27.95 0 18 0z" fill="${color}"/>
+        <circle cx="18" cy="17" r="12" fill="#ffffff"/>
+        <text x="18" y="19" font-size="15" text-anchor="middle" dominant-baseline="central">${emoji}</text>
+      </svg>
+    `;
+
+    // Rider Google Maps Marker
+    const riderMarker = new window.google.maps.Marker({
+      position: center,
+      map,
+      title: `Rider: Tanvir Hossain (${riderLocationName})`,
+      icon: {
+        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(createGooglePinSvg('🛵', '#10b981')),
+        scaledSize: new window.google.maps.Size(36, 46),
+        anchor: new window.google.maps.Point(18, 46)
+      }
+    });
+    markersRef.current.push(riderMarker);
+
+    // Active Mission Pickup & Dropoff Markers
+    if (activeMission && activeMission.pickupCoords) {
+      const restoPos = { lat: activeMission.pickupCoords[0], lng: activeMission.pickupCoords[1] };
+      const restoMarker = new window.google.maps.Marker({
+        position: restoPos,
+        map,
+        title: `Pickup: ${activeMission.restaurantName}`,
+        icon: {
+          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(createGooglePinSvg('🏪', '#ef4444')),
+          scaledSize: new window.google.maps.Size(36, 46),
+          anchor: new window.google.maps.Point(18, 46)
+        }
+      });
+      markersRef.current.push(restoMarker);
+
+      if (activeMission.dropoffCoords) {
+        const shelterPos = { lat: activeMission.dropoffCoords[0], lng: activeMission.dropoffCoords[1] };
+        const shelterMarker = new window.google.maps.Marker({
+          position: shelterPos,
+          map,
+          title: `Deliver to: ${activeMission.shelterName}`,
+          icon: {
+            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(createGooglePinSvg('🏠', '#3b82f6')),
+            scaledSize: new window.google.maps.Size(36, 46),
+            anchor: new window.google.maps.Point(18, 46)
+          }
+        });
+        markersRef.current.push(shelterMarker);
+
+        const streetPts = getDhakaStreetWaypoints(
+          [center.lat, center.lng],
+          activeMission.pickupCoords,
+          activeMission.dropoffCoords || activeMission.pickupCoords
+        );
+        const googlePath = streetPts.map(pt => ({ lat: pt[0], lng: pt[1] }));
+
+        if (window.google && window.google.maps && window.google.maps.DirectionsService) {
+          const ds = new window.google.maps.DirectionsService();
+          ds.route(
+            {
+              origin: center,
+              destination: shelterPos || restoPos,
+              waypoints: [{ location: restoPos, stopover: true }],
+              travelMode: window.google.maps.TravelMode.DRIVING
+            },
+            (result, status) => {
+              if (status === 'OK' && result.routes && result.routes[0]) {
+                const polyline = new window.google.maps.Polyline({
+                  path: result.routes[0].overview_path,
+                  geodesic: true,
+                  strokeColor: '#2563eb',
+                  strokeOpacity: 0.95,
+                  strokeWeight: 6,
+                  map
+                });
+                polylineRef.current.push(polyline);
+              } else {
+                const polyline = new window.google.maps.Polyline({
+                  path: googlePath,
+                  geodesic: true,
+                  strokeColor: '#2563eb',
+                  strokeOpacity: 0.95,
+                  strokeWeight: 6,
+                  map
+                });
+                polylineRef.current.push(polyline);
+              }
+            }
+          );
+        } else {
+          const polyline = new window.google.maps.Polyline({
+            path: googlePath,
+            geodesic: true,
+            strokeColor: '#2563eb',
+            strokeOpacity: 0.95,
+            strokeWeight: 6,
+            map
+          });
+          polylineRef.current.push(polyline);
+        }
+      }
+    }
+  }, [centerCoords, radarRadius, activeMission, themeMode, riderLocationName, locationMode]);
+
+  return (
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
+      <div className="v-map-overlay-banner">
+        <Navigation size={13} /> <span><strong>Google Maps API (Paid Active)</strong> • {riderLocationName} • <strong>{radarRadius} km Coverage</strong></span>
+      </div>
+    </div>
+  );
+}
 
 export default function VolunteerApp({ onLogout }) {
   const { logout } = useAuth();
@@ -44,7 +234,18 @@ export default function VolunteerApp({ onLogout }) {
   const [isDeviceFrameMode, setIsDeviceFrameMode] = useState(true); // Toggle device shell vs stretched view
 
   // Mission Step Workflow (0: Incoming Alert, 1: Pickup, 2: OTP, 3: Delivery, 4: Handover, 5: Celebration)
-  const [missionStep, setMissionStep] = useState(0);
+  const [missionStep, setMissionStep] = useState(() => {
+    try {
+      const saved = localStorage.getItem('foodrescue_active_rider_mission');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed.missionStep === 'number' && parsed.missionStep > 0 && parsed.missionStep < 5) {
+          return parsed.missionStep;
+        }
+      }
+    } catch (e) {}
+    return 0;
+  });
   const [otpInput, setOtpInput] = useState('');
   const [otpError, setOtpError] = useState('');
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
@@ -52,63 +253,51 @@ export default function VolunteerApp({ onLogout }) {
   const [sosReason, setSosReason] = useState('VEHICLE_BREAKDOWN');
   const [sosStatus, setSosStatus] = useState(null);
   const [isCelebrationModalOpen, setIsCelebrationModalOpen] = useState(false);
-  const [hasIncomingAlert, setHasIncomingAlert] = useState(true); // Toggle between Dispatch Pop-up Alert vs Idle Radar Scanning
+  const [hasIncomingAlert, setHasIncomingAlert] = useState(false); // Default false when 0 DB items exist
 
-  // Rider Location & Geofence Radius State
+  // Rider Location, Coords & Geofence Radius State
+  const [riderCoords, setRiderCoords] = useState([23.8110, 90.4200]); // Gulshan-Banani Live GPS
   const [locationMode, setLocationMode] = useState('live'); // 'live' (Primary Auto) or 'manual'
-  const [riderLocationName, setRiderLocationName] = useState('Banani Rd 11, Dhaka');
+  const [riderLocationName, setRiderLocationName] = useState('Live GPS (23.811, 90.420)');
   const [manualAddressInput, setManualAddressInput] = useState('');
-  const [radarRadius, setRadarRadius] = useState(2.0); // 2.0 km radius coverage distance
-  const [isGpsModalOpen, setIsGpsModalOpen] = useState(false);
-  const [gpsStatusText, setGpsStatusText] = useState(null);
 
-  const syncSurplusPoolFromSupplyChain = () => {
+  // Persistent Radar Coverage Radius State (Saved in LocalStorage across page reloads)
+  const [radarRadius, setRadarRadiusState] = useState(() => {
     try {
-      const batches = supplyChainService.getBatches();
-      const riderBatches = batches.filter(b => b.deliveryMode === 'VOLUNTEER_RIDER' && b.status !== 'DELIVERED');
-      
-      if (riderBatches.length > 0) {
-        const mapped = riderBatches.map(b => ({
-          id: b.id,
-          restaurantName: b.restaurant || 'Star Chef Bistro',
-          restaurantAddress: b.restaurantAddress || 'Block D, Banani Road 11, Dhaka',
-          restaurantPhone: b.riderPhone || '+880 1711-987654',
-          shelterName: b.recipient || 'Anjuman Orphanage Shelter',
-          shelterAddress: 'Plot 4, Road 2, Block B, Bashundhara R/A',
-          shelterPhone: '+880 1819-123456',
-          foodItem: b.title,
-          weight: `${b.foodSavedKg || 14.5} kg (Feeds ${b.portions || 35} People)`,
-          expiryTime: b.expiryTime || '42 mins left',
-          karmaPoints: 50,
-          requiredOtp: b.pickupOtp || '4892',
-          deliveryOtp: b.deliveryOtp || '7842',
-          pickupCoords: [23.7937, 90.4066],
-          dropoffCoords: [23.8103, 90.4125],
-          dist: b.distanceKm || '0.8 km away',
-          urgency: 'URGENT',
-          isAutoDispatch: true
-        }));
-        
-        setSurplusPool(mapped);
-        
-        const newest = mapped[0];
-        setActiveMission(prev => ({
-          ...newest,
-          riderCoords: prev.riderCoords || [23.7900, 90.4020]
-        }));
-        setHasIncomingAlert(true);
+      const saved = localStorage.getItem('foodrescue_radar_radius');
+      if (saved) {
+        const parsed = parseFloat(saved);
+        if (!isNaN(parsed) && parsed > 0) return parsed;
       }
     } catch (e) {
-      console.warn('Error syncing rider surplus pool:', e);
+      console.warn('Failed to read radar radius from localStorage:', e);
+    }
+    return 5.0; // Default 5.0 km fallback
+  });
+
+  const setRadarRadius = (val) => {
+    setRadarRadiusState(val);
+    try {
+      localStorage.setItem('foodrescue_radar_radius', val.toString());
+    } catch (e) {
+      console.warn('Failed to save radar radius to localStorage:', e);
     }
   };
-
-  useEffect(() => {
-    fetchDeviceGps();
-    syncSurplusPoolFromSupplyChain();
-    window.addEventListener('foodrescue_supply_chain_updated', syncSurplusPoolFromSupplyChain);
-    return () => window.removeEventListener('foodrescue_supply_chain_updated', syncSurplusPoolFromSupplyChain);
-  }, []);
+  const [isGpsModalOpen, setIsGpsModalOpen] = useState(false);
+  const [gpsStatusText, setGpsStatusText] = useState(null);
+  const [surplusPool, setSurplusPool] = useState([]);
+  const [activeMission, setActiveMission] = useState(() => {
+    try {
+      const saved = localStorage.getItem('foodrescue_active_rider_mission');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.activeMission && parsed.missionStep > 0 && parsed.missionStep < 5) {
+          return parsed.activeMission;
+        }
+      }
+    } catch (e) {}
+    return null;
+  });
 
   // Fetch Live Device GPS Location (Primary Auto Mode)
   const fetchDeviceGps = () => {
@@ -116,25 +305,45 @@ export default function VolunteerApp({ onLogout }) {
     setGpsStatusText('🛰️ Contacting device GPS satellites...');
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords;
-          setActiveMission(prev => ({
-            ...prev,
-            riderCoords: [latitude, longitude]
-          }));
-          setRiderLocationName(`Banani Rd 11 (${latitude.toFixed(3)}, ${longitude.toFixed(3)})`);
-          setGpsStatusText(`✅ Live GPS Acquired: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+          setRiderCoords([latitude, longitude]);
+          if (activeMission) {
+            setActiveMission(prev => prev ? ({ ...prev, riderCoords: [latitude, longitude] }) : null);
+          }
+
+          let locationText = `Live GPS (${latitude.toFixed(3)}, ${longitude.toFixed(3)})`;
+
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            const data = await res.json();
+            if (data && data.address) {
+              const road = data.address.road || data.address.suburb || data.address.neighbourhood || data.address.city_district || data.address.city || '';
+              const city = data.address.city || data.address.town || data.address.county || 'Dhaka';
+              if (road) {
+                locationText = `${road}, ${city} (${latitude.toFixed(3)}, ${longitude.toFixed(3)})`;
+              } else if (data.display_name) {
+                const parts = data.display_name.split(',');
+                locationText = `${parts[0]?.trim() || 'Live Location'}, ${parts[1]?.trim() || ''} (${latitude.toFixed(3)}, ${longitude.toFixed(3)})`;
+              }
+            }
+          } catch (e) {
+            console.warn('Reverse geocoding fetch error:', e);
+          }
+
+          setRiderLocationName(locationText);
+          setGpsStatusText(`✅ Live Device GPS Acquired: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
         },
         (error) => {
           console.warn('GPS error fallback:', error);
-          setRiderLocationName('Banani Rd 11, Dhaka');
-          setGpsStatusText('📍 Live GPS acquired (Banani Hub Center)');
+          setRiderLocationName('GPS Permission Denied / Off');
+          setGpsStatusText('⚠️ GPS Permission Denied or Timed Out. Please allow browser location access.');
         },
-        { enableHighAccuracy: true, timeout: 5000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
-      setRiderLocationName('Banani Rd 11, Dhaka');
-      setGpsStatusText('📍 Live GPS acquired (Banani Hub Center)');
+      setRiderLocationName('Geolocation Not Supported');
+      setGpsStatusText('⚠️ Geolocation not supported by browser.');
     }
   };
 
@@ -152,7 +361,10 @@ export default function VolunteerApp({ onLogout }) {
     if (presetKey && presets[presetKey]) {
       const selected = presets[presetKey];
       setRiderLocationName(selected.name);
-      setActiveMission(prev => ({ ...prev, riderCoords: selected.coords }));
+      setRiderCoords(selected.coords);
+      if (activeMission) {
+        setActiveMission(prev => prev ? ({ ...prev, riderCoords: selected.coords }) : null);
+      }
       setGpsStatusText(`📍 Manual Location Set: ${selected.name}`);
     } else if (manualAddressInput.trim()) {
       setRiderLocationName(manualAddressInput.trim());
@@ -160,113 +372,311 @@ export default function VolunteerApp({ onLogout }) {
     }
   };
 
-  // Surplus Food Rescues Pool (Available within 2.0 km Radius)
-  const [surplusPool, setSurplusPool] = useState([
-    {
-      id: 'RESCUE-8091',
-      restaurantName: 'Star Kabab & Restaurant',
-      restaurantAddress: 'Block D, Banani Road 11, Dhaka',
+  // Real-Time Database Order Creation Helper (Simulate Real Order in Database)
+  const handleCreateRealTestOrder = () => {
+    const orderId = `BATCH-${Math.floor(8000 + Math.random() * 999)}`;
+    const passId = `PASS-${Math.floor(100000 + Math.random() * 900000)}`;
+    const pinCode = '1794';
+
+    const consumerOrderObj = {
+      id: passId,
+      batchId: orderId,
+      restaurantName: 'Star Chef Bistro',
+      restaurantAddress: 'Block D, Banani Rd 11, Dhaka',
       restaurantPhone: '+880 1711-987654',
-      shelterName: 'Anjuman Orphanage Shelter',
-      shelterAddress: 'Plot 4, Road 2, Block B, Bashundhara R/A',
-      shelterPhone: '+880 1819-123456',
-      foodItem: '35x Mutton Kacchi Biryani Boxes',
-      weight: '14.5 kg (Feeds 35 Children)',
-      expiryTime: '42 mins left',
-      karmaPoints: 50,
-      requiredOtp: '4892',
+      itemTitle: 'Gourmet Beef Tehari & Salad Package',
+      quantity: 1,
+      totalAmount: 250,
+      fulfillmentType: 'delivery',
+      paymentMethod: 'COD',
+      pinCode: pinCode,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      createdAt: Date.now(),
+      status: 'RIDER_SEARCHING',
+      riderAssigned: false,
+      riderName: 'Searching for Hero Rider...',
+      riderPhone: null,
+      riderAvatar: '🛵',
+      riderRating: '4.9',
+      distanceKm: '0.8 km',
+      eta: '12 mins ETA'
+    };
+
+    // Save to consumer orders
+    try {
+      const saved = localStorage.getItem('foodrescue_consumer_orders');
+      const orders = saved ? JSON.parse(saved) : [];
+      orders.unshift(consumerOrderObj);
+      localStorage.setItem('foodrescue_consumer_orders', JSON.stringify(orders));
+    } catch (e) { }
+
+    const newOrder = {
+      id: orderId,
+      title: 'Gourmet Beef Tehari & Salad Package',
+      name: 'Gourmet Beef Tehari & Salad Package',
+      restaurant: 'Star Chef Bistro',
+      donor: 'Star Chef Bistro',
+      restaurantAddress: 'Block D, Banani Rd 11, Dhaka',
+      area: 'Banani, Dhaka',
+      category: 'COOKED_MEAL',
+      portions: 1,
+      portionsClaimedNgo: 0,
+      portionsSoldConsumer: 1,
+      hygieneScore: 98,
+      aiGrade: 'GRADE_A_PREMIUM',
+      prepTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      expiryTime: 'Expires in 45 mins',
+      currentStage: 2,
+      status: 'CLAIMED_PENDING_PICKUP',
+      deliveryMode: 'VOLUNTEER_RIDER',
+      recipient: 'Farhan Ahmed (House 42, Road 11, Block D, Banani, Dhaka)',
+      customerName: 'Farhan Ahmed',
+      customerAddress: 'House 42, Road 11, Block D, Banani, Dhaka',
+      customerPhone: '+880 1712-345678',
+      recipientType: 'CONSUMER',
+      riderName: 'Pending Rider Acceptance',
+      riderPhone: '+880 1711-987654',
+      riderAvatar: '🛵',
+      pickupOtp: pinCode,
+      pickupOtpVerified: false,
+      pickupOtpStatus: 'ACTIVE_VISIBLE',
+      deliveryOtp: pinCode,
+      deliveryOtpVerified: false,
+      deliveryOtpStatus: 'ACTIVE_VISIBLE',
+      eta: '12 mins ETA',
+      distanceKm: '0.8 km',
       pickupCoords: [23.7937, 90.4066],
-      dropoffCoords: [23.8103, 90.4125],
-      dist: '0.8 km away',
-      urgency: 'URGENT',
-      isAutoDispatch: true
-    },
-    {
-      id: 'REC-901',
-      restaurantName: 'Kacchi Bhai Banani',
-      restaurantAddress: 'House 42, Road 11, Block E, Banani',
-      restaurantPhone: '+880 1712-345678',
-      shelterName: 'Jaago Foundation Shelter',
-      shelterAddress: 'Korail Bastee Gate 3, Mohakhali',
-      shelterPhone: '+880 1700-112233',
-      foodItem: '20 Platter Boxes (Kacchi & Borhani)',
-      weight: '8.0 kg (Feeds 20 Children)',
-      expiryTime: '30 mins left',
-      karmaPoints: 40,
-      requiredOtp: '1284',
-      pickupCoords: [23.7925, 90.4070],
-      dropoffCoords: [23.7845, 90.4020],
-      dist: '0.7 km away',
-      urgency: 'HIGH',
-      isAutoDispatch: false
-    },
-    {
-      id: 'REC-902',
-      restaurantName: 'Dhakaiya Mezban Gulshan',
-      restaurantAddress: 'Circle 2, Road 45, Gulshan',
-      restaurantPhone: '+880 1819-556677',
-      shelterName: 'Shishu Vikash Kendro Shelter',
-      shelterAddress: 'Tejgaon Industrial Area, Dhaka',
-      shelterPhone: '+880 1911-889900',
-      foodItem: '15 Beef Roast Packages & Naan',
-      weight: '6.5 kg (Feeds 15 People)',
-      expiryTime: '1.5 hours left',
-      karmaPoints: 30,
-      requiredOtp: '7391',
-      pickupCoords: [23.7979, 90.4143],
-      dropoffCoords: [23.7680, 90.3980],
-      dist: '1.4 km away',
-      urgency: 'MEDIUM',
-      isAutoDispatch: false
-    },
-    {
-      id: 'REC-903',
-      restaurantName: 'Takeout Burgers Gulshan',
-      restaurantAddress: 'Plot 12, Avenue 3, Gulshan 1',
-      restaurantPhone: '+880 1912-778899',
-      shelterName: 'Al-Ihsan Orphanage Center',
-      shelterAddress: 'Badda Link Road, Rampura',
-      shelterPhone: '+880 1611-334455',
-      foodItem: '12 Gourmet Chicken Burgers & Fries',
-      weight: '4.2 kg (Feeds 12 Youths)',
-      expiryTime: '2 hours left',
-      karmaPoints: 25,
-      requiredOtp: '9520',
-      pickupCoords: [23.7800, 90.4160],
-      dropoffCoords: [23.7650, 90.4250],
-      dist: '2.1 km away',
-      urgency: 'NORMAL',
-      isAutoDispatch: false
+      dropoffCoords: [23.7937, 90.4066],
+      foodSavedKg: 1.8,
+      co2SavedKg: 2.7,
+      createdAt: Date.now(),
+      isDemo: false
+    };
+    supplyChainService.addOrUpdateBatch(newOrder);
+  };
+
+  // Haversine Distance Helper (lat1, lon1, lat2, lon2 in km)
+  const calculateHaversineKm = (lat1, lon1, lat2, lon2) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return 1.0;
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return Math.round(R * c * 10) / 10;
+  };
+
+  // Parse Remaining Expiry Minutes Helper
+  const parseRemainingMinutes = (expiryTime, expiresAt) => {
+    if (expiresAt && typeof expiresAt === 'number') {
+      const mins = Math.round((expiresAt - Date.now()) / (1000 * 60));
+      return mins > 0 ? mins : 5;
     }
-  ]);
+    if (typeof expiryTime === 'string') {
+      const match = expiryTime.match(/(\d+)\s*(min|hr|hour)/i);
+      if (match) {
+        const val = parseInt(match[1], 10);
+        return match[2].toLowerCase().startsWith('h') ? val * 60 : val;
+      }
+    }
+    return 35; // Default 35 mins
+  };
 
-  // Active Mission Data (Selected or Auto-Dispatched)
-  const [activeMission, setActiveMission] = useState({
-    id: 'RESCUE-8091',
-    restaurantName: 'Star Kabab & Restaurant',
-    restaurantAddress: 'Block D, Banani Road 11, Dhaka',
-    restaurantPhone: '+880 1711-987654',
-    shelterName: 'Anjuman Orphanage Shelter',
-    shelterAddress: 'Plot 4, Road 2, Block B, Bashundhara R/A',
-    shelterPhone: '+880 1819-123456',
-    foodItem: '35x Mutton Kacchi Biryani Boxes',
-    weight: '14.5 kg (Feeds 35 Children)',
-    expiryTime: '42 mins left',
-    karmaPoints: 50,
-    requiredOtp: '4892',
-    pickupCoords: [23.7937, 90.4066], // Banani
-    dropoffCoords: [23.8103, 90.4125], // Bashundhara
-    riderCoords: [23.7900, 90.4020]    // Current Rider
-  });
+  const syncSurplusPoolFromSupplyChain = () => {
+    try {
+      const batches = supplyChainService.getBatches();
+      // Filter for VOLUNTEER_RIDER delivery mode and non-delivered items
+      const riderBatches = batches.filter(b => b.deliveryMode === 'VOLUNTEER_RIDER' && b.status !== 'DELIVERED');
 
-  // Handle Rider Claiming Any Rescue Item from the Surplus Board
-  const handleClaimSurplusMission = (rescueItem) => {
-    setActiveMission(prev => ({
-      ...rescueItem,
-      riderCoords: prev.riderCoords || [23.7900, 90.4020]
-    }));
+      const mapped = riderBatches.map(b => {
+        const pCoords = b.pickupCoords || [23.7937, 90.4066];
+        const distKm = calculateHaversineKm(riderCoords[0], riderCoords[1], pCoords[0], pCoords[1]);
+        const remainingMins = parseRemainingMinutes(b.expiryTime, b.expiresAt);
+        const isConsumerOrder = b.recipientType === 'CONSUMER' || (b.recipient && (b.recipient.includes('Consumer') || b.recipient.includes('Farhan')));
+
+        // Priority Score Formula:
+        // Real Consumer Orders get -1000 priority bonus so active consumer delivery requests ALWAYS show up FIRST at top of Rider Cockpit!
+        const priorityScore = (isConsumerOrder ? -1000 : 0) + (remainingMins * 1.0) + (distKm * 3.0);
+
+        return {
+          id: b.id,
+          restaurantName: b.restaurant || b.donor || 'Star Chef Bistro',
+          restaurantAddress: b.restaurantAddress || b.area || 'Banani, Dhaka',
+          restaurantPhone: b.riderPhone || '+880 1711-987654',
+          shelterName: isConsumerOrder ? (b.customerName ? `${b.customerName} (${b.customerAddress || b.area || 'Banani, Dhaka'})` : (b.recipient || 'Farhan Ahmed (Banani, Dhaka)')) : (b.recipient || 'NGO Shelter'),
+          shelterAddress: isConsumerOrder ? (b.customerAddress || b.restaurantAddress || 'House 42, Road 11, Block D, Banani, Dhaka') : (b.shelterAddress || 'Dhaka Destination'),
+          shelterPhone: b.customerPhone || b.shelterPhone || '+880 1712-345678',
+          foodItem: b.title || b.name || 'Gourmet Beef Tehari & Salad Package',
+          weight: isConsumerOrder ? `1 Consumer Meal Pack (${b.portions || 1}x)` : `${b.foodSavedKg || 12} kg (Feeds ${b.portions || 25} People)`,
+          expiryTime: b.expiryTime || `${remainingMins} mins left`,
+          remainingMins,
+          karmaPoints: isConsumerOrder ? 40 : 50,
+          requiredOtp: b.pickupOtp || '1794',
+          deliveryOtp: b.deliveryOtp || b.pickupOtp || '1794',
+          pickupCoords: pCoords,
+          dropoffCoords: b.dropoffCoords || pCoords,
+          dist: `${distKm} km away`,
+          distKm,
+          priorityScore,
+          isConsumerOrder,
+          urgency: isConsumerOrder ? 'CONSUMER_ORDER' : remainingMins <= 30 ? 'CRITICAL_URGENT' : remainingMins <= 60 ? 'HIGH' : 'NORMAL',
+          createdAt: b.createdAt || Date.now(),
+          isRealDatabaseOrder: !b.isDemo
+        };
+      });
+
+      // Sort Priority: Lowest Priority Score First (Expiring Soonest + Nearest Distance)
+      mapped.sort((a, b) => a.priorityScore - b.priorityScore);
+
+      // Filter by rider radar coverage radius (fallback to all mapped items if radius is tight)
+      const radiusFiltered = mapped.filter(item => item.distKm <= radarRadius);
+      const activeList = radiusFiltered.length > 0 ? radiusFiltered : mapped;
+
+      setSurplusPool(activeList);
+
+      if (activeList.length > 0) {
+        const topPriorityMission = activeList[0];
+        setActiveMission({
+          ...topPriorityMission,
+          riderCoords: riderCoords
+        });
+        setHasIncomingAlert(true);
+      } else {
+        setActiveMission(null);
+        setHasIncomingAlert(false);
+      }
+    } catch (e) {
+      console.warn('Error syncing rider surplus pool:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchDeviceGps();
+    syncSurplusPoolFromSupplyChain();
+
+    const syncChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('foodrescue_live_channel') : null;
+    if (syncChannel) {
+      syncChannel.onmessage = () => {
+        syncSurplusPoolFromSupplyChain();
+      };
+    }
+
+    window.addEventListener('foodrescue_supply_chain_updated', syncSurplusPoolFromSupplyChain);
+    window.addEventListener('foodrescue_surplus_updated', syncSurplusPoolFromSupplyChain);
+    window.addEventListener('foodrescue_claims_updated', syncSurplusPoolFromSupplyChain);
+    window.addEventListener('storage', syncSurplusPoolFromSupplyChain);
+
+    return () => {
+      if (syncChannel) syncChannel.close();
+      window.removeEventListener('foodrescue_supply_chain_updated', syncSurplusPoolFromSupplyChain);
+      window.removeEventListener('foodrescue_surplus_updated', syncSurplusPoolFromSupplyChain);
+      window.removeEventListener('foodrescue_claims_updated', syncSurplusPoolFromSupplyChain);
+      window.removeEventListener('storage', syncSurplusPoolFromSupplyChain);
+    };
+  }, [radarRadius, riderLocationName, riderCoords]);
+
+  // Persist Active Mission state to localStorage across page reloads
+  useEffect(() => {
+    try {
+      if (activeMission && missionStep > 0 && missionStep < 5) {
+        localStorage.setItem('foodrescue_active_rider_mission', JSON.stringify({
+          activeMission,
+          missionStep,
+          timestamp: Date.now()
+        }));
+
+        // Continuously sync live rider location to supplyChainService for Consumer & Restaurant portals
+        if (activeMission.id && riderCoords) {
+          supplyChainService.addOrUpdateBatch({
+            id: activeMission.id,
+            riderCoords: riderCoords,
+            riderName: activeMission.riderName || 'Tanvir Hossain (Motorcycle)',
+            riderPhone: activeMission.riderPhone || '+880 1711-987654'
+          });
+        }
+      } else if (missionStep === 0 || missionStep >= 5) {
+        localStorage.removeItem('foodrescue_active_rider_mission');
+      }
+    } catch (e) {
+      console.warn('Failed to persist active rider mission state:', e);
+    }
+  }, [activeMission, missionStep, riderCoords]);
+
+  // Handle Rider Claiming / Accepting Any Rescue Item from the Surplus Board or Alert Card
+  const handleAcceptRescueMission = (mission = activeMission) => {
     setMissionStep(1); // Set directly to Step 1: En Route to Pickup
     setActiveTab('dispatch'); // Automatically switch to Cockpit (Live Navigation)
+
+    const target = mission || activeMission;
+    if (target) {
+      const updatedMission = {
+        ...target,
+        riderName: 'Tanvir Hossain (Motorcycle)',
+        riderPhone: '+880 1711-987654',
+        riderAvatar: '🛵',
+        riderCoords: riderCoords
+      };
+      setActiveMission(updatedMission);
+
+      try {
+        localStorage.setItem('foodrescue_active_rider_mission', JSON.stringify({
+          activeMission: updatedMission,
+          missionStep: 1,
+          timestamp: Date.now()
+        }));
+      } catch (e) {}
+
+      // Update supplyChainService batch
+      supplyChainService.addOrUpdateBatch({
+        id: target.id,
+        title: target.foodItem,
+        restaurant: target.restaurantName,
+        status: 'RIDER_ACCEPTED_EN_ROUTE_PICKUP',
+        riderName: 'Tanvir Hossain (Motorcycle)',
+        riderPhone: '+880 1711-987654',
+        riderAvatar: '🛵',
+        eta: 'En Route to Restaurant Pickup (ETA 8 mins)'
+      });
+
+      // Update Consumer Orders in LocalStorage
+      try {
+        const rawConsumerOrders = localStorage.getItem('foodrescue_consumer_orders');
+        if (rawConsumerOrders) {
+          const orders = JSON.parse(rawConsumerOrders);
+          if (Array.isArray(orders)) {
+            const updated = orders.map(ord => {
+              if (ord.id === target.id || ord.batchId === target.id || ord.restaurantName === target.restaurantName) {
+                return {
+                  ...ord,
+                  riderAssigned: true,
+                  riderName: 'Tanvir Hossain (Motorcycle)',
+                  riderPhone: '+880 1711-987654',
+                  riderAvatar: '🛵',
+                  status: 'RIDER_ASSIGNED',
+                  eta: '12 mins ETA'
+                };
+              }
+              return ord;
+            });
+            localStorage.setItem('foodrescue_consumer_orders', JSON.stringify(updated));
+          }
+        }
+      } catch (e) {}
+
+      // Dispatch cross-portal live sync events
+      window.dispatchEvent(new Event('foodrescue_supply_chain_updated'));
+      window.dispatchEvent(new Event('foodrescue_surplus_updated'));
+      const syncChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('foodrescue_live_channel') : null;
+      if (syncChannel) {
+        syncChannel.postMessage({ type: 'RIDER_ACCEPTED_MISSION', targetId: target.id, timestamp: Date.now() });
+      }
+    }
+  };
+
+  const handleClaimSurplusMission = (rescueItem) => {
+    handleAcceptRescueMission(rescueItem);
   };
 
   // OTP Verification Handler
@@ -276,19 +686,36 @@ export default function VolunteerApp({ onLogout }) {
     try {
       if (missionStep === 2) {
         // Pickup OTP verification (Kitchen Handover)
-        supplyChainService.verifyPickupOtp(activeMission.id, otpInput.trim());
+        if (activeMission?.id) supplyChainService.verifyPickupOtp(activeMission.id, otpInput.trim());
+
+        ngoService.updateClaimStatus(activeMission?.title || activeMission?.foodItem || activeMission?.id, {
+          statusCategory: 'ON_THE_WAY',
+          statusLabel: '🚚 Rider Picked Up Food • En Route to Shelter',
+          volunteerName: 'Tanvir Hossain (Motorcycle)',
+          eta: 'Arrival ETA: 12 minutes away'
+        });
+
         setOtpError('');
         setIsOtpModalOpen(false);
         setMissionStep(3); // Advance to Delivery
       } else if (missionStep === 4) {
         // Delivery OTP verification (Shelter Handover)
-        supplyChainService.verifyDeliveryOtp(activeMission.id, otpInput.trim());
+        if (activeMission?.id) supplyChainService.verifyDeliveryOtp(activeMission.id, otpInput.trim());
+
+        ngoService.updateClaimStatus(activeMission?.title || activeMission?.foodItem || activeMission?.id, {
+          statusCategory: 'DELIVERED',
+          statusLabel: '🏢 Food Delivered to Shelter',
+          volunteerName: 'Tanvir Hossain (Motorcycle)',
+          isConfirmed: true,
+          eta: 'Delivered & Saved'
+        });
+
         setOtpError('');
         setMissionStep(5); // Advance to Celebration
         setIsCelebrationModalOpen(true);
       } else {
-        const response = await volunteerService.verifyOtp(activeMission.id, otpInput.trim());
-        if (response.success || otpInput.trim() === activeMission.requiredOtp) {
+        const response = await volunteerService.verifyOtp(activeMission?.id || 'RESCUE-REAL', otpInput.trim());
+        if (response.success || otpInput.trim() === activeMission?.requiredOtp) {
           setOtpError('');
           setIsOtpModalOpen(false);
           setMissionStep(3);
@@ -297,7 +724,7 @@ export default function VolunteerApp({ onLogout }) {
         }
       }
     } catch (err) {
-      if (otpInput.trim() === activeMission.requiredOtp || otpInput.trim() === activeMission.deliveryOtp) {
+      if (otpInput.trim() === activeMission?.requiredOtp || otpInput.trim() === activeMission?.deliveryOtp) {
         setOtpError('');
         setIsOtpModalOpen(false);
         setMissionStep(missionStep === 2 ? 3 : 5);
@@ -310,8 +737,8 @@ export default function VolunteerApp({ onLogout }) {
   // SOS Emergency Trigger Handler
   const handleTriggerSos = async () => {
     const response = await volunteerService.triggerSosEmergency({
-      missionId: activeMission.id,
-      riderLocation: activeMission.riderCoords,
+      missionId: activeMission?.id || 'RESCUE-REAL',
+      riderLocation: activeMission?.riderCoords || riderCoords,
       reason: sosReason
     });
     setSosStatus(response);
@@ -338,7 +765,7 @@ export default function VolunteerApp({ onLogout }) {
 
   return (
     <div className={`v-mobile-app-container theme-${themeMode} ${!isDeviceFrameMode ? 'full-screen-viewport' : ''}`}>
-      
+
       {/* EVALUATOR / TOP PREVIEW TOOLBAR */}
       <div className="v-evaluator-toolbar">
         <div className="v-eval-info">
@@ -367,7 +794,7 @@ export default function VolunteerApp({ onLogout }) {
         </div>
 
         <div className="v-eval-actions">
-          <button 
+          <button
             className="v-toggle-theme-btn"
             onClick={() => toggleRoleTheme('volunteer')}
             title="Toggle Light / Dark Mode"
@@ -376,7 +803,7 @@ export default function VolunteerApp({ onLogout }) {
             <span>{themeMode === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
           </button>
 
-          <button 
+          <button
             className="v-toggle-view-btn"
             onClick={() => setIsDeviceFrameMode(!isDeviceFrameMode)}
           >
@@ -384,8 +811,8 @@ export default function VolunteerApp({ onLogout }) {
             <span>{isDeviceFrameMode ? ' Full Viewport' : ' Smartphone Frame'}</span>
           </button>
 
-          <button 
-            className="v-exit-app-btn" 
+          <button
+            className="v-exit-app-btn"
             onClick={() => {
               logout();
               if (onLogout) onLogout();
@@ -398,7 +825,7 @@ export default function VolunteerApp({ onLogout }) {
 
       {/* SMARTPHONE DEVICE SHELL CONTAINER */}
       <div className="v-phone-device-shell">
-        
+
         {/* Dynamic Island / Speaker Notch Bar */}
         <div className="v-phone-notch-bar">
           <div className="v-camera-lens" />
@@ -429,7 +856,7 @@ export default function VolunteerApp({ onLogout }) {
           </div>
 
           <div className="v-duty-action-box">
-            <button 
+            <button
               className="v-header-theme-btn"
               onClick={() => toggleRoleTheme('volunteer')}
               title="Toggle Light / Dark Mode"
@@ -437,7 +864,7 @@ export default function VolunteerApp({ onLogout }) {
               {themeMode === 'dark' ? <Sun size={14} color="#fbbf24" /> : <Moon size={14} color="#38bdf8" />}
             </button>
 
-            <button 
+            <button
               className={`v-duty-pill ${isOnline ? 'duty-online' : 'duty-offline'}`}
               onClick={() => setIsOnline(!isOnline)}
             >
@@ -445,7 +872,7 @@ export default function VolunteerApp({ onLogout }) {
               <span>{isOnline ? 'ON DUTY' : 'OFF DUTY'}</span>
             </button>
 
-            <button 
+            <button
               className="v-header-sos-btn"
               onClick={() => setIsSosModalOpen(true)}
               title="1-Click Emergency SOS"
@@ -464,7 +891,7 @@ export default function VolunteerApp({ onLogout }) {
               {locationMode === 'live' ? '🛰️ Live GPS:' : '✏️ Manual:'} <strong>{riderLocationName}</strong> • <strong>{radarRadius} km Radius</strong>
             </span>
           </button>
-          
+
           <button className="v-gps-locate-btn" onClick={fetchDeviceGps} title="Refresh Auto Live GPS Location">
             <Radio size={13} className="spin-icon" color="#38bdf8" />
             <span>Auto GPS</span>
@@ -473,76 +900,26 @@ export default function VolunteerApp({ onLogout }) {
 
         {/* MAIN MOBILE APP BODY */}
         <div className="v-app-body">
-          
+
           {/* TAB 1: LIVE MISSIONS & GPS RADAR MAP */}
           {activeTab === 'dispatch' && (
             <div className="v-pane-dispatch">
-              
-              {/* Full-Width Mobile GPS Leaflet Map Viewport */}
+
+              {/* Full-Width Mobile GPS Native Google Maps Viewport */}
               <div className="v-mobile-map-container">
-                <MapContainer 
-                  center={[23.8050, 90.4180]} 
-                  zoom={13} 
-                  scrollWheelZoom={true}
-                  zoomControl={false}
-                  style={{ height: '100%', width: '100%' }}
-                >
-                  <TileLayer
-                    url={getOsmTileLayer(themeMode).url}
-                    attribution={getOsmTileLayer(themeMode).attribution}
-                  />
-
-                  {/* Geofence Radar Circle Ring */}
-                  <Circle
-                    center={activeMission.riderCoords}
-                    radius={radarRadius * 1000}
-                    pathOptions={{
-                      color: locationMode === 'live' ? '#10b981' : '#f59e0b',
-                      fillColor: locationMode === 'live' ? '#10b981' : '#f59e0b',
-                      fillOpacity: 0.12,
-                      weight: 2,
-                      dashArray: '6, 6'
-                    }}
-                  />
-
-                  {/* Polyline Route */}
-                  <Polyline 
-                    positions={BANANI_TO_BASHUNDHARA_ALT_ROUTE} 
-                    pathOptions={{ color: '#94a3b8', weight: 4, opacity: 0.6 }} 
-                  />
-                  <Polyline 
-                    positions={BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE} 
-                    pathOptions={{ color: '#1a73e8', weight: 8, opacity: 0.3 }} 
-                  />
-                  <Polyline 
-                    positions={BANANI_TO_BASHUNDHARA_PRIMARY_ROUTE} 
-                    pathOptions={{ color: '#4285F4', weight: 5, opacity: 0.98 }} 
-                  />
-
-                  {/* Google ETA Markers */}
-                  <Marker position={PRIMARY_ROUTE_ETA_POS} icon={createGoogleEtaBadgeMarker('১৪ মিনিট', '৩.৮ কিমি', true)} />
-                  <Marker position={ALT_ROUTE_ETA_POS} icon={createGoogleEtaBadgeMarker('১৫ মিনিট', '৬.১ কিমি', false)} />
-
-                  {/* Clean Pin Markers */}
-                  <Marker position={activeMission.riderCoords} icon={riderPin}>
-                    <Popup>🛵 Rider: Tanvir Hossain ({riderLocationName} • {radarRadius}km Range)</Popup>
-                  </Marker>
-                  <Marker position={activeMission.pickupCoords} icon={restaurantPin}>
-                    <Popup>🏪 Pickup: {activeMission.restaurantName}</Popup>
-                  </Marker>
-                  <Marker position={activeMission.dropoffCoords} icon={shelterPin}>
-                    <Popup>🏠 Dropoff: {activeMission.shelterName}</Popup>
-                  </Marker>
-                </MapContainer>
-
-                <div className="v-map-overlay-banner">
-                  <Navigation size={13} /> <span>{riderLocationName} • <strong>{radarRadius} km Coverage Radius</strong></span>
-                </div>
+                <GoogleMapsNativeView
+                  centerCoords={activeMission ? activeMission.riderCoords || riderCoords : riderCoords}
+                  radarRadius={radarRadius}
+                  activeMission={activeMission}
+                  themeMode={themeMode}
+                  riderLocationName={riderLocationName}
+                  locationMode={locationMode}
+                />
               </div>
 
               {/* Mobile Bottom Action Sheet Drawer */}
               <div className="v-mobile-bottom-sheet">
-                
+
                 {/* OFF-DUTY STANDBY STATE */}
                 {!isOnline && (
                   <div className="v-offduty-standby-card">
@@ -561,13 +938,22 @@ export default function VolunteerApp({ onLogout }) {
                     {hasIncomingAlert ? (
                       <div className="v-sheet-alert-card">
                         <div className="v-sheet-top-row">
-                          <span className="v-radar-ping">⚡ NEW RESCUE DISPATCH NEARBY</span>
+                          <span className="v-radar-ping">
+                            {activeMission.isConsumerOrder ? '🛍️ NEW CONSUMER ORDER DISPATCH' : '⚡ NEW RESCUE DISPATCH NEARBY'}
+                          </span>
                           <span className="v-timer-pill">⏳ {activeMission.expiryTime}</span>
                         </div>
 
                         <h4 className="v-food-name">🍲 {activeMission.foodItem}</h4>
-                        <p className="v-resto-addr">🏪 <strong>{activeMission.restaurantName}</strong> (Banani - 0.8 km)</p>
-                        <p className="v-shelter-addr">🏠 Deliver to: <strong>{activeMission.shelterName}</strong></p>
+                        <p className="v-resto-addr">🏪 <strong>{activeMission.restaurantName}</strong> ({activeMission.restaurantAddress || 'Banani, Dhaka'} • {activeMission.dist})</p>
+                        <p className="v-shelter-addr">
+                          🏠 Deliver to: <strong>{activeMission.shelterName}</strong>
+                          {activeMission.shelterAddress && (
+                            <span style={{ display: 'block', fontSize: '0.82rem', color: '#64748b', marginTop: '3px' }}>
+                              📍 Address: <strong>{activeMission.shelterAddress}</strong> {activeMission.shelterPhone ? `• 📞 ${activeMission.shelterPhone}` : ''}
+                            </span>
+                          )}
+                        </p>
 
                         <div className="v-karma-banner">
                           <Sparkles size={15} color="#d97706" />
@@ -575,7 +961,7 @@ export default function VolunteerApp({ onLogout }) {
                         </div>
 
                         <div className="v-alert-btn-row">
-                          <button 
+                          <button
                             className="v-btn-mobile-decline"
                             onClick={() => setHasIncomingAlert(false)}
                             title="Skip this alert and return to radar scanning"
@@ -583,9 +969,9 @@ export default function VolunteerApp({ onLogout }) {
                             Skip Alert
                           </button>
 
-                          <button 
+                          <button
                             className="v-btn-mobile-accept"
-                            onClick={() => setMissionStep(1)}
+                            onClick={() => handleAcceptRescueMission(activeMission)}
                           >
                             ✅ ACCEPT RESCUE MISSION
                           </button>
@@ -617,14 +1003,14 @@ export default function VolunteerApp({ onLogout }) {
                         </div>
 
                         <div className="v-idle-btn-row">
-                          <button 
+                          <button
                             className="v-btn-trigger-alert"
                             onClick={() => setHasIncomingAlert(true)}
                           >
                             ⚡ Receive Emergency Alert
                           </button>
 
-                          <button 
+                          <button
                             className="v-btn-browse-surplus"
                             onClick={() => setActiveTab('feed')}
                           >
@@ -639,7 +1025,43 @@ export default function VolunteerApp({ onLogout }) {
                 {/* STEP 1-4 ACTIVE WORKFLOW STEPPER */}
                 {missionStep > 0 && missionStep < 5 && (
                   <div className="v-sheet-workflow">
-                    
+
+                    {/* Active Mission Food Details Header Card */}
+                    {activeMission && (
+                      <div style={{
+                        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+                        color: '#ffffff',
+                        padding: '12px 16px',
+                        borderRadius: '12px',
+                        marginBottom: '12px',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <span style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            {activeMission.isConsumerOrder ? '🛍️ Active Consumer Delivery' : '⚡ Active Surplus Rescue'}
+                          </span>
+                          <span style={{ fontSize: '0.78rem', background: 'rgba(255,255,255,0.15)', padding: '2px 8px', borderRadius: '12px' }}>
+                            ⏳ {activeMission.expiryTime}
+                          </span>
+                        </div>
+
+                        <h4 style={{ fontSize: '1.05rem', fontWeight: '700', margin: '0 0 4px 0', color: '#f8fafc' }}>
+                          🍲 {activeMission.foodItem}
+                        </h4>
+
+                        <p style={{ fontSize: '0.82rem', color: '#94a3b8', margin: '0 0 8px 0' }}>
+                          {activeMission.weight}
+                        </p>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8rem', color: '#cbd5e1', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                          <span>🏪 <strong>Pickup:</strong> {activeMission.restaurantName} ({activeMission.restaurantAddress || 'Banani, Dhaka'})</span>
+                          <span>🏠 <strong>Deliver:</strong> {activeMission.shelterName} {activeMission.shelterAddress ? `(${activeMission.shelterAddress})` : ''}</span>
+                          <span>🔑 <strong>Pickup OTP:</strong> <code style={{ background: '#2563eb', padding: '1px 6px', borderRadius: '4px', color: '#fff', fontWeight: 'bold' }}>{activeMission.requiredOtp}</code> | <strong>Delivery OTP:</strong> <code style={{ background: '#059669', padding: '1px 6px', borderRadius: '4px', color: '#fff', fontWeight: 'bold' }}>{activeMission.deliveryOtp}</code></span>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Stepper Dots Indicator */}
                     <div className="v-mobile-stepper-bar">
                       <div className={`v-m-step ${missionStep >= 1 ? 'active' : ''}`}>1. Resto</div>
@@ -667,7 +1089,7 @@ export default function VolunteerApp({ onLogout }) {
                           <a href={`tel:${activeMission.restaurantPhone}`} className="v-m-btn-call">
                             <PhoneCall size={14} /> Call Manager
                           </a>
-                          <button 
+                          <button
                             className="v-m-btn-primary"
                             onClick={() => {
                               setMissionStep(2);
@@ -691,7 +1113,7 @@ export default function VolunteerApp({ onLogout }) {
                           </div>
                         </div>
 
-                        <button 
+                        <button
                           className="v-m-btn-primary green"
                           onClick={() => setIsOtpModalOpen(true)}
                         >
@@ -716,7 +1138,7 @@ export default function VolunteerApp({ onLogout }) {
                           <a href={`tel:${activeMission.shelterPhone}`} className="v-m-btn-call">
                             <PhoneCall size={14} /> Call Shelter Contact
                           </a>
-                          <button 
+                          <button
                             className="v-m-btn-primary emerald"
                             onClick={() => setMissionStep(4)}
                           >
@@ -735,7 +1157,7 @@ export default function VolunteerApp({ onLogout }) {
                           <p>Confirm delivery of {activeMission.foodItem}.</p>
                         </div>
 
-                        <button 
+                        <button
                           className="v-m-btn-primary emerald"
                           onClick={() => {
                             setMissionStep(5);
@@ -786,43 +1208,74 @@ export default function VolunteerApp({ onLogout }) {
               </div>
 
               <div className="v-feed-list">
-                {surplusPool.map((item) => {
-                  const isActiveNav = activeMission.id === item.id && missionStep > 0 && missionStep < 5;
-                  return (
-                    <div key={item.id} className={`v-feed-card ${isActiveNav ? 'is-active-card' : ''}`}>
-                      <div className="v-feed-card-top">
-                        <span className="v-feed-title">🏪 {item.restaurantName}</span>
-                        <span className={`v-feed-badge ${(item.urgency || 'HIGH').toLowerCase()}`}>{item.expiryTime}</span>
-                      </div>
-                      
-                      <p className="v-feed-food-desc">🍲 <strong>{item.foodItem}</strong></p>
-                      
-                      <div className="v-feed-meta-row">
-                        <span>🏠 {item.shelterName}</span>
-                        <span className="v-feed-weight">{item.weight}</span>
-                      </div>
-
-                      <div className="v-feed-card-bottom">
-                        <span className="v-feed-dist">📍 {item.dist}</span>
-                        {isActiveNav ? (
-                          <button 
-                            className="v-feed-claim-btn active-nav-btn"
-                            onClick={() => setActiveTab('dispatch')}
-                          >
-                            🟢 Active Navigation ➔
-                          </button>
-                        ) : (
-                          <button 
-                            className="v-feed-claim-btn"
-                            onClick={() => handleClaimSurplusMission(item)}
-                          >
-                            Claim (+{item.karmaPoints} pts)
-                          </button>
-                        )}
-                      </div>
+                {surplusPool.length === 0 ? (
+                  <div className="v-empty-surplus-card">
+                    <div className="v-empty-icon-ring">
+                      <Radio size={28} className="spin-icon" color="#10b981" />
                     </div>
-                  );
-                })}
+                    <h4 className="v-empty-title">No Active Rescues in Area</h4>
+                    <p className="v-empty-sub">
+                      Database scanned for <strong>VOLUNTEER_RIDER</strong> requests within <strong>{radarRadius} km Radius</strong> of <strong>{riderLocationName}</strong>. No active rescue requests stored in area database right now.
+                    </p>
+
+                    <div className="v-db-status-badge">
+                      <span>🗄️ Area Database: <strong>Synced Live</strong></span>
+                      <span>⏰ Synced: <strong>{new Date().toLocaleTimeString()}</strong></span>
+                    </div>
+
+                    <div className="v-empty-action-box">
+                      <span className="v-sim-lbl">Want to test adding a real order to the database?</span>
+                      <button
+                        type="button"
+                        className="v-btn-create-test-order"
+                        onClick={handleCreateRealTestOrder}
+                      >
+                        ⚡ Create Real Order in Area Database (+1 Order)
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  surplusPool.map((item) => {
+                    const isActiveNav = activeMission.id === item.id && missionStep > 0 && missionStep < 5;
+                    return (
+                      <div key={item.id} className={`v-feed-card ${isActiveNav ? 'is-active-card' : ''}`}>
+                        <div className="v-feed-card-top">
+                          <span className="v-feed-title">🏪 {item.restaurantName}</span>
+                          <span className={`v-feed-badge ${(item.urgency || 'HIGH').toLowerCase()}`}>{item.expiryTime}</span>
+                        </div>
+
+                        <p className="v-feed-food-desc">🍲 <strong>{item.foodItem}</strong></p>
+
+                        <div className="v-feed-meta-row">
+                          <span>🏠 {item.shelterName}</span>
+                          <span className="v-feed-weight">{item.weight}</span>
+                        </div>
+
+                        <div className="v-feed-card-bottom">
+                          <span className="v-feed-dist">
+                            📍 {item.dist}
+                            {item.isRealDatabaseOrder && <span className="v-db-tag">🗄️ Real Order</span>}
+                          </span>
+                          {isActiveNav ? (
+                            <button
+                              className="v-feed-claim-btn active-nav-btn"
+                              onClick={() => setActiveTab('dispatch')}
+                            >
+                              🟢 Active Navigation ➔
+                            </button>
+                          ) : (
+                            <button
+                              className="v-feed-claim-btn"
+                              onClick={() => handleClaimSurplusMission(item)}
+                            >
+                              Claim (+{item.karmaPoints} pts)
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           )}
@@ -874,19 +1327,19 @@ export default function VolunteerApp({ onLogout }) {
               <div className="v-veh-selection">
                 <h5>My Vehicle Mode</h5>
                 <div className="v-veh-grid">
-                  <button 
+                  <button
                     className={`v-veh-card ${vehicleType === 'motorbike' ? 'active' : ''}`}
                     onClick={() => setVehicleType('motorbike')}
                   >
                     <span>🛵 Motorbike</span>
                   </button>
-                  <button 
+                  <button
                     className={`v-veh-card ${vehicleType === 'bicycle' ? 'active' : ''}`}
                     onClick={() => setVehicleType('bicycle')}
                   >
                     <span>🚲 Bicycle</span>
                   </button>
-                  <button 
+                  <button
                     className={`v-veh-card ${vehicleType === 'car' ? 'active' : ''}`}
                     onClick={() => setVehicleType('car')}
                   >
@@ -906,7 +1359,7 @@ export default function VolunteerApp({ onLogout }) {
           </svg>
 
           {/* Center Floating Action Button (🛵) */}
-          <button 
+          <button
             className={`v-fab-center-btn ${activeTab === 'dispatch' ? 'active' : ''}`}
             onClick={() => {
               setActiveTab('dispatch');
@@ -917,7 +1370,7 @@ export default function VolunteerApp({ onLogout }) {
           </button>
 
           <div className="v-nav-grid">
-            <button 
+            <button
               className={`v-nav-btn ${activeTab === 'dispatch' ? 'active' : ''}`}
               onClick={() => setActiveTab('dispatch')}
             >
@@ -925,7 +1378,7 @@ export default function VolunteerApp({ onLogout }) {
               <span>Cockpit</span>
             </button>
 
-            <button 
+            <button
               className={`v-nav-btn ${activeTab === 'feed' ? 'active' : ''}`}
               onClick={() => setActiveTab('feed')}
             >
@@ -935,7 +1388,7 @@ export default function VolunteerApp({ onLogout }) {
 
             <div className="v-notch-spacer" />
 
-            <button 
+            <button
               className={`v-nav-btn ${activeTab === 'impact' ? 'active' : ''}`}
               onClick={() => setActiveTab('impact')}
             >
@@ -943,7 +1396,7 @@ export default function VolunteerApp({ onLogout }) {
               <span>Impact</span>
             </button>
 
-            <button 
+            <button
               className={`v-nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
               onClick={() => setActiveTab('profile')}
             >
@@ -956,24 +1409,24 @@ export default function VolunteerApp({ onLogout }) {
       </div>
 
       {/* MODAL 1: OTP PICKUP VERIFICATION */}
-      <Modal 
-        isOpen={isOtpModalOpen} 
+      <Modal
+        isOpen={isOtpModalOpen}
         onClose={() => setIsOtpModalOpen(false)}
         title="🔑 Enter Restaurant Handover OTP"
       >
         <form onSubmit={handleVerifyOtp} className="v-otp-form">
           <p className="v-otp-desc">
-            Enter 4-digit code from <strong>Star Kabab & Restaurant</strong> staff to confirm pickup.
+            Enter 4-digit code from <strong>{activeMission?.restaurantName || 'Restaurant'}</strong> staff to confirm pickup.
           </p>
 
           <div className="v-otp-hint">
-            💡 Demo Verification OTP Code: <strong>{activeMission.requiredOtp}</strong>
+            💡 Demo Verification OTP Code: <strong>{activeMission?.requiredOtp || '4892'}</strong>
           </div>
 
           <div className="v-otp-input-box">
-            <input 
-              type="text" 
-              maxLength="4" 
+            <input
+              type="text"
+              maxLength="4"
               className="v-otp-input"
               placeholder="0 0 0 0"
               value={otpInput}
@@ -985,12 +1438,12 @@ export default function VolunteerApp({ onLogout }) {
           {otpError && <div className="v-otp-error">{otpError}</div>}
 
           <div className="v-otp-btn-row">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="v-btn-autofill"
-              onClick={() => setOtpInput(activeMission.requiredOtp)}
+              onClick={() => setOtpInput(activeMission?.requiredOtp || '4892')}
             >
-              Autofill Code ({activeMission.requiredOtp})
+              Autofill Code ({activeMission?.requiredOtp || '4892'})
             </button>
             <Button type="submit" variant="primary" fullWidth>
               Verify OTP & Advance ➔
@@ -1012,7 +1465,7 @@ export default function VolunteerApp({ onLogout }) {
 
           <div className="v-form-group">
             <label className="v-label">Emergency Issue Type</label>
-            <select 
+            <select
               className="v-select"
               value={sosReason}
               onChange={(e) => setSosReason(e.target.value)}
@@ -1052,14 +1505,14 @@ export default function VolunteerApp({ onLogout }) {
       >
         <div className="v-celeb-modal-content">
           <div className="v-celeb-badge">✨ +50 Karma Points Earned</div>
-          <h2>Fed 35 Children at Anjuman Orphanage!</h2>
-          <p>Rescue mission #RESCUE-8091 was completed and saved to MySQL database.</p>
+          <h2>Fed 35 Children at {activeMission?.shelterName || 'Shelter'}!</h2>
+          <p>Rescue mission #{activeMission?.id || 'RESCUE-REAL'} was completed and saved to MySQL database.</p>
 
           <div className="v-impact-cert-card">
             <h4>📜 Digital Rescue Impact Receipt</h4>
-            <div className="v-cert-row"><span>Donor:</span> <strong>Star Kabab Banani</strong></div>
-            <div className="v-cert-row"><span>Food:</span> <strong>35x Mutton Kacchi Biryani</strong></div>
-            <div className="v-cert-row"><span>Recipient:</span> <strong>Anjuman Orphanage Shelter</strong></div>
+            <div className="v-cert-row"><span>Donor:</span> <strong>{activeMission?.restaurantName || 'Donor Restaurant'}</strong></div>
+            <div className="v-cert-row"><span>Food:</span> <strong>{activeMission?.foodItem || 'Surplus Food'}</strong></div>
+            <div className="v-cert-row"><span>Recipient:</span> <strong>{activeMission?.shelterName || 'NGO Shelter'}</strong></div>
             <div className="v-cert-row"><span>CO2 Offset:</span> <strong>28.5 kg CO2e Prevented</strong></div>
           </div>
 
@@ -1082,15 +1535,15 @@ export default function VolunteerApp({ onLogout }) {
 
           {/* Location Mode Switcher */}
           <div className="v-loc-mode-switcher">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className={`v-mode-tab ${locationMode === 'live' ? 'active' : ''}`}
               onClick={fetchDeviceGps}
             >
               🛰️ Live Device GPS (Primary Auto)
             </button>
-            <button 
-              type="button" 
+            <button
+              type="button"
               className={`v-mode-tab ${locationMode === 'manual' ? 'active' : ''}`}
               onClick={() => setLocationMode('manual')}
             >
@@ -1123,15 +1576,15 @@ export default function VolunteerApp({ onLogout }) {
               <div className="v-form-group" style={{ marginTop: '0.8rem' }}>
                 <label className="v-label">Or Type Custom Landmark / Address</label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="v-input-text"
                     placeholder="e.g. Mohakhali Wireless Gate, Dhaka"
                     value={manualAddressInput}
                     onChange={(e) => setManualAddressInput(e.target.value)}
                   />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="v-btn-apply-manual"
                     onClick={() => handleApplyManualLocation()}
                   >
@@ -1148,28 +1601,28 @@ export default function VolunteerApp({ onLogout }) {
               Max Rescue Coverage Radius: <strong style={{ color: '#059669' }}>{radarRadius} km Distance</strong>
             </label>
             <div className="v-radius-buttons-grid">
-              <button 
+              <button
                 type="button"
                 className={`v-rad-btn ${radarRadius === 1.0 ? 'active' : ''}`}
                 onClick={() => setRadarRadius(1.0)}
               >
                 1.0 km (Under 10 mins)
               </button>
-              <button 
+              <button
                 type="button"
                 className={`v-rad-btn ${radarRadius === 2.0 ? 'active' : ''}`}
                 onClick={() => setRadarRadius(2.0)}
               >
                 2.0 km (Recommended)
               </button>
-              <button 
+              <button
                 type="button"
                 className={`v-rad-btn ${radarRadius === 3.5 ? 'active' : ''}`}
                 onClick={() => setRadarRadius(3.5)}
               >
                 3.5 km (Extended Zone)
               </button>
-              <button 
+              <button
                 type="button"
                 className={`v-rad-btn ${radarRadius === 5.0 ? 'active' : ''}`}
                 onClick={() => setRadarRadius(5.0)}

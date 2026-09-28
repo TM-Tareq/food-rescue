@@ -11,12 +11,13 @@ export default function CartCheckoutModal({
   isOpen,
   onClose,
   cartItems,
+  userInfo,
   onRemoveFromCart,
   onClearCart,
   onCheckoutSuccess
 }) {
-  const [fulfillmentType, setFulfillmentType] = useState('pickup'); // 'pickup' or 'delivery'
-  const [paymentMethod, setPaymentMethod] = useState('bkash'); // 'bkash', 'nagad', 'card'
+  const [fulfillmentType, setFulfillmentType] = useState('delivery'); // 'delivery' or 'pickup'
+  const [paymentMethod, setPaymentMethod] = useState('cod'); // Default Cash on Delivery (COD)
   const [isProcessing, setIsProcessing] = useState(false);
   const [holdTimer, setHoldTimer] = useState(600); // 10 minutes in seconds
 
@@ -47,8 +48,20 @@ export default function CartCheckoutModal({
 
     setIsProcessing(true);
 
+    const userProf = userInfo || {
+      name: 'Farhan Ahmed',
+      address: 'House 42, Road 11, Block D, Banani, Dhaka',
+      phone: '+880 1712-345678'
+    };
+
     const orderPayload = {
-      restaurantName: cartItems[0]?.restaurantName || 'Kacchi Bhai Banani',
+      restaurantName: cartItems[0]?.restaurantName || 'Star Chef Bistro',
+      restaurantAddress: cartItems[0]?.area || cartItems[0]?.restaurantAddress || 'Block D, Banani Rd 11, Dhaka',
+      customerName: userProf.name,
+      customerAddress: userProf.address,
+      customerPhone: userProf.phone,
+      itemTitle: cartItems.map(i => i.itemTitle || i.name).join(', ') || 'Surplus Meal Pack',
+      quantity: cartItems.length,
       totalAmount: totalAmount,
       fulfillmentType: fulfillmentType,
       paymentMethod: paymentMethod.toUpperCase()
@@ -139,17 +152,26 @@ export default function CartCheckoutModal({
               </div>
             </div>
 
-            {/* Payment Escrow Method */}
+            {/* Payment Method */}
             <div className="payment-method-section">
-              <h5 className="section-label">Select Mobile Banking Escrow</h5>
-              <div className="payment-options-grid">
+              <h5 className="section-label">Select Payment Method</h5>
+              <div className="payment-options-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                <button 
+                  type="button"
+                  className={`pay-option ${paymentMethod === 'cod' ? 'p-active' : ''}`}
+                  onClick={() => setPaymentMethod('cod')}
+                >
+                  <span className="pay-logo cod" style={{ fontSize: '1.2rem' }}>💵</span>
+                  <span>Cash on Delivery</span>
+                </button>
+
                 <button 
                   type="button"
                   className={`pay-option ${paymentMethod === 'bkash' ? 'p-active' : ''}`}
                   onClick={() => setPaymentMethod('bkash')}
                 >
                   <span className="pay-logo bkash">bKash</span>
-                  <span>Instant Escrow</span>
+                  <span>Mobile Wallet</span>
                 </button>
 
                 <button 

@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,11 +28,18 @@ public class SurplusListingResponseDTO {
     private Double currentPriceBDT;
     private Integer dynamicDiscountPercent; // e.g. 0%, 70%, 80%
 
-    // Dynamic Tier Status
+    // Dynamic Tier Status & Lifecycle Timestamps
     private ListingTier currentTier;
     private Long remainingNgoWindowMins;
     private Long remainingConsumerWindowMins;
     private Long remainingFinalExpiryMins;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime ngoStartAt;
+    private LocalDateTime ngoEndAt;
+    private LocalDateTime consumerStartAt;
+    private LocalDateTime consumerEndAt;
+    private LocalDateTime expiresAt;
 
     // AI Safety Seal
     private Integer aiHygieneScore;

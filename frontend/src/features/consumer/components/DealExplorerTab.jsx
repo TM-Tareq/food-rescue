@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, Filter, Clock, MapPin, Tag, ShoppingBag, 
   Sparkles, Flame, ShieldCheck, Heart, AlertCircle, ChevronRight
 } from 'lucide-react';
 import Button from '../../../components/Button/Button';
 import Badge from '../../../components/Badge/Badge';
+import { surplusService } from '../../../services/surplusService';
 
 export default function DealExplorerTab({ 
   onAddToCart, 
@@ -14,127 +15,100 @@ export default function DealExplorerTab({
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [filterUrgency, setFilterUrgency] = useState('all');
+  const [now, setNow] = useState(Date.now());
+  const [storedListings, setStoredListings] = useState(surplusService.getStoredListings());
 
-  // Sample Dhaka Surplus Food Deals
-  const dealsData = [
-    {
-      id: 'DEAL-101',
-      restaurantName: 'Kacchi Bhai - Banani',
-      rating: 4.8,
-      reviewsCount: 320,
-      cuisine: 'Bengali / Biryani',
-      itemTitle: 'Royal Mutton Kacchi & Borhani Combo',
-      description: 'Hot thermal packed 2x Mutton Kacchi platters + 250ml Borhani. Freshly cooked today.',
-      originalPrice: 580,
-      discountedPrice: 220,
-      discountPercent: 62,
-      portionCount: 6,
-      expiryTimeMinutes: 35,
-      distanceKm: 0.8,
-      area: 'Banani Road 11',
-      tags: ['Halal', 'Hot Packed', 'Top Rated'],
-      imageUrl: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=600&q=80',
-      dietary: 'Non-Veg'
-    },
-    {
-      id: 'DEAL-102',
-      restaurantName: 'Chillox Burgers - Gulshan 2',
-      rating: 4.7,
-      reviewsCount: 450,
-      cuisine: 'Fast Food / American',
-      itemTitle: 'Smoky Beef Cheese Burger + Fries Box',
-      description: 'Double beef patty burgers with loaded fries. Perfectly fresh surplus from evening rush.',
-      originalPrice: 420,
-      discountedPrice: 160,
-      discountPercent: 62,
-      portionCount: 4,
-      expiryTimeMinutes: 20,
-      distanceKm: 1.2,
-      area: 'Gulshan 2 Circle',
-      tags: ['Halal', 'Chef Special', 'Urgent'],
-      imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80',
-      dietary: 'Non-Veg'
-    },
-    {
-      id: 'DEAL-103',
-      restaurantName: 'Secret Recipe Bakery - Dhanmondi',
-      rating: 4.9,
-      reviewsCount: 510,
-      cuisine: 'Bakery & Desserts',
-      itemTitle: 'Premium Chocolate Fudge Cake Slice & Pastry',
-      description: '2x Decadent chocolate cake slices + 1x Croissant. Made fresh this morning.',
-      originalPrice: 490,
-      discountedPrice: 170,
-      discountPercent: 65,
-      portionCount: 8,
-      expiryTimeMinutes: 90,
-      distanceKm: 2.4,
-      area: 'Dhanmondi 27',
-      tags: ['Sweet Treat', 'Vegetarian'],
-      imageUrl: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=600&q=80',
-      dietary: 'Veg'
-    },
-    {
-      id: 'DEAL-104',
-      restaurantName: 'Sultan’s Dine - Bashundhara',
-      rating: 4.8,
-      reviewsCount: 620,
-      cuisine: 'Traditional Feast',
-      itemTitle: 'Special Beef Tehari & Jarda Box',
-      description: 'Fragrant mustard-oil beef tehari with sweet jarda. Hygienically packed.',
-      originalPrice: 380,
-      discountedPrice: 150,
-      discountPercent: 60,
-      portionCount: 5,
-      expiryTimeMinutes: 45,
-      distanceKm: 1.8,
-      area: 'Bashundhara Gate',
-      tags: ['Halal', 'Bestseller'],
-      imageUrl: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80',
-      dietary: 'Non-Veg'
-    },
-    {
-      id: 'DEAL-105',
-      restaurantName: 'Takeout Burgers - Uttara',
-      rating: 4.6,
-      reviewsCount: 290,
-      cuisine: 'Fast Food',
-      itemTitle: 'Crispy Gourmet Chicken Strips & Dip',
-      description: '6x Crispy fried chicken tenderloin strips + Garlic Mayo dip box.',
-      originalPrice: 350,
-      discountedPrice: 130,
-      discountPercent: 63,
-      portionCount: 3,
-      expiryTimeMinutes: 15,
-      distanceKm: 3.1,
-      area: 'Uttara Sector 3',
-      tags: ['Urgent', 'Halal'],
-      imageUrl: 'https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=600&q=80',
-      dietary: 'Non-Veg'
-    },
-    {
-      id: 'DEAL-106',
-      restaurantName: 'Boulangerie Artisanal - Banani',
-      rating: 4.9,
-      reviewsCount: 180,
-      cuisine: 'Organic Bakery',
-      itemTitle: 'Artisanal Sourdough & Garlic Butter Loaf',
-      description: '1x Whole sourdough bread + Garlic herb butter spread. Organic & healthy.',
-      originalPrice: 400,
-      discountedPrice: 140,
-      discountPercent: 65,
-      portionCount: 7,
-      expiryTimeMinutes: 120,
-      distanceKm: 0.9,
-      area: 'Banani Block E',
-      tags: ['Organic', 'Vegetarian'],
-      imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
-      dietary: 'Veg'
-    }
-  ];
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    const updateHandler = () => setStoredListings(surplusService.getStoredListings());
+    window.addEventListener('foodrescue_surplus_updated', updateHandler);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('foodrescue_surplus_updated', updateHandler);
+    };
+  }, []);
 
-  // Filtering Logic
-  const filteredDeals = dealsData.filter(deal => {
+  // Helper for parsing any timestamp format (ms number, ISO string, or Date)
+  const parseTimestamp = (val) => {
+    if (!val) return null;
+    if (typeof val === 'number') return val;
+    const parsed = new Date(val).getTime();
+    return isNaN(parsed) ? null : parsed;
+  };
+
+  const formatRemainingTime = (totalMins) => {
+    if (totalMins <= 0) return 'Expired';
+    const hrs = Math.floor(totalMins / 60);
+    const mins = totalMins % 60;
+    if (hrs > 0) return `${hrs}h ${mins}m`;
+    return `${mins}m`;
+  };
+
+  // Live consumer deals mapped dynamically from restaurant surplus food listings
+  const dynamicConsumerDeals = storedListings
+    .filter(item => {
+      const consumerStartMs = parseTimestamp(item.consumerStartAt) || parseTimestamp(item.ngoEndAt) || parseTimestamp(item.ngoPriorityUntil);
+      const expiresAtMs = parseTimestamp(item.expiresAt) || parseTimestamp(item.consumerEndAt) || parseTimestamp(item.finalExpiryTimestamp);
+
+      // Consumer market starts ONLY AFTER NGO priority window has ended (now >= consumerStartMs)
+      const hasConsumerStarted = consumerStartMs ? now >= consumerStartMs : true;
+      // Item MUST NOT be fully expired (now < expiresAtMs)
+      const isNotExpired = !expiresAtMs || now < expiresAtMs;
+      // Item MUST NOT be claimed by an NGO
+      const isNotClaimed = !item.claimedByNgo;
+
+      return hasConsumerStarted && isNotExpired && isNotClaimed;
+    })
+    .map(item => {
+      const ngoEndMs = parseTimestamp(item.ngoEndAt) || parseTimestamp(item.ngoPriorityUntil) || parseTimestamp(item.createdAt);
+      const expiresAtMs = parseTimestamp(item.expiresAt) || parseTimestamp(item.consumerEndAt) || parseTimestamp(item.finalExpiryTimestamp) || (now + 3 * 3600 * 1000);
+      
+      const isShiftedToB2C = ngoEndMs ? now >= ngoEndMs : false;
+      const origPrice = item.initialPriceBDT !== undefined ? Number(item.initialPriceBDT) : 500;
+      const discPercent = isShiftedToB2C ? 60 : 50;
+      const discPrice = Math.round(origPrice * (1 - discPercent / 100));
+
+      const diffMs = expiresAtMs - now;
+      const minsLeft = Math.max(0, Math.ceil(diffMs / 60000));
+
+      // Accurate Portion Count from Item
+      let portionCountStr = '15 Portions';
+      if (typeof item.quantityPortions === 'number' && item.quantityPortions > 0) {
+        portionCountStr = `${item.quantityPortions} Portions`;
+      } else if (typeof item.quantity === 'string' && item.quantity.trim()) {
+        portionCountStr = item.quantity;
+      } else if (typeof item.quantity === 'number') {
+        portionCountStr = `${item.quantity} Portions`;
+      }
+
+      const portionNum = parseInt(portionCountStr, 10) || 15;
+
+      return {
+        id: `DEAL-${item.id}`,
+        restaurantName: item.donor || item.restaurantName || 'Star Chef Bistro - Banani',
+        rating: 4.9,
+        reviewsCount: 180,
+        cuisine: item.category === 'COOKED' ? 'Bengali / Biryani' : item.category === 'BAKERY' ? 'Bakery & Desserts' : 'Surplus Meals',
+        itemTitle: item.name || item.foodItemTitle || 'Surplus Meal Package',
+        description: item.sub || 'Fresh surplus meal from restaurant kitchen.',
+        originalPrice: origPrice,
+        discountedPrice: discPrice,
+        discountPercent: discPercent,
+        portionCount: portionNum,
+        portionText: portionCountStr,
+        expiryTimeMinutes: minsLeft,
+        expiryFormatted: formatRemainingTime(minsLeft),
+        distanceKm: 1.2,
+        area: item.area || item.restaurantArea || 'Banani Road 11',
+        tags: isShiftedToB2C 
+          ? ['⚡ Shifted to B2C Flash Sale', '60% OFF', 'Fresh'] 
+          : ['🤝 Tier-1 NGO Window', '50% OFF Preview', 'Fresh'],
+        imageUrl: (item.image && !item.image.includes('.svg')) ? item.image : (item.packagingPhotoUrl && !item.packagingPhotoUrl.includes('.svg')) ? item.packagingPhotoUrl : 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80',
+        dietary: item.category === 'BAKERY' ? 'Veg' : 'Non-Veg'
+      };
+    });
+
+  const filteredDeals = dynamicConsumerDeals.filter(deal => {
     const matchesSearch = deal.itemTitle.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           deal.restaurantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           deal.cuisine.toLowerCase().includes(searchTerm.toLowerCase());
@@ -272,7 +246,7 @@ export default function DealExplorerTab({
                     {deal.discountPercent}% OFF
                   </div>
                   <div className="expiry-floating-pill">
-                    <Clock size={12} /> {deal.expiryTimeMinutes}m Left
+                    <Clock size={12} /> {deal.expiryFormatted} Left
                   </div>
                 </div>
 
@@ -303,7 +277,7 @@ export default function DealExplorerTab({
                     </div>
 
                     <div className="stock-counter">
-                      <span className="stock-num">{deal.portionCount} Left</span>
+                      <span className="stock-num">{deal.portionText}</span>
                       <span className="stock-lbl">Reserve before sold</span>
                     </div>
                   </div>

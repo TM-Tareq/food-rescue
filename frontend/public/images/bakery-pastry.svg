@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#701a75"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <linearGradient id="pastryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="chocoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b0764"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <filter id="shadow3" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="10" stdDeviation="15" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="600" height="400" fill="url(#bgGrad3)"/>
+  
+  <!-- Wooden Board -->
+  <rect x="120" y="100" width="360" height="220" rx="16" fill="#78350f" stroke="#92400e" stroke-width="6" filter="url(#shadow3)"/>
+  
+  <!-- Croissant -->
+  <path d="M 180,180 C 170,140 230,130 260,170 C 290,210 210,220 180,180 Z" fill="url(#pastryGrad)"/>
+
+  <!-- Chocolate Tart Slice -->
+  <polygon points="320,150 420,180 340,240" fill="url(#chocoGrad)" stroke="#f59e0b" stroke-width="3"/>
+  <circle cx="360" cy="185" r="10" fill="#dc2626"/>
+
+  <!-- Donut -->
+  <circle cx="250" cy="240" r="30" fill="#f472b6"/>
+  <circle cx="250" cy="240" r="10" fill="#78350f"/>
+
+  <!-- Overlay Text Badge -->
+  <rect x="25" y="25" width="240" height="38" rx="19" fill="rgba(15, 23, 42, 0.85)"/>
+  <text x="145" y="49" font-family="Arial, sans-serif" font-weight="bold" font-size="14" fill="#f472b6" text-anchor="middle">🥐 ASSORTED BAKERY PACK</text>
+</svg>

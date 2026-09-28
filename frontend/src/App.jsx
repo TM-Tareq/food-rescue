@@ -222,7 +222,21 @@ export default function App() {
     if (isUserAuthorizedForView(targetView)) {
       changeView(targetView, true);
     } else {
-      handleOpenAuth(roleStr);
+      const demoCredentials = {
+        restaurant: { email: 'chef@starbistro.com', pass: 'Chef@123456' },
+        ngo: { email: 'anjuman@shelter.org', pass: 'Ngo@123456' },
+        volunteer: { email: 'tanvir@hero.org', pass: 'Rider@123456' },
+        admin: { email: 'tareq@foodrescue.org', pass: 'Admin@2026#' },
+        consumer: { email: 'farhan@gmail.com', pass: 'User@123456' }
+      };
+      const targetCred = demoCredentials[roleStr?.toLowerCase()] || demoCredentials.restaurant;
+
+      authService.login(targetCred.email, targetCred.pass, roleStr).then((res) => {
+        if (login) login(res);
+        handleAuthSuccess(roleStr, res, 'login');
+      }).catch(() => {
+        handleOpenAuth(roleStr);
+      });
     }
   };
 

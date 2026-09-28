@@ -57,6 +57,8 @@ public class SurplusListingService {
 
         SurplusListing listing = SurplusListing.builder()
                 .restaurantId(request.getRestaurantId() != null ? request.getRestaurantId() : 1L)
+                .restaurantName(request.getRestaurantName() != null ? request.getRestaurantName() : "Star Chef Bistro")
+                .restaurantArea(request.getRestaurantArea() != null ? request.getRestaurantArea() : "Banani, Dhaka")
                 .foodItemTitle(request.getFoodItemTitle() != null ? request.getFoodItemTitle() : "Surplus Meal")
                 .category(request.getCategory() != null ? request.getCategory() : FoodCategory.COOKED)
                 .quantityPortions(request.getQuantityPortions() != null ? request.getQuantityPortions() : 20)
@@ -68,6 +70,12 @@ public class SurplusListingService {
                 .tier1NgoWindowEnd(tier1End)
                 .tier2ConsumerWindowEnd(tier2End)
                 .tier3FlashWindowEnd(tier3End)
+                .createdAt(now)
+                .ngoStartAt(now)
+                .ngoEndAt(tier1End)
+                .consumerStartAt(tier1End)
+                .consumerEndAt(finalExpiry)
+                .expiresAt(finalExpiry)
                 .currentTier(ListingTier.TIER1_NGO_FREE)
                 .aiHygieneScore(auditResult.getHygieneScore())
                 .aiQualityGrade(auditResult.getGrade())
@@ -88,15 +96,26 @@ public class SurplusListingService {
     }
 
     public List<MarketplaceDealResponseDto> getMarketplaceDeals() {
+        LocalDateTime now = LocalDateTime.now();
         return surplusListingRepository.findByStatus(ListingStatus.ACTIVE)
                 .stream()
+                .filter(item -> {
+                    LocalDateTime consumerStart = item.getConsumerStartAt() != null ? item.getConsumerStartAt() : item.getNgoEndAt();
+                    LocalDateTime expiresAt = item.getExpiresAt() != null ? item.getExpiresAt() : item.getFinalExpiryTimestamp();
+                    boolean hasConsumerStarted = consumerStart == null || !now.isBefore(consumerStart);
+                    boolean isNotExpired = expiresAt == null || now.isBefore(expiresAt);
+                    return hasConsumerStarted && isNotExpired;
+                })
                 .map(item -> {
-                    long minutesLeft = Duration.between(LocalDateTime.now(), item.getFinalExpiryTimestamp()).toMinutes();
+                    LocalDateTime finalExpiry = item.getFinalExpiryTimestamp() != null ? item.getFinalExpiryTimestamp() : LocalDateTime.now().plusHours(2);
+                    long minutesLeft = Math.max(0L, Duration.between(LocalDateTime.now(), finalExpiry).toMinutes());
                     double origPrice = item.getInitialPriceBDT() != null ? item.getInitialPriceBDT() : 450.0;
                     double discPrice = origPrice * 0.4; // 60% discount
+                    String restoName = item.getRestaurantName() != null ? item.getRestaurantName() : "Star Chef Bistro";
+                    String areaName = item.getRestaurantArea() != null ? item.getRestaurantArea() : "Banani Road 11";
                     return MarketplaceDealResponseDto.builder()
                             .id("DEAL-" + item.getId())
-                            .restaurantName("Star Chef Bistro - Banani")
+                            .restaurantName(restoName)
                             .rating(4.8)
                             .itemTitle(item.getFoodItemTitle())
                             .originalPrice(origPrice)
@@ -105,18 +124,60 @@ public class SurplusListingService {
                             .portionCount(item.getQuantityPortions())
                             .expiryTimeMinutes(Math.max(minutesLeft, 15L))
                             .distanceKm(1.2)
-                            .area("Banani Road 11")
+                            .area(areaName)
                             .build();
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public SurplusResponseDto updateSurplusListing(Long id, CreateSurplusRequestDto request) {
+        SurplusListing listing = surplusListingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Surplus listing not found with id: " + id));
+
+        if (request.getFoodItemTitle() != null && !request.getFoodItemTitle().isBlank()) {
+            listing.setFoodItemTitle(request.getFoodItemTitle());
+        }
+        if (request.getRestaurantName() != null && !request.getRestaurantName().isBlank()) {
+            listing.setRestaurantName(request.getRestaurantName());
+        }
+        if (request.getRestaurantArea() != null && !request.getRestaurantArea().isBlank()) {
+            listing.setRestaurantArea(request.getRestaurantArea());
+        }
+        if (request.getCategory() != null) {
+            listing.setCategory(request.getCategory());
+        }
+        if (request.getQuantityPortions() != null) {
+            listing.setQuantityPortions(request.getQuantityPortions());
+        }
+        if (request.getInitialPriceBDT() != null) {
+            listing.setInitialPriceBDT(request.getInitialPriceBDT());
+        }
+        if (request.getPackagingPhotoUrl() != null) {
+            listing.setPackagingPhotoUrl(request.getPackagingPhotoUrl());
+        }
+        listing.setUpdatedAt(LocalDateTime.now());
+
+        SurplusListing updated = surplusListingRepository.save(listing);
+        return mapToResponseDto(updated);
+    }
+
+    @Transactional
+    public void deleteSurplusListing(Long id) {
+        if (surplusListingRepository.existsById(id)) {
+            surplusListingRepository.deleteById(id);
+        }
     }
 
     private SurplusResponseDto mapToResponseDto(SurplusListing listing) {
         return SurplusResponseDto.builder()
                 .id(listing.getId())
                 .restaurantId(listing.getRestaurantId())
+                .restaurantName(listing.getRestaurantName() != null ? listing.getRestaurantName() : "Star Chef Bistro")
+                .restaurantArea(listing.getRestaurantArea() != null ? listing.getRestaurantArea() : "Banani, Dhaka")
                 .foodItemTitle(listing.getFoodItemTitle())
                 .quantityPortions(listing.getQuantityPortions())
+                .initialPriceBDT(listing.getInitialPriceBDT())
                 .currentPriceBDT(listing.getCurrentPriceBDT())
                 .currentTier(listing.getCurrentTier())
                 .aiQualityGrade(listing.getAiQualityGrade())
@@ -125,6 +186,11 @@ public class SurplusListingService {
                 .packagingPhotoUrl(listing.getPackagingPhotoUrl())
                 .finalExpiryTimestamp(listing.getFinalExpiryTimestamp())
                 .createdAt(listing.getCreatedAt())
+                .ngoStartAt(listing.getNgoStartAt())
+                .ngoEndAt(listing.getNgoEndAt())
+                .consumerStartAt(listing.getConsumerStartAt())
+                .consumerEndAt(listing.getConsumerEndAt())
+                .expiresAt(listing.getExpiresAt())
                 .build();
     }
 }

@@ -116,7 +116,7 @@ export default function RestaurantDashboard({ onLogout }) {
             >
               <Package size={18} />
               <span>Active Listings</span>
-              <span className="nav-badge">2</span>
+              <span className="nav-badge">{activeListingsData.length}</span>
             </button>
 
             <button
@@ -287,7 +287,7 @@ export default function RestaurantDashboard({ onLogout }) {
                   <span className="kpi-dot"></span>
                 </div>
                 <div className="kpi-body">
-                  <span className="kpi-value">2 Posts Live</span>
+                  <span className="kpi-value">{activeListingsData.length} Posts Live</span>
                   <span className="kpi-label">Active Listings</span>
                   <span className="kpi-sub">Awaiting pickup/matching</span>
                 </div>

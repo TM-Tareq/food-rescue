@@ -178,6 +178,7 @@ export default function SystemOverviewTab({ theme = 'light' }) {
               <TileLayer
                 url={tileLayer.url}
                 attribution={tileLayer.attribution}
+                subdomains={tileLayer.subdomains || '0123'}
               />
 
               {/* Heatmap density circles */}

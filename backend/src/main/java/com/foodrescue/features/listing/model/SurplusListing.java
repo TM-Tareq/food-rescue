@@ -21,6 +21,12 @@ public class SurplusListing {
     @Column(name = "restaurant_id", nullable = false)
     private Long restaurantId;
 
+    @Column(name = "restaurant_name")
+    private String restaurantName;
+
+    @Column(name = "restaurant_area")
+    private String restaurantArea;
+
     @Column(name = "food_item_title", nullable = false)
     private String foodItemTitle;
 
@@ -47,7 +53,7 @@ public class SurplusListing {
     @Column(name = "final_expiry_timestamp", nullable = false)
     private LocalDateTime finalExpiryTimestamp;
 
-    // Dynamic Tier Time Windows (Calculated by AI Engine)
+    // Dynamic Tier Time Windows & Stored Timestamps
     @Column(name = "tier1_ngo_window_end")
     private LocalDateTime tier1NgoWindowEnd;
 
@@ -56,6 +62,21 @@ public class SurplusListing {
 
     @Column(name = "tier3_flash_window_end")
     private LocalDateTime tier3FlashWindowEnd;
+
+    @Column(name = "ngo_start_at")
+    private LocalDateTime ngoStartAt;
+
+    @Column(name = "ngo_end_at")
+    private LocalDateTime ngoEndAt;
+
+    @Column(name = "consumer_start_at")
+    private LocalDateTime consumerStartAt;
+
+    @Column(name = "consumer_end_at")
+    private LocalDateTime consumerEndAt;
+
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "current_tier", nullable = false)
