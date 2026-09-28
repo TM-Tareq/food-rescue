@@ -107,11 +107,17 @@ public class AuthController {
                     .body(ApiResponse.error("Invalid password. Please check your credentials."));
         }
 
-        // Enforce strict Super Admin role check if attempting to log into Admin portal
-        if ("ADMIN".equalsIgnoreCase(requestedRole) && user.getRole() != Role.ADMIN) {
-            log.warn("Access denied: User {} with role {} attempted to log into Admin Portal.", email, user.getRole());
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Access denied. Admin portal requires Super Admin privileges."));
+        // Enforce strict portal-to-role matching for all modules
+        if (requestedRole != null && !requestedRole.isBlank()) {
+            String requestedRoleUpper = requestedRole.toUpperCase();
+            String userRoleUpper = user.getRole().name().toUpperCase();
+
+            if (!requestedRoleUpper.equals(userRoleUpper)) {
+                log.warn("Access denied: Account {} with role {} attempted to log into {} portal.", email, userRoleUpper, requestedRoleUpper);
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("⛔ Access denied: Account registered as " + userRoleUpper + 
+                                " cannot log into the " + requestedRoleUpper + " portal. Please select the " + userRoleUpper + " portal tab or use a " + requestedRoleUpper + " credential."));
+            }
         }
 
         Map<String, Object> responseData = new HashMap<>();
