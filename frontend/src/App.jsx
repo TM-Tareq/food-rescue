@@ -77,16 +77,16 @@ export default function App() {
   const isUserAuthorizedForView = (targetView, currentUser = user) => {
     if (targetView === 'landing' || targetView === 'savings') return true;
     if (!currentUser) return false;
-    
+
     const userRole = (currentUser.role || '').toUpperCase();
     if (userRole === 'ADMIN') return true; // Admin has access to all portals
-    
+
     if (targetView === 'admin') return userRole === 'ADMIN';
     if (targetView === 'dashboard') return userRole === 'RESTAURANT';
     if (targetView === 'ngo') return userRole === 'NGO';
     if (targetView === 'volunteer') return userRole === 'VOLUNTEER';
     if (targetView === 'consumer') return userRole === 'CONSUMER';
-    
+
     return false;
   };
 
@@ -218,7 +218,7 @@ export default function App() {
       admin: 'admin'
     };
     const targetView = roleViewMap[roleStr?.toLowerCase()] || 'dashboard';
-    
+
     if (isUserAuthorizedForView(targetView)) {
       changeView(targetView, true);
     } else {
@@ -331,56 +331,56 @@ export default function App() {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
               <span style={{ fontSize: '13px', fontWeight: 700, color: '#10b981' }}>🔒 Secured Portal Gateway</span>
-              <button 
+              <button
                 onClick={() => setIsDemoMenuOpen(false)}
                 style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '14px' }}
               >
                 ✕
               </button>
             </div>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <button 
+              <button
                 onClick={() => { changeView('landing', true); setIsDemoMenuOpen(false); }}
                 style={{ background: currentView === 'landing' ? '#2563eb' : 'rgba(255,255,255,0.08)', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '12px', fontWeight: 500 }}
               >
                 🌐 Public Landing Page
               </button>
-              <button 
+              <button
                 onClick={() => { handleOpenPortal('restaurant'); setIsDemoMenuOpen(false); }}
                 style={{ background: currentView === 'dashboard' ? '#2563eb' : 'rgba(255,255,255,0.08)', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '12px', fontWeight: 500 }}
               >
                 🏪 Restaurant Partner Dashboard
               </button>
-              <button 
+              <button
                 onClick={() => { handleOpenPortal('ngo'); setIsDemoMenuOpen(false); }}
                 style={{ background: currentView === 'ngo' ? '#2563eb' : 'rgba(255,255,255,0.08)', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '12px', fontWeight: 500 }}
               >
                 🏢 NGO Shelter Portal
               </button>
-              <button 
+              <button
                 onClick={() => { handleOpenPortal('volunteer'); setIsDemoMenuOpen(false); }}
                 style={{ background: currentView === 'volunteer' ? '#2563eb' : 'rgba(255,255,255,0.08)', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '12px', fontWeight: 500 }}
               >
                 🛵 Hero Volunteer GPS App
               </button>
-              <button 
+              <button
                 onClick={() => { handleOpenPortal('consumer'); setIsDemoMenuOpen(false); }}
                 style={{ background: currentView === 'consumer' ? '#2563eb' : 'rgba(255,255,255,0.08)', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '12px', fontWeight: 500 }}
               >
                 🛍️ Consumer Marketplace (50-80% OFF)
               </button>
-              <button 
+              <button
                 onClick={() => { handleOpenPortal('admin'); setIsDemoMenuOpen(false); }}
                 style={{ background: currentView === 'admin' ? '#2563eb' : 'rgba(255,255,255,0.08)', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '12px', fontWeight: 500 }}
               >
                 🛡️ Super Admin Control Tower
               </button>
             </div>
-            
+
             <div style={{ marginTop: '10px', pt: '8px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <BackendStatusBadge />
-              <button 
+              <button
                 onClick={toggleTheme}
                 style={{ background: 'none', border: 'none', color: '#fbbf24', cursor: 'pointer', fontSize: '12px' }}
               >
@@ -389,7 +389,7 @@ export default function App() {
             </div>
           </div>
         ) : (
-          <button 
+          <button
             onClick={() => setIsDemoMenuOpen(true)}
             style={{
               background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',

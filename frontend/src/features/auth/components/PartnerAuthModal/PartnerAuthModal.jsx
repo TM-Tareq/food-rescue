@@ -32,17 +32,9 @@ export default function PartnerAuthModal({ isOpen, onClose, initialRole = 'resta
     }
   }, [isOpen, initialRole, mode]);
 
-  // Handle email typing to auto-select registered role tab
   const handleEmailChange = (e) => {
     const val = e.target.value;
     setEmail(val);
-    
-    if (val.trim()) {
-      const detectedRole = authService.getRegisteredRoleForEmail(val.trim());
-      if (detectedRole) {
-        setSelectedRole(detectedRole.toLowerCase());
-      }
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -51,10 +43,9 @@ export default function PartnerAuthModal({ isOpen, onClose, initialRole = 'resta
     setAuthStatusMessage(null);
 
     const cleanEmail = email.trim().toLowerCase();
-    const knownRole = authService.getRegisteredRoleForEmail(cleanEmail);
 
     try {
-      let activeRole = (knownRole || selectedRole).toLowerCase();
+      let activeRole = selectedRole.toLowerCase();
 
       if (!isLoginMode) {
         // --- CONSUMER SELF-REGISTRATION FLOW WITH STRICT VALIDATION ---
@@ -81,7 +72,7 @@ export default function PartnerAuthModal({ isOpen, onClose, initialRole = 'resta
         };
 
         const res = await authService.register(registerData);
-        activeRole = (res.role || selectedRole).toLowerCase();
+        activeRole = selectedRole.toLowerCase();
         
         const registeredUser = {
           id: res.userId || Date.now(),
@@ -105,7 +96,7 @@ export default function PartnerAuthModal({ isOpen, onClose, initialRole = 'resta
       } else {
         // --- REAL LOGIN FLOW ---
         const res = await authService.login(cleanEmail, password, selectedRole.toUpperCase());
-        activeRole = (res.role || knownRole || selectedRole).toLowerCase();
+        activeRole = selectedRole.toLowerCase();
 
         const loggedInUser = {
           id: res.userId || Date.now(),
